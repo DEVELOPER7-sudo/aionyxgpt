@@ -17,7 +17,7 @@ const Landing = () => {
           </div>
 
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
-            AI Chat Studio
+            OnyxGPT
           </h1>
 
           <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto">
@@ -106,7 +106,7 @@ const Landing = () => {
         <div className="mt-20 text-center">
           <Link to="/chat">
             <Button size="lg" className="glow-blue-strong text-lg px-12 py-6">
-              Launch AI Chat Studio
+              Launch OnyxGPT
             </Button>
           </Link>
         </div>
