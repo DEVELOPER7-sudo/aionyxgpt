@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { useVisionAI } from '@/hooks/useVisionAI';
 import {
   Send,
   Mic,
@@ -65,8 +66,10 @@ const ChatArea = ({
   const [editingMessageContent, setEditingMessageContent] = useState('');
   const [attachments, setAttachments] = useState<string[]>([]);
   const [puterPaths, setPuterPaths] = useState<string[]>([]);
+  const [analyzeImages, setAnalyzeImages] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { analyzeImage, isAnalyzing } = useVisionAI();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -88,9 +91,26 @@ const ChatArea = ({
     }
   }, [chat?.id, input]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim() && attachments.length === 0) return;
-    onSendMessage(input, puterPaths);
+    if (isLoading || isAnalyzing) return; // Prevent multiple sends
+    
+    // If images are attached and analyze is enabled, analyze them first
+    if (analyzeImages && puterPaths.length > 0) {
+      try {
+        const analyses = await Promise.all(
+          puterPaths.map(path => analyzeImage(path, input || "What do you see in this image?"))
+        );
+        const combinedAnalysis = analyses.join('\n\n---\n\n');
+        const enhancedInput = `${input}\n\n[Vision AI Analysis]:\n${combinedAnalysis}`;
+        onSendMessage(enhancedInput, puterPaths);
+      } catch (error) {
+        onSendMessage(input, puterPaths);
+      }
+    } else {
+      onSendMessage(input, puterPaths);
+    }
+    
     // clear UI state
     setInput('');
     setAttachments([]);
@@ -385,16 +405,17 @@ const ChatArea = ({
       <div className="border-t border-border p-4 bg-card/50 backdrop-blur-sm animate-fade-in">
         <div className="max-w-4xl mx-auto space-y-3">
           {/* Toggles */}
-          <div className="flex items-center gap-6 text-sm">
+          <div className="flex flex-wrap items-center gap-3 md:gap-6 text-xs md:text-sm">
             <div className="flex items-center gap-2">
               <Switch
                 checked={webSearchEnabled}
                 onCheckedChange={onToggleWebSearch}
                 id="web-search"
               />
-              <Label htmlFor="web-search" className="flex items-center gap-1 cursor-pointer">
-                <Globe className="w-4 h-4" />
-                Web Search
+              <Label htmlFor="web-search" className="flex items-center gap-1 cursor-pointer whitespace-nowrap">
+                <Globe className="w-3 h-3 md:w-4 md:h-4" />
+                <span className="hidden sm:inline">Web Search</span>
+                <span className="sm:hidden">Web</span>
               </Label>
             </div>
             <div className="flex items-center gap-2">
@@ -403,9 +424,22 @@ const ChatArea = ({
                 onCheckedChange={onToggleDeepSearch}
                 id="deep-search"
               />
-              <Label htmlFor="deep-search" className="flex items-center gap-1 cursor-pointer">
-                <SearchIcon className="w-4 h-4" />
-                Deep Search
+              <Label htmlFor="deep-search" className="flex items-center gap-1 cursor-pointer whitespace-nowrap">
+                <SearchIcon className="w-3 h-3 md:w-4 md:h-4" />
+                <span className="hidden sm:inline">Deep Search</span>
+                <span className="sm:hidden">Deep</span>
+              </Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={analyzeImages}
+                onCheckedChange={setAnalyzeImages}
+                id="vision-ai"
+              />
+              <Label htmlFor="vision-ai" className="flex items-center gap-1 cursor-pointer whitespace-nowrap">
+                <ImageIcon className="w-3 h-3 md:w-4 md:h-4" />
+                <span className="hidden sm:inline">Vision AI</span>
+                <span className="sm:hidden">Vision</span>
               </Label>
             </div>
           </div>
@@ -455,7 +489,8 @@ const ChatArea = ({
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Type a message or use /img to generate an image..."
-              className="flex-1 min-h-[60px] max-h-[200px] resize-none bg-input border-input"
+              className="flex-1 min-h-[60px] max-h-[200px] resize-none bg-input border-input text-base"
+              style={{ fontSize: '16px' }}
             />
             <Button
               variant="ghost"
@@ -466,11 +501,11 @@ const ChatArea = ({
             </Button>
             <Button
               onClick={handleSend}
-              disabled={isLoading}
+              disabled={isLoading || isAnalyzing}
               className="glow-blue-strong transition-all duration-300 hover:scale-110 hover:rotate-12"
               size="icon"
             >
-              {isLoading ? (
+              {isLoading || isAnalyzing ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <Send className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" />

@@ -318,4 +318,28 @@ All colors MUST be HSL.
   .prose img:hover {
     @apply scale-[1.02];
   }
+
+  /* Mobile optimizations */
+  @media (max-width: 768px) {
+    .prose {
+      font-size: 14px;
+    }
+    
+    .prose pre {
+      font-size: 12px;
+      overflow-x: auto;
+      max-width: 100%;
+    }
+
+    .prose code {
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    .prose table {
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+  }
 }

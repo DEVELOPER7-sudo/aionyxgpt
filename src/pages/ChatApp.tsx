@@ -1,6 +1,7 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import ChatSidebar from '@/components/ChatSidebar';
 import ChatArea from '@/components/ChatArea';
+import Header from '@/components/Header';
 import { Chat, Message, ImageGeneration, AppSettings } from '@/types/chat';
 import { storage } from '@/lib/storage';
 import { toast } from 'sonner';
@@ -372,29 +373,23 @@ What would you like to work on today?`,
   };
 
   return (
-    <div className="flex h-screen w-full bg-background overflow-hidden relative">
+    <div className="flex flex-col h-screen w-full bg-background overflow-hidden relative">
       <MotionBackground />
-      {/* Mobile Menu Button */}
-      <div className="md:hidden fixed top-4 left-4 z-50">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="glow-blue"
-        >
-          {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </Button>
-      </div>
+      <Header 
+        showMenuButton={true}
+        onMenuClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+      />
 
-      {/* Sidebar */}
-      <div
-        className={cn(
-          'transition-all duration-300 ease-in-out',
-          'md:static md:translate-x-0',
-          'fixed inset-y-0 left-0 z-40 w-72 md:w-auto',
-          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-        )}
-      >
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar */}
+        <div
+          className={cn(
+            'transition-all duration-300 ease-in-out',
+            'md:static md:translate-x-0',
+            'fixed inset-y-0 left-0 z-40 w-72 md:w-auto',
+            mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+          )}
+        >
         <ChatSidebar
           chats={chats}
           currentChatId={currentChatId}
@@ -420,8 +415,8 @@ What would you like to work on today?`,
         />
       )}
 
-      {/* Main Content */}
-      <div className="flex-1 overflow-hidden">
+        {/* Main Content */}
+        <div className="flex-1 overflow-hidden">
         {currentView === 'chat' && (
           <ChatArea
             chat={currentChat}
@@ -462,6 +457,7 @@ What would you like to work on today?`,
             }} />
           )}
         </Suspense>
+        </div>
       </div>
     </div>
   );
