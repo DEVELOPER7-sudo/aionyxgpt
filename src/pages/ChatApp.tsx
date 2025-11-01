@@ -162,30 +162,85 @@ What would you like to work on today?`,
     // @ts-ignore - Puter is loaded via script tag
     const puter = window.puter;
 
-    // Build messages, optionally attaching files to the last user message
+    // Prepare basics
     const baseMessages = messages.map((m) => ({ role: m.role, content: m.content }));
-    let formattedMessages: any[] = baseMessages;
+    const lastUser = [...messages].reverse().find((m) => m.role === 'user');
+    const userText = lastUser?.content ?? '';
 
+    // Use selected model (do not force a single default)
+    const modelId = settings.textModel;
+
+    // If we have attachments, call vision like: puter.ai.chat(prompt, imageUrl, { model })
     if (attachments && attachments.length > 0) {
-      const lastIdx = baseMessages.length - 1;
-      if (lastIdx >= 0 && baseMessages[lastIdx].role === 'user') {
-        const last = baseMessages[lastIdx] as { role: string; content: string };
-        const contentArray = [
-          ...attachments.map((p) => ({ type: 'file', puter_path: p })),
-          { type: 'text', text: last.content },
-        ];
-        formattedMessages = [
-          ...baseMessages.slice(0, lastIdx),
-          { role: 'user', content: contentArray },
-        ];
+      try {
+        if (settings.enableDebugLogs) {
+          console.log('[DEBUG] Vision chat using URL:', attachments[0], 'model:', modelId);
+        }
+
+        const assistantMessage: Message = {
+          id: Date.now().toString(),
+          role: 'assistant',
+          content: '',
+          timestamp: Date.now(),
+        };
+
+        const chat = chats.find((c) => c.id === chatId);
+        if (!chat) return;
+
+        // Insert placeholder assistant message
+        const startMessages = [...messages, assistantMessage];
+        storage.updateChat(chatId, { messages: startMessages });
+        setChats((prev) => prev.map((c) => (c.id === chatId ? { ...c, messages: startMessages } : c)));
+
+        const res = await puter.ai.chat(userText || 'What do you see?', attachments[0], { model: modelId });
+
+        let full = '';
+        const hasAsyncIter = (res as any)?.[Symbol.asyncIterator]?.bind(res);
+        if (hasAsyncIter) {
+          for await (const part of res as any) {
+            const text = part?.text ?? part?.delta ?? part?.message?.content ?? '';
+            if (typeof text === 'string') {
+              full += text;
+              assistantMessage.content = full;
+              const updated = [...messages, assistantMessage];
+              storage.updateChat(chatId, { messages: updated });
+              setChats((prev) => prev.map((c) => (c.id === chatId ? { ...c, messages: updated } : c)));
+            }
+          }
+        } else {
+          if (typeof res === 'string') full = res;
+          else if (Array.isArray(res)) full = res.map((p: any) => p?.text || '').join('');
+          else if (res && typeof res === 'object' && typeof (res as any).text === 'string') full = (res as any).text;
+          assistantMessage.content = (full || '').trim();
+          const updated = [...messages, assistantMessage];
+          storage.updateChat(chatId, { messages: updated });
+          setChats((prev) => prev.map((c) => (c.id === chatId ? { ...c, messages: updated } : c)));
+        }
+
+        // Auto-generate title for first turn
+        if (messages.length === 1) {
+          const title = messages[0].content.slice(0, 50) + (messages[0].content.length > 50 ? '...' : '');
+          storage.updateChat(chatId, { title });
+          setChats(chats.map((c) => (c.id === chatId ? { ...c, title } : c)));
+        }
+      } catch (err) {
+        console.error('Vision chat error:', err);
+        const assistantMessage: Message = {
+          id: Date.now().toString(),
+          role: 'assistant',
+          content: 'Failed to get response from AI',
+          timestamp: Date.now(),
+        };
+        const updated = [...messages, assistantMessage];
+        storage.updateChat(chatId, { messages: updated });
+        setChats((prev) => prev.map((c) => (c.id === chatId ? { ...c, messages: updated } : c)));
       }
+      return; // Important: do not run the regular text-only flow
     }
 
+    // Regular text-only flow with system prompt
     const systemPrompt = `You are a helpful AI assistant. ${webSearchEnabled ? 'You may use web knowledge if your model supports it.' : ''} ${deepSearchEnabled ? 'Prefer deeper step-by-step reasoning when needed.' : ''}`.trim();
-    formattedMessages = [{ role: 'system', content: systemPrompt }, ...formattedMessages];
-
-    // Use the full model ID including 'openrouter:' prefix for custom models
-    const modelId = settings.textModel;
+    let formattedMessages: any[] = [{ role: 'system', content: systemPrompt }, ...baseMessages];
 
     if (settings.enableDebugLogs) {
       console.log('[DEBUG] Using model:', modelId);
@@ -194,7 +249,7 @@ What would you like to work on today?`,
       console.log('[DEBUG] API Call params:', {
         model: modelId,
         temperature: settings.temperature,
-        max_tokens: settings.maxTokens
+        max_tokens: settings.maxTokens,
       });
     }
 
