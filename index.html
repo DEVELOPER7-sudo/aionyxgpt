@@ -14,10 +14,24 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Puter.js AI library - pinned to v2 for stability -->
-    <script src="https://js.puter.com/v2/" crossorigin="anonymous"></script>
-
-    
+    <!-- Self-hosted Puter.js AI library (v2) to reduce CDN supply-chain risk -->
+    <script src="/vendor/puter-v2.js"></script>
+    <script>
+      (function() {
+        // Fallback: if local script fails to provide window.puter, load from CDN
+        function loadCDN() {
+          var s = document.createElement('script');
+          s.src = 'https://js.puter.com/v2/';
+          s.crossOrigin = 'anonymous';
+          document.head.appendChild(s);
+        }
+        if (!window.puter) {
+          setTimeout(function() {
+            if (!window.puter) loadCDN();
+          }, 50);
+        }
+      })();
+    </script>
     
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
