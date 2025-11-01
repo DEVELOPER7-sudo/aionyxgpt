@@ -11,7 +11,7 @@ import {
 interface HeaderProps {
   onMenuClick?: () => void;
   showMenuButton?: boolean;
-  user?: { email: string } | null;
+  user?: { email?: string } | null;
   onSignOut?: () => void;
 }
 
@@ -50,13 +50,13 @@ const Header = ({ onMenuClick, showMenuButton = false, user, onSignOut }: Header
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="gap-2 transition-all duration-200 hover:scale-105">
                 <User className="h-4 w-4" />
-                <span className="hidden md:inline">{user.email}</span>
+                <span className="hidden md:inline">{user.email || 'User'}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 animate-scale-in">
               <DropdownMenuItem disabled>
                 <User className="mr-2 h-4 w-4" />
-                {user.email}
+                {user.email || 'User'}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onSignOut} className="text-destructive focus:text-destructive">

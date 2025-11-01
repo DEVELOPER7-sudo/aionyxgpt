@@ -10,6 +10,8 @@ import { Menu, X, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/hooks/useTheme';
 import { useChatPersistence } from '@/hooks/useChatPersistence';
+import { useAuth } from '@/hooks/useAuth';
+import { useChatSync } from '@/hooks/useChatSync';
 import MotionBackground from '@/components/MotionBackground';
 
 // Lazy load heavy components
@@ -29,12 +31,17 @@ const ChatApp = () => {
   const [webSearchEnabled, setWebSearchEnabled] = useState(settings.enableWebSearch);
   const [deepSearchEnabled, setDeepSearchEnabled] = useState(settings.enableDeepSearch);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
+  
+  const { user, signOut, loading: authLoading } = useAuth();
 
   // Apply theme
   useTheme(settings);
 
-  // Auto-persist chats to prevent data loss
+  // Auto-persist chats locally
   useChatPersistence(chats, currentChatId);
+  
+  // Sync chats to cloud if user is signed in
+  useChatSync(chats, user?.id, setChats);
 
   useEffect(() => {
     try {
@@ -378,6 +385,8 @@ What would you like to work on today?`,
       <Header 
         showMenuButton={true}
         onMenuClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        user={user}
+        onSignOut={signOut}
       />
 
       <div className="flex flex-1 overflow-hidden">
