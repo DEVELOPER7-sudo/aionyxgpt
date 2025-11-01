@@ -8,6 +8,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
 import { z } from 'zod';
 import MotionBackground from '@/components/MotionBackground';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const emailSchema = z.string().trim().email({ message: "Invalid email address" }).max(255);
 const passwordSchema = z.string().min(6, { message: "Password must be at least 6 characters" });
@@ -64,8 +66,21 @@ const Auth = () => {
     }
   };
 
-  const handleGuestMode = () => {
-    navigate('/chat');
+  const handleGuestMode = async () => {
+    try {
+      setIsSubmitting(true);
+      // Sign in anonymously for guest mode
+      const { error } = await supabase.auth.signInAnonymously();
+      if (error) {
+        toast.error('Failed to start guest session. Please try again.');
+        return;
+      }
+      // Navigation will happen automatically via auth state change
+    } catch (error) {
+      toast.error('An error occurred. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (loading) {

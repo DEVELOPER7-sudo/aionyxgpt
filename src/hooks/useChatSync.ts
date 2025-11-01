@@ -42,7 +42,11 @@ export const useChatSync = (
           setChats([...cloudChats, ...localChats]);
         }
       } catch (error) {
-        console.error('Error loading cloud chats:', error);
+        // Only log in development
+        if (import.meta.env.DEV) {
+          console.error('Error loading cloud chats:', error);
+        }
+        toast.error('Failed to load chats from cloud');
       }
     };
 
@@ -81,7 +85,11 @@ export const useChatSync = (
 
         lastSyncRef.current = Date.now();
       } catch (error) {
-        console.error('Error syncing chats:', error);
+        // Only log in development
+        if (import.meta.env.DEV) {
+          console.error('Error syncing chats:', error);
+        }
+        // Silent fail for sync - don't interrupt user experience
       }
     }, 2000);
 

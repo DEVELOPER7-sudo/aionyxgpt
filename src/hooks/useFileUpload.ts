@@ -83,8 +83,11 @@ export const useFileUpload = () => {
       
       return uploadedFileData;
     } catch (error: any) {
-      console.error('File upload error:', error);
-      toast.error(`Failed to upload ${file.name}: ${error.message}`);
+      // Only log detailed errors in development
+      if (import.meta.env.DEV) {
+        console.error('File upload error:', error);
+      }
+      toast.error(`Failed to upload ${file.name}`);
       return null;
     } finally {
       setIsUploading(false);
@@ -108,13 +111,20 @@ export const useFileUpload = () => {
         .remove([storagePath]);
 
       if (error) {
-        console.error('Error deleting file:', error);
-        toast.error('Failed to delete file from storage');
+        // Only log in development
+        if (import.meta.env.DEV) {
+          console.error('Error deleting file:', error);
+        }
+        toast.error('Failed to delete file');
       }
 
       setUploadedFiles(prev => prev.filter(f => f.storagePath !== storagePath));
     } catch (error) {
-      console.error('Error removing file:', error);
+      // Only log in development
+      if (import.meta.env.DEV) {
+        console.error('Error removing file:', error);
+      }
+      toast.error('Failed to remove file');
     }
   };
 

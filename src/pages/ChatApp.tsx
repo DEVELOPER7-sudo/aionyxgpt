@@ -128,18 +128,15 @@ What would you like to work on today?`,
         await handleTextChat(updatedChat.messages, currentChatId, attachments);
       }
     } catch (error: any) {
-      if (settings.enableDebugLogs) {
+      // Only log detailed errors in development
+      if (import.meta.env.DEV) {
         console.error('[DEBUG] Full AI Error:', JSON.stringify(error, null, 2));
+        console.error('AI Error:', error);
       }
-      console.error('AI Error:', error);
       
-      let errorMessage = 'Failed to get response from AI';
+      let errorMessage = 'An error occurred. Please try again.';
       if (error.message?.includes('rate limit') || error.message?.includes('429')) {
-        errorMessage = 'Rate limit exceeded. You have used your 400M token quota. Please sign in with a new Puter account or wait for the limit to reset.';
-      } else if (error.error?.message) {
-        errorMessage = `API Error: ${error.error.message}`;
-      } else if (error.message) {
-        errorMessage = `Error: ${error.message}`;
+        errorMessage = 'Rate limit exceeded. Please try again later.';
       }
       
       toast.error(errorMessage);
@@ -202,7 +199,8 @@ What would you like to work on today?`,
     // If we have attachments, call vision like: puter.ai.chat(prompt, imageUrl, { model })
     if (attachments && attachments.length > 0) {
       try {
-        if (settings.enableDebugLogs) {
+        // Only log in development
+        if (import.meta.env.DEV && settings.enableDebugLogs) {
           console.log('[DEBUG] Vision chat using URL:', attachments[0], 'model:', modelId);
         }
 
@@ -253,11 +251,14 @@ What would you like to work on today?`,
           setChats(chats.map((c) => (c.id === chatId ? { ...c, title } : c)));
         }
       } catch (err) {
-        console.error('Vision chat error:', err);
+        // Only log detailed errors in development
+        if (import.meta.env.DEV) {
+          console.error('Vision chat error:', err);
+        }
         const assistantMessage: Message = {
           id: Date.now().toString(),
           role: 'assistant',
-          content: 'Failed to get response from AI',
+          content: 'Failed to get response from AI. Please try again.',
           timestamp: Date.now(),
         };
         const updated = [...messages, assistantMessage];
@@ -271,7 +272,8 @@ What would you like to work on today?`,
     const systemPrompt = `You are a helpful AI assistant. ${webSearchEnabled ? 'You may use web knowledge if your model supports it.' : ''} ${deepSearchEnabled ? 'Prefer deeper step-by-step reasoning when needed.' : ''}`.trim();
     let formattedMessages: any[] = [{ role: 'system', content: systemPrompt }, ...baseMessages];
 
-    if (settings.enableDebugLogs) {
+    // Only log in development
+    if (import.meta.env.DEV && settings.enableDebugLogs) {
       console.log('[DEBUG] Using model:', modelId);
       console.log('[DEBUG] webSearch:', webSearchEnabled, '| deepSearch:', deepSearchEnabled);
       console.log('[DEBUG] Messages:', JSON.stringify(formattedMessages, null, 2));
