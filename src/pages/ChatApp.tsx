@@ -430,12 +430,37 @@ What would you like to work on today?`,
     setChats(chats.map(c => c.id === chatId ? { ...c, title } : c));
   };
 
-  const handleDeleteChat = (chatId: string) => {
-    storage.deleteChat(chatId);
-    setChats(chats.filter(c => c.id !== chatId));
-    if (currentChatId === chatId) {
-      setCurrentChatId(null);
-      storage.setCurrentChatId(null);
+  const handleDeleteChat = async (chatId: string) => {
+    try {
+      // Delete from local storage
+      storage.deleteChat(chatId);
+      
+      // Delete from Supabase if user is logged in
+      if (user?.id) {
+        const { error } = await supabase
+          .from('chats')
+          .delete()
+          .eq('id', chatId)
+          .eq('user_id', user.id);
+        
+        if (error) {
+          console.error('Error deleting chat from cloud:', error);
+          toast.error('Failed to delete chat from cloud');
+          return;
+        }
+      }
+      
+      // Update local state
+      setChats(chats.filter(c => c.id !== chatId));
+      if (currentChatId === chatId) {
+        setCurrentChatId(null);
+        storage.setCurrentChatId(null);
+      }
+      
+      toast.success('Chat deleted');
+    } catch (error) {
+      console.error('Error deleting chat:', error);
+      toast.error('Failed to delete chat');
     }
   };
 

@@ -22,7 +22,7 @@ interface ChatSidebarProps {
   currentChatId: string | null;
   onNewChat: () => void;
   onSelectChat: (chatId: string) => void;
-  onDeleteChat: (chatId: string) => void;
+  onDeleteChat: (chatId: string) => Promise<void>;
   onNavigate: (section: 'images' | 'memory' | 'search' | 'settings' | 'logs') => void;
   collapsed: boolean;
   onToggleCollapse: () => void;

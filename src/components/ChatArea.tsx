@@ -34,7 +34,7 @@ interface ChatAreaProps {
   chat: Chat | null;
   onSendMessage: (content: string) => void;
   onUpdateTitle: (chatId: string, title: string) => void;
-  onDeleteChat: (chatId: string) => void;
+  onDeleteChat: (chatId: string) => Promise<void>;
   onRegenerateMessage: (messageId: string) => void;
   onEditMessage: (messageId: string, newContent: string) => void;
   isLoading: boolean;
