@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useVisionAI } from '@/hooks/useVisionAI';
+import { useFileUpload } from '@/hooks/useFileUpload';
 import { toast } from 'sonner';
 
 import LoadingDots from '@/components/LoadingDots';
@@ -78,15 +79,32 @@ const ChatArea = ({
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { analyzeImage, isAnalyzing } = useVisionAI();
+  const { uploadFile, isUploading } = useFileUpload();
 
-  // Extract thinking and main content separately
-  const processThinking = (content: string): { thinking: string | null; main: string } => {
-    const thinkRegex = /<think>([\s\S]*?)<\/think>/i;
-    const match = content.match(thinkRegex);
-    if (!match) return { thinking: null, main: content };
-    const thinking = match[1].trim();
-    const main = content.replace(thinkRegex, '').trim();
-    return { thinking, main };
+  // Extract thinking and main content separately - handle incomplete tags
+  const processThinking = (content: string): { thinking: string | null; main: string; isThinking: boolean } => {
+    const thinkStartIndex = content.indexOf('<think>');
+    const thinkEndIndex = content.indexOf('</think>');
+    
+    // No thinking tags at all
+    if (thinkStartIndex === -1) {
+      return { thinking: null, main: content, isThinking: false };
+    }
+    
+    // Has opening tag but no closing tag yet (still streaming thinking)
+    if (thinkStartIndex !== -1 && thinkEndIndex === -1) {
+      const thinking = content.slice(thinkStartIndex + 7); // Everything after <think>
+      return { thinking, main: '', isThinking: true };
+    }
+    
+    // Has both tags (thinking complete)
+    if (thinkStartIndex !== -1 && thinkEndIndex !== -1) {
+      const thinking = content.slice(thinkStartIndex + 7, thinkEndIndex).trim();
+      const main = content.slice(thinkEndIndex + 8).trim(); // Everything after </think>
+      return { thinking, main, isThinking: false };
+    }
+    
+    return { thinking: null, main: content, isThinking: false };
   };
 
   useEffect(() => {
@@ -109,7 +127,7 @@ const ChatArea = ({
     }
   }, [chat?.id, input]);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -118,12 +136,12 @@ const ChatArea = ({
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setUploadedImage(event.target?.result as string);
+    // Upload to Supabase storage
+    const uploadedFile = await uploadFile(file);
+    if (uploadedFile) {
+      setUploadedImage(uploadedFile.url);
       toast.success('Image uploaded! Add a question or click send to analyze.');
-    };
-    reader.readAsDataURL(file);
+    }
   };
 
   const handleSend = async () => {
@@ -292,7 +310,7 @@ const ChatArea = ({
                 )}
                 {message.role === 'assistant' ? (
                   (() => {
-                    const { thinking, main } = processThinking(message.content);
+                    const { thinking, main, isThinking } = processThinking(message.content);
                     const isExpanded = expandedThinking.has(message.id);
                     
                     return (
@@ -311,7 +329,7 @@ const ChatArea = ({
                               }}
                               className="w-full px-3 py-2 bg-muted/50 hover:bg-muted flex items-center justify-between text-sm font-medium"
                             >
-                              <span>💭 Thinking</span>
+                              <span>💭 Thinking{isThinking ? ' (streaming...)' : ''}</span>
                               <span className="text-xs">{isExpanded ? '▼' : '▶'}</span>
                             </button>
                             {isExpanded && (
@@ -327,7 +345,7 @@ const ChatArea = ({
                         )}
                         <div className="prose prose-sm dark:prose-invert max-w-none min-w-0 overflow-hidden">
                           <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                            {main}
+                            {main || (isThinking ? '' : message.content)}
                           </ReactMarkdown>
                         </div>
                       </>
@@ -484,11 +502,11 @@ const ChatArea = ({
             </Button>
             <Button
               onClick={handleSend}
-              disabled={isLoading || isAnalyzing}
+              disabled={isLoading || isAnalyzing || isUploading}
               className="h-10 w-10 flex-shrink-0"
               size="icon"
             >
-              {isLoading || isAnalyzing ? (
+              {isLoading || isAnalyzing || isUploading ? (
                 <Loader2 className="w-4 h-4 md:w-5 md:h-5 animate-spin" />
               ) : (
                 <Send className="w-4 h-4 md:w-5 md:h-5" />
