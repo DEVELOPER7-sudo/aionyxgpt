@@ -447,28 +447,40 @@ I'm your intelligent companion powered by cutting-edge AI models. Here's what I 
       console.log('[Vision] Prompt:', prompt);
       console.log('[Vision] Using model:', settings.textModel);
       
-      // Use selected model from settings instead of hardcoded gpt-5-nano
+      // Use streaming for real-time response
       const response = await puter.ai.chat(prompt, imageUrl, {
         model: settings.textModel,
+        stream: true,
       });
 
-      const fullResponse = typeof response === 'string' ? response : String(response);
-      
+      let fullResponse = '';
       const assistantMessage: Message = {
         id: Date.now().toString(),
         role: 'assistant',
-        content: fullResponse,
+        content: '',
         timestamp: Date.now(),
       };
 
-      const currentMessages = [...messages, assistantMessage];
-      storage.updateChat(chatId, { messages: currentMessages });
-      setChats(prevChats => prevChats.map(c => c.id === chatId ? { ...c, messages: currentMessages } : c));
-      
-      logger.logSuccess('puter.ai.chat (vision)', { prompt, imageUrl, model: settings.textModel }, fullResponse);
-      console.log('[Vision] Analysis complete');
-      
-      setAbortController(null);
+      const chat = chats.find(c => c.id === chatId);
+      if (!chat) return;
+
+      try {
+        for await (const part of response) {
+          if (controller.signal.aborted) {
+            break;
+          }
+          
+          fullResponse += part?.text || '';
+          const currentMessages = [...messages, { ...assistantMessage, content: fullResponse }];
+          storage.updateChat(chatId, { messages: currentMessages });
+          setChats(prevChats => prevChats.map(c => c.id === chatId ? { ...c, messages: currentMessages } : c));
+        }
+        
+        logger.logSuccess('puter.ai.chat (vision)', { prompt, imageUrl, model: settings.textModel }, fullResponse);
+        console.log('[Vision] Analysis complete');
+      } finally {
+        setAbortController(null);
+      }
     } catch (error: any) {
       logger.logError('puter.ai.chat (vision)', { prompt, imageUrl }, error);
       console.error('[Vision] Error:', error);
