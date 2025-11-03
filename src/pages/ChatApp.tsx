@@ -129,8 +129,9 @@ I'm your intelligent companion powered by cutting-edge AI models. Here's what I 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: isVisionRequest ? `${content}\n\n[Image uploaded]` : content,
+      content: isVisionRequest ? content : content,
       timestamp: Date.now(),
+      imageUrl: isVisionRequest ? imageData.imageUrl : undefined,
     };
 
     const updatedChat = { ...currentChat! };

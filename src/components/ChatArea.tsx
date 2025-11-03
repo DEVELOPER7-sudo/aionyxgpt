@@ -322,8 +322,8 @@ const ChatArea = ({
                   <div className="mb-3">
                     <img
                       src={message.imageUrl}
-                      alt={message.imagePrompt || 'Generated image'}
-                      className="rounded-lg max-w-full h-auto"
+                      alt={message.imagePrompt || 'Uploaded image'}
+                      className="rounded-lg max-w-full h-auto max-h-96 object-contain"
                     />
                     {message.imagePrompt && (
                       <p className="text-xs text-muted-foreground mt-2">
