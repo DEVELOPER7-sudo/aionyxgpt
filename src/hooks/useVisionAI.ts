@@ -5,7 +5,7 @@ export const useVisionAI = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const analyzeImage = async (
-    imageUrl: string,
+    imageUrl: string | string[],
     prompt: string = 'What do you see?',
     model: string = 'gpt-5-nano'
   ): Promise<string> => {
@@ -20,7 +20,7 @@ export const useVisionAI = () => {
     const logger = createPuterAPILogger();
     
     try {
-      // Call Puter vision API with correct format: chat(prompt, imageUrl, options)
+      // Call Puter vision API - supports single image or multiple images array
       const result = await puter.ai.chat(prompt, imageUrl, { model });
       logger.logSuccess('puter.ai.chat (vision)', { prompt, imageUrl, model }, result);
       return typeof result === 'string' ? result : String(result);

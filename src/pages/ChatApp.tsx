@@ -428,7 +428,7 @@ I'm your intelligent companion powered by cutting-edge AI models. Here's what I 
     }
   };
 
-  const handleVisionChat = async (imageUrl: string, prompt: string, messages: Message[], chatId: string) => {
+  const handleVisionChat = async (imageUrl: string | string[], prompt: string, messages: Message[], chatId: string) => {
     // @ts-ignore - Puter is loaded via script tag
     const puter = (window as any)?.puter;
     if (!puter?.ai?.chat) {
@@ -443,12 +443,13 @@ I'm your intelligent companion powered by cutting-edge AI models. Here's what I 
     const logger = createPuterAPILogger();
 
     try {
-      console.log('[Vision] Analyzing image:', imageUrl);
+      console.log('[Vision] Analyzing image(s):', imageUrl);
       console.log('[Vision] Prompt:', prompt);
+      console.log('[Vision] Using model:', settings.textModel);
       
-      // Use non-streaming for instant response
+      // Use selected model from settings instead of hardcoded gpt-5-nano
       const response = await puter.ai.chat(prompt, imageUrl, {
-        model: 'gpt-5-nano',
+        model: settings.textModel,
       });
 
       const fullResponse = typeof response === 'string' ? response : String(response);
@@ -464,7 +465,7 @@ I'm your intelligent companion powered by cutting-edge AI models. Here's what I 
       storage.updateChat(chatId, { messages: currentMessages });
       setChats(prevChats => prevChats.map(c => c.id === chatId ? { ...c, messages: currentMessages } : c));
       
-      logger.logSuccess('puter.ai.chat (vision)', { prompt, imageUrl }, fullResponse);
+      logger.logSuccess('puter.ai.chat (vision)', { prompt, imageUrl, model: settings.textModel }, fullResponse);
       console.log('[Vision] Analysis complete');
       
       setAbortController(null);
