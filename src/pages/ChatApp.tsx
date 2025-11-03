@@ -432,7 +432,7 @@ I'm your intelligent companion powered by cutting-edge AI models. Here's what I 
     // @ts-ignore - Puter is loaded via script tag
     const puter = (window as any)?.puter;
     if (!puter?.ai?.chat) {
-      toast.error('AI service not available');
+      toast.error('Puter AI service not available. Please refresh the page.');
       setIsLoading(false);
       return;
     }
@@ -440,7 +440,13 @@ I'm your intelligent companion powered by cutting-edge AI models. Here's what I 
     const controller = new AbortController();
     setAbortController(controller);
 
+    const logger = createPuterAPILogger();
+
     try {
+      console.log('[Vision] Analyzing image:', imageUrl);
+      console.log('[Vision] Prompt:', prompt);
+      
+      // Call Puter vision API: chat(prompt, imageUrl, options)
       const response = await puter.ai.chat(prompt, imageUrl, {
         model: 'gpt-5-nano',
         stream: true,
@@ -468,11 +474,16 @@ I'm your intelligent companion powered by cutting-edge AI models. Here's what I 
           storage.updateChat(chatId, { messages: currentMessages });
           setChats(prevChats => prevChats.map(c => c.id === chatId ? { ...c, messages: currentMessages } : c));
         }
+        
+        logger.logSuccess('puter.ai.chat (vision)', { prompt, imageUrl }, fullResponse);
+        console.log('[Vision] Analysis complete');
       } finally {
         setAbortController(null);
       }
-    } catch (error) {
-      console.error('Vision error:', error);
+    } catch (error: any) {
+      logger.logError('puter.ai.chat (vision)', { prompt, imageUrl }, error);
+      console.error('[Vision] Error:', error);
+      toast.error(error?.message || 'Failed to analyze image');
       throw error;
     }
 

@@ -12,21 +12,22 @@ export const useVisionAI = () => {
     // @ts-ignore - Puter is loaded via script tag
     const puter = (window as any)?.puter;
     if (!puter?.ai?.chat) {
-      console.warn('Puter AI not available');
-      return '';
+      console.error('Puter AI not available - ensure Puter script is loaded');
+      throw new Error('Puter AI service not available');
     }
 
     setIsAnalyzing(true);
     const logger = createPuterAPILogger();
     
     try {
+      // Call Puter vision API with correct format: chat(prompt, imageUrl, options)
       const result = await puter.ai.chat(prompt, imageUrl, { model });
       logger.logSuccess('puter.ai.chat (vision)', { prompt, imageUrl, model }, result);
       return typeof result === 'string' ? result : String(result);
-    } catch (error) {
+    } catch (error: any) {
       logger.logError('puter.ai.chat (vision)', { prompt, imageUrl, model }, error);
       console.error('Vision AI error:', error);
-      return '';
+      throw new Error(error?.message || 'Failed to analyze image');
     } finally {
       setIsAnalyzing(false);
     }
