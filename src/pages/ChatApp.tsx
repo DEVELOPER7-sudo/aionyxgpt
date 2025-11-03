@@ -182,9 +182,10 @@ What would you like to work on today?`,
 
     // Use selected model
     const modelId = settings.textModel;
+    const provider = settings.provider || 'puter';
     
-    // Check if this is an OpenRouter model
-    const isOpenRouterModel = modelId.startsWith('openrouter:');
+    // Check if this is an OpenRouter model or if provider is set to OpenRouter
+    const isOpenRouterModel = modelId.startsWith('openrouter:') || provider === 'openrouter';
     
     if (isOpenRouterModel) {
       await handleOpenRouterChat(messages, chatId);
@@ -311,6 +312,7 @@ What would you like to work on today?`,
           model: modelId,
           temperature: settings.temperature,
           max_tokens: settings.maxTokens,
+          customApiKey: settings.customOpenRouterKey,
         }),
       });
 

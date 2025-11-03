@@ -11,14 +11,20 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, model, temperature, max_tokens } = await req.json();
-    const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
+    const { messages, model, temperature, max_tokens, customApiKey } = await req.json();
+    
+    // Use custom API key if provided, otherwise use default
+    const OPENROUTER_API_KEY = customApiKey || Deno.env.get('OPENROUTER_API_KEY');
 
     if (!OPENROUTER_API_KEY) {
       throw new Error('OpenRouter API key not configured');
     }
 
-    console.log('OpenRouter request:', { model, messageCount: messages.length });
+    console.log('OpenRouter request:', { 
+      model, 
+      messageCount: messages.length,
+      usingCustomKey: !!customApiKey 
+    });
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',

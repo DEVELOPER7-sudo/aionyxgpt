@@ -105,40 +105,94 @@ const SettingsPanel = ({
       {/* Theme Customization */}
       <ThemeCustomizer settings={localSettings} onUpdateSettings={onUpdateSettings} />
 
-      {/* Puter Account */}
+      {/* AI Provider Selection */}
       <Card className="p-6 space-y-4">
         <div>
-          <h2 className="text-xl font-semibold mb-2">Puter Account</h2>
+          <h2 className="text-xl font-semibold mb-2">AI Provider</h2>
           <p className="text-sm text-muted-foreground">
-            Sign in to a Puter account to use AI features. Get 400M free tokens per month per account.
+            Choose between Puter AI or OpenRouter for chat models
           </p>
         </div>
         
-        <div className="flex flex-wrap gap-3">
-          {!isPuterSignedIn ? (
-            <Button onClick={handlePuterSignIn} size="lg" className="glow-blue">
-              <LogIn className="w-4 h-4 mr-2" />
-              Sign In to Puter
-            </Button>
-          ) : (
-            <Button onClick={handlePuterSignOut} variant="outline" size="lg">
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
-            </Button>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="provider">Provider</Label>
+            <Select
+              value={localSettings.provider || 'puter'}
+              onValueChange={(value: 'puter' | 'openrouter') =>
+                setLocalSettings({ ...localSettings, provider: value })
+              }
+            >
+              <SelectTrigger id="provider" className="bg-input">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="puter">Puter AI (Free)</SelectItem>
+                <SelectItem value="openrouter">OpenRouter</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {localSettings.provider === 'openrouter' && (
+            <div className="space-y-2 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+              <Label htmlFor="custom-openrouter-key">Custom OpenRouter API Key (Optional)</Label>
+              <Input
+                id="custom-openrouter-key"
+                type="password"
+                placeholder="sk-or-v1-..."
+                value={localSettings.customOpenRouterKey || ''}
+                onChange={(e) =>
+                  setLocalSettings({ ...localSettings, customOpenRouterKey: e.target.value })
+                }
+                className="bg-input"
+              />
+              <p className="text-xs text-muted-foreground">
+                ⚠️ <strong>Security Warning:</strong> Using your own API key exposes it in browser storage. The Venice model uses our secure backend key by default.
+              </p>
+              <p className="text-xs text-muted-foreground mt-2">
+                Leave empty to use default backend key (recommended for Venice model).
+              </p>
+            </div>
           )}
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={() => window.open('https://puter.com', '_blank')}
-          >
-            Create New Account
-          </Button>
-        </div>
-        
-        <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
-          <p className="text-sm"><strong>Check Usage:</strong> Go to puter.com → Settings → Usage</p>
         </div>
       </Card>
+
+      {/* Puter Account */}
+      {localSettings.provider === 'puter' && (
+        <Card className="p-6 space-y-4">
+          <div>
+            <h2 className="text-xl font-semibold mb-2">Puter Account</h2>
+            <p className="text-sm text-muted-foreground">
+              Sign in to a Puter account to use AI features. Get 400M free tokens per month per account.
+            </p>
+          </div>
+          
+          <div className="flex flex-wrap gap-3">
+            {!isPuterSignedIn ? (
+              <Button onClick={handlePuterSignIn} size="lg" className="glow-blue">
+                <LogIn className="w-4 h-4 mr-2" />
+                Sign In to Puter
+              </Button>
+            ) : (
+              <Button onClick={handlePuterSignOut} variant="outline" size="lg">
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => window.open('https://puter.com', '_blank')}
+            >
+              Create New Account
+            </Button>
+          </div>
+          
+          <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+            <p className="text-sm"><strong>Check Usage:</strong> Go to puter.com → Settings → Usage</p>
+          </div>
+        </Card>
+      )}
 
       {/* Model Selection */}
       <Card className="p-6 space-y-6">

@@ -133,7 +133,7 @@ export const storage = {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.SETTINGS);
       return data ? JSON.parse(data) : {
-        textModel: 'openrouter:anthropic/claude-sonnet-4',
+        textModel: 'gpt-5-nano',
         imageModel: 'flux',
         temperature: 0.7,
         maxTokens: 2000,
@@ -143,11 +143,13 @@ export const storage = {
         themeColor: '217 91% 60%',
         accentColor: '217 91% 60%',
         backgroundColor: '0 0% 0%',
+        provider: 'puter',
+        customOpenRouterKey: undefined,
       };
     } catch (error) {
       console.error('Error loading settings:', error);
       return {
-        textModel: 'openrouter:anthropic/claude-sonnet-4',
+        textModel: 'gpt-5-nano',
         imageModel: 'flux',
         temperature: 0.7,
         maxTokens: 2000,
@@ -156,6 +158,8 @@ export const storage = {
         themeColor: '217 91% 60%',
         accentColor: '217 91% 60%',
         backgroundColor: '0 0% 0%',
+        provider: 'puter',
+        customOpenRouterKey: undefined,
       };
     }
   },

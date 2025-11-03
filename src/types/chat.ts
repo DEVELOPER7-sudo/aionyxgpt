@@ -45,4 +45,6 @@ export interface AppSettings {
   accentColor?: string;
   backgroundColor?: string;
   taskMode?: 'standard' | 'reasoning' | 'research' | 'creative';
+  provider?: 'puter' | 'openrouter';
+  customOpenRouterKey?: string;
 }
