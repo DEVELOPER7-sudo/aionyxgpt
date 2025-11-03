@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -34,13 +34,6 @@ const SettingsPanel = ({
   const [customModels, setCustomModels] = useState<string[]>(getCustomModels());
   const [modelSearch, setModelSearch] = useState('');
   const [isTextModelOpen, setIsTextModelOpen] = useState(false);
-  const modelSearchRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (isTextModelOpen) {
-      setTimeout(() => modelSearchRef.current?.focus(), 50);
-    }
-  }, [isTextModelOpen]);
 
   // Get all models including custom ones
   const ALL_TEXT_MODELS = getAllTextModels();
@@ -214,7 +207,6 @@ const SettingsPanel = ({
               >
                 <div className="px-2 pb-2 sticky top-0 bg-popover z-10">
                   <Input
-                    ref={modelSearchRef}
                     placeholder="Search models..."
                     value={modelSearch}
                     onChange={(e) => setModelSearch(e.target.value)}
@@ -223,7 +215,6 @@ const SettingsPanel = ({
                     onMouseDown={(e) => e.stopPropagation()}
                     onTouchStart={(e) => e.stopPropagation()}
                     onFocusCapture={(e) => e.stopPropagation()}
-                    autoFocus
                     inputMode="search"
                     className="h-8 text-sm"
                   />
