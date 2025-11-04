@@ -162,14 +162,9 @@ I'm your intelligent companion powered by cutting-edge AI models. Here's what I 
       if (error.message?.includes('rate limit') || error.message?.includes('429')) {
         errorMessage = 'Rate limit exceeded. Please try again later.';
       } else if (error.message?.includes('OpenRouter')) {
-        errorMessage = 'OpenRouter API error. Check your API key in Settings.';
+        errorMessage = 'OpenRouter API error. Check your settings or try a different model.';
       } else if (error.message?.includes('not available')) {
-        errorMessage = 'AI service not available. Please check your settings.';
-      } else if (error.error?.message?.includes('Permission denied') || error.message?.includes('Permission denied')) {
-        errorMessage = 'AI service permission denied. Using fallback provider.';
-      } else if (error.message) {
-        // Show actual error message for debugging
-        errorMessage = `Error: ${error.message}`;
+        errorMessage = 'AI service not available. Please sign in to Puter in Settings.';
       }
       
       playError();
@@ -214,12 +209,11 @@ I'm your intelligent companion powered by cutting-edge AI models. Here's what I 
       return;
     }
 
-    // Try Puter AI first, fall back to OpenRouter if it fails
     // @ts-ignore - Puter is loaded via script tag (HTML style)
     const puter = (window as any)?.puter;
     if (!puter?.ai?.chat) {
-      // Puter not available, use OpenRouter
-      await handleOpenRouterChat(messages, chatId);
+      toast.error('AI service not available');
+      setIsLoading(false);
       return;
     }
 
@@ -293,22 +287,8 @@ I'm your intelligent companion powered by cutting-edge AI models. Here's what I 
 
       playMessageComplete();
       logger.logSuccess('puter.ai.chat (streaming)', chatParams, fullResponse);
-    } catch (streamError: any) {
+    } catch (streamError) {
       logger.logError('puter.ai.chat (streaming)', chatParams, streamError);
-      
-      // Check if it's a Puter permission/authentication error
-      const isPuterAuthError = streamError?.error?.message?.includes('Permission denied') || 
-                                streamError?.error?.code?.includes('error_400') ||
-                                streamError?.message?.includes('Permission denied');
-      
-      if (isPuterAuthError) {
-        console.log('[INFO] Puter AI permission denied, falling back to OpenRouter');
-        // Fall back to OpenRouter
-        setAbortController(null);
-        await handleOpenRouterChat(messages, chatId);
-        return;
-      }
-      
       throw streamError;
     }
 
