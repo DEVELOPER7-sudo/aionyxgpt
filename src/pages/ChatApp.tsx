@@ -15,6 +15,7 @@ import { useChatSync } from '@/hooks/useChatSync';
 import MotionBackground from '@/components/MotionBackground';
 import { createPuterAPILogger } from '@/lib/api-logger';
 import { supabase } from '@/integrations/supabase/client';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
 
 // Lazy load heavy components
 const SettingsPanel = lazy(() => import('@/components/SettingsPanel'));
@@ -37,6 +38,7 @@ const ChatApp = () => {
   const [abortController, setAbortController] = useState<AbortController | null>(null);
   
   const { user, signOut, loading: authLoading } = useAuth();
+  const { playMessageComplete, playError } = useSoundEffects();
 
   // Apply theme
   useTheme(settings);
@@ -165,6 +167,7 @@ I'm your intelligent companion powered by cutting-edge AI models. Here's what I 
         errorMessage = 'AI service not available. Please sign in to Puter in Settings.';
       }
       
+      playError();
       toast.error(errorMessage);
       
       const errorMsg: Message = {
@@ -282,6 +285,7 @@ I'm your intelligent companion powered by cutting-edge AI models. Here's what I 
         setAbortController(null);
       }
 
+      playMessageComplete();
       logger.logSuccess('puter.ai.chat (streaming)', chatParams, fullResponse);
     } catch (streamError) {
       logger.logError('puter.ai.chat (streaming)', chatParams, streamError);
@@ -397,6 +401,7 @@ I'm your intelligent companion powered by cutting-edge AI models. Here's what I 
         }
       }
 
+      playMessageComplete();
       setAbortController(null);
     } catch (error) {
       console.error('OpenRouter error:', error);
@@ -476,6 +481,7 @@ I'm your intelligent companion powered by cutting-edge AI models. Here's what I 
           setChats(prevChats => prevChats.map(c => c.id === chatId ? { ...c, messages: currentMessages } : c));
         }
         
+        playMessageComplete();
         logger.logSuccess('puter.ai.chat (vision)', { prompt, imageUrl, model: settings.textModel }, fullResponse);
         console.log('[Vision] Analysis complete');
       } finally {
@@ -484,6 +490,7 @@ I'm your intelligent companion powered by cutting-edge AI models. Here's what I 
     } catch (error: any) {
       logger.logError('puter.ai.chat (vision)', { prompt, imageUrl }, error);
       console.error('[Vision] Error:', error);
+      playError();
       toast.error(error?.message || 'Failed to analyze image');
       throw error;
     }
@@ -551,6 +558,7 @@ I'm your intelligent companion powered by cutting-edge AI models. Here's what I 
     };
     storage.addImage(imageGen);
 
+    playMessageComplete();
     toast.success(`Image generated with ${settings.imageModel}`);
   };
 

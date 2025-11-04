@@ -9,6 +9,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useVisionAI } from '@/hooks/useVisionAI';
 import { useFileUpload } from '@/hooks/useFileUpload';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { toast } from 'sonner';
 
 import LoadingDots from '@/components/LoadingDots';
@@ -80,8 +81,11 @@ const ChatArea = ({
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const userHasScrolled = useRef(false);
+  const lastMessageCount = useRef(0);
   const { analyzeImage, isAnalyzing } = useVisionAI();
   const { uploadFile, isUploading } = useFileUpload();
+  const { playButtonClick, playMessageSent } = useSoundEffects();
 
   // Extract thinking and main content separately - handle incomplete tags
   const processThinking = (content: string): { thinking: string | null; main: string; isThinking: boolean } => {
@@ -110,23 +114,50 @@ const ChatArea = ({
   };
 
   const scrollToBottom = (instant = false) => {
-    if (bottomRef.current) {
+    if (bottomRef.current && !userHasScrolled.current) {
       bottomRef.current.scrollIntoView({ behavior: instant ? 'auto' : 'smooth', block: 'end' });
     }
   };
 
+  // Detect user scrolling
   useEffect(() => {
+    const scrollContainer = scrollRef.current;
+    if (!scrollContainer) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+      const isAtBottom = scrollHeight - scrollTop - clientHeight < 100;
+      userHasScrolled.current = !isAtBottom;
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll);
+    return () => scrollContainer.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Reset scroll lock when chat changes or new message from user
+  useEffect(() => {
+    userHasScrolled.current = false;
+    lastMessageCount.current = 0;
     scrollToBottom(true);
   }, [chat?.id]);
 
+  // Auto-scroll only if user hasn't manually scrolled up
   useEffect(() => {
+    const messageCount = chat?.messages.length || 0;
+    const isNewUserMessage = messageCount > lastMessageCount.current;
+    
+    if (isNewUserMessage) {
+      userHasScrolled.current = false;
+    }
+    
+    lastMessageCount.current = messageCount;
     scrollToBottom();
   }, [chat?.messages, isLoading]);
 
   useEffect(() => {
-    if (!scrollRef.current) return;
+    if (!scrollRef.current || userHasScrolled.current) return;
     const observer = new MutationObserver(() => {
-      if (isLoading) scrollToBottom();
+      if (isLoading && !userHasScrolled.current) scrollToBottom();
     });
     observer.observe(scrollRef.current, { childList: true, subtree: true, characterData: true });
     return () => observer.disconnect();
@@ -167,6 +198,8 @@ const ChatArea = ({
   const handleSend = async () => {
     if (!input.trim() && !uploadedImage) return;
     if (isLoading || isAnalyzing) return;
+
+    playMessageSent();
 
     // If image is uploaded, pass it to parent with message
     if (uploadedImage) {
