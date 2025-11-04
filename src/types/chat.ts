@@ -31,6 +31,11 @@ export interface Memory {
   key: string;
   value: string;
   timestamp: number;
+  category?: string;
+  expiresAt?: number;
+  importance?: 'low' | 'medium' | 'high';
+  tags?: string[];
+  autoExtracted?: boolean;
 }
 
 export interface AppSettings {

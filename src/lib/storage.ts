@@ -128,6 +128,41 @@ export const storage = {
     storage.saveMemories(memories);
   },
 
+  searchMemories: (query: string): Memory[] => {
+    const memories = storage.getMemories();
+    const lowerQuery = query.toLowerCase();
+    return memories.filter(m => 
+      m.key.toLowerCase().includes(lowerQuery) || 
+      m.value.toLowerCase().includes(lowerQuery) ||
+      m.category?.toLowerCase().includes(lowerQuery) ||
+      m.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))
+    );
+  },
+
+  getMemoriesByCategory: (category: string): Memory[] => {
+    return storage.getMemories().filter(m => m.category === category);
+  },
+
+  getActiveMemories: (): Memory[] => {
+    const now = Date.now();
+    return storage.getMemories().filter(m => !m.expiresAt || m.expiresAt > now);
+  },
+
+  cleanExpiredMemories: () => {
+    const now = Date.now();
+    const memories = storage.getMemories().filter(m => !m.expiresAt || m.expiresAt > now);
+    storage.saveMemories(memories);
+  },
+
+  getMemoryCategories: (): string[] => {
+    const memories = storage.getMemories();
+    const categories = new Set<string>();
+    memories.forEach(m => {
+      if (m.category) categories.add(m.category);
+    });
+    return Array.from(categories).sort();
+  },
+
   // Settings
   getSettings: (): AppSettings => {
     try {
