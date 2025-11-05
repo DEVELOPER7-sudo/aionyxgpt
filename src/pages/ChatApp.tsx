@@ -13,7 +13,7 @@ import { useChatPersistence } from '@/hooks/useChatPersistence';
 import { useAuth } from '@/hooks/useAuth';
 import { useChatSync } from '@/hooks/useChatSync';
 import MotionBackground from '@/components/MotionBackground';
-import { createPuterAPILogger } from '@/lib/api-logger';
+import { createPuterAPILogger, createOpenRouterAPILogger } from '@/lib/api-logger';
 import { supabase } from '@/integrations/supabase/client';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { detectTriggersAndBuildPrompt } from '@/lib/triggers';
@@ -304,8 +304,23 @@ I'm your intelligent companion powered by cutting-edge AI models. Here's what I 
 
       playMessageComplete();
       logger.logSuccess('puter.ai.chat (streaming)', chatParams, fullResponse);
-    } catch (streamError) {
+    } catch (streamError: any) {
       logger.logError('puter.ai.chat (streaming)', chatParams, streamError);
+      
+      // Check for rate limit errors
+      const errorMsg = streamError?.message || String(streamError);
+      if (errorMsg.toLowerCase().includes('rate limit') || errorMsg.toLowerCase().includes('429')) {
+        toast.error('⚠️ Puter Rate Limit Reached', {
+          description: 'Please wait a moment before trying again. Too many requests.',
+          duration: 5000,
+        });
+      } else if (errorMsg.toLowerCase().includes('quota') || errorMsg.toLowerCase().includes('credit')) {
+        toast.error('💳 Puter Credit Limit', {
+          description: 'Your Puter credits may be exhausted. Please check your account.',
+          duration: 5000,
+        });
+      }
+      
       throw streamError;
     }
 
@@ -370,6 +385,13 @@ I'm your intelligent companion powered by cutting-edge AI models. Here's what I 
 
     const controller = new AbortController();
     setAbortController(controller);
+
+    const logger = createOpenRouterAPILogger();
+    const apiParams = {
+      messages: formattedMessages,
+      temperature: settings.temperature,
+      max_tokens: settings.maxTokens,
+    };
 
     try {
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/openrouter-chat`, {
@@ -439,9 +461,43 @@ I'm your intelligent companion powered by cutting-edge AI models. Here's what I 
       }
 
       playMessageComplete();
+      logger.logSuccess(modelId, apiParams, fullResponse);
+      
+      // Log OpenRouter API call success
+      if (settings.enableDebugLogs) {
+        console.log('[DEBUG] OpenRouter call successful:', {
+          model: modelId,
+          messageLength: fullResponse.length,
+          tokensEstimate: Math.ceil(fullResponse.length / 4),
+        });
+      }
       setAbortController(null);
-    } catch (error) {
-      console.error('OpenRouter error:', error);
+    } catch (error: any) {
+      console.error('OpenRouter streaming error:', error);
+      logger.logError(modelId, apiParams, error);
+      playError();
+      
+      // Check for rate limit errors
+      const errorMsg = error?.message || String(error);
+      if (errorMsg.toLowerCase().includes('rate limit') || errorMsg.toLowerCase().includes('429')) {
+        toast.error('⚠️ OpenRouter Rate Limit Reached', {
+          description: 'Please wait before trying again. Too many requests to OpenRouter API.',
+          duration: 5000,
+        });
+      } else if (errorMsg.toLowerCase().includes('quota') || errorMsg.toLowerCase().includes('credit') || errorMsg.toLowerCase().includes('402')) {
+        toast.error('💳 OpenRouter Credit Limit', {
+          description: 'OpenRouter credits exhausted. Please add credits to your OpenRouter account.',
+          duration: 5000,
+        });
+      } else {
+        toast.error('❌ OpenRouter Error', {
+          description: errorMsg.slice(0, 100),
+          duration: 5000,
+        });
+      }
+      
+      setIsLoading(false);
+      setAbortController(null);
       throw error;
     }
 
