@@ -1,98 +1,216 @@
-
-import { storage } from './storage';
+// Trigger Framework - Storage and Utilities
 
 export interface Trigger {
   trigger: string;
-  category: 'Reasoning & Analysis' | 'Research & Information' | 'Planning & Organization' | 'Communication & Style' | 'Custom';
+  category: 'Reasoning & Analysis' | 'Research & Information' | 'Planning & Organization' | 'Communication & Style';
   system_instruction: string;
   example: string;
   enabled: boolean;
-  tag: string;
-  metadata_support: boolean;
-  context_expansion: boolean; // New field
+  custom?: boolean;
 }
 
-// Load custom triggers from storage or use an empty array
-const customTriggers: Trigger[] = storage.getCustomTriggers();
+const STORAGE_KEY = 'onyxgpt_triggers';
 
-export const defaultTriggers: Trigger[] = [
-  // Reasoning & Analysis
-  { trigger: 'analyze', category: 'Reasoning & Analysis', system_instruction: 'Break down the user query into its fundamental components and examine each part systematically. Identify underlying assumptions, logical structures, and key relationships. Your output should be a detailed, structured analysis.', example: 'Use "analyze" to deconstruct a complex problem.', enabled: true, tag: '<analyze></analyze>', metadata_support: true, context_expansion: true },
-  { trigger: 'compare', category: 'Reasoning & Analysis', system_instruction: 'Identify key similarities and differences between two or more subjects. Create a structured comparison that highlights the most important distinctions and shared characteristics.', example: 'Use "compare" to evaluate two opposing viewpoints.', enabled: true, tag: '<compare></compare>', metadata_support: true, context_expansion: true },
-  { trigger: 'critique', category: 'Reasoning & Analysis', system_instruction: 'Provide a balanced and constructive evaluation of a subject, identifying both its strengths and weaknesses. Your critique should be supported by evidence and logical reasoning.', example: 'Use "critique" to review a piece of work.', enabled: true, tag: '<critique></critique>', metadata_support: true, context_expansion: true },
-  { trigger: 'deduce', category: 'Reasoning & Analysis', system_instruction: 'Draw logical conclusions from the provided information. Clearly state the premises and show how they lead to the final deduction. Avoid making assumptions beyond the given context.', example: 'Use "deduce" to find a logical conclusion.', enabled: true, tag: '<deduce></deduce>', metadata_support: true, context_expansion: false },
-  { trigger: 'evaluate', category: 'Reasoning & Analysis', system_instruction: 'Assess the value, quality, or significance of a subject based on a set of criteria. Your evaluation should be objective and well-reasoned.', example: 'Use "evaluate" to judge the effectiveness of a solution.', enabled: true, tag: '<evaluate></evaluate>', metadata_support: true, context_expansion: true },
-  { trigger: 'explain', category: 'Reasoning & Analysis', system_instruction: 'Clarify a topic in simple, easy-to-understand terms. Use analogies and examples to make complex ideas accessible to a broad audience.', example: 'Use "explain" to simplify a technical concept.', enabled: true, tag: '<explain></explain>', metadata_support: true, context_expansion: true },
-  { trigger: 'justify', category: 'Reasoning & Analysis', system_instruction: 'Defend a claim or decision with rational arguments and factual support. Anticipate counterarguments and address them proactively.', example: 'Use "justify" to provide supporting reasoning.', enabled: true, tag: '<justify></justify>', metadata_support: true, context_expansion: true },
-  { trigger: 'hypothesize', category: 'Reasoning & Analysis', system_instruction: 'Formulate a plausible explanation or prediction based on limited evidence. Clearly state your hypothesis and the reasoning behind it.', example: 'Use "hypothesize" for theory building.', enabled: true, tag: '<hypothesize></hypothesize>', metadata_support: true, context_expansion: true },
-  { trigger: 'examine', category: 'Reasoning & Analysis', system_instruction: 'Inspect a subject in detail, paying close attention to its components, structure, and nuances. Your examination should be thorough and systematic.', example: 'Use "examine" for detailed inspection.', enabled: true, tag: '<examine></examine>', metadata_support: true, context_expansion: true },
-  { trigger: 'interpret', category: 'Reasoning & Analysis', system_instruction: 'Explain the meaning or significance of data, a text, or an event. Provide context and clarify any ambiguities.', example: 'Use "interpret" to decode complex information.', enabled: true, tag: '<interpret></interpret>', metadata_support: true, context_expansion: true },
-  { trigger: 'verify', category: 'Reasoning & Analysis', system_instruction: 'Check the accuracy and consistency of statements or data. Cross-reference information and identify any discrepancies.', example: 'Use "verify" to confirm facts.', enabled: true, tag: '<verify></verify>', metadata_support: true, context_expansion: false },
-  { trigger: 'reflect', category: 'Reasoning & Analysis', system_instruction: 'Offer thoughtful insights and consider the broader implications of a topic. Go beyond surface-level analysis to explore deeper meanings and connections.', example: 'Use "reflect" for deeper understanding.', enabled: true, tag: '<reflect></reflect>', metadata_support: true, context_expansion: true },
-  { trigger: 'fact_check', category: 'Reasoning & Analysis', system_instruction: 'Verify the factual accuracy of a statement using reliable sources. Clearly state the claim and provide a verdict with supporting evidence.', example: 'Use "fact_check" on a questionable statement.', enabled: true, tag: '<fact_check></fact_check>', metadata_support: true, context_expansion: false },
-  { trigger: 'validate', category: 'Reasoning & Analysis', system_instruction: 'Confirm the truth or reliability of a claim using established facts and principles. Your validation should be rigorous and objective.', example: 'Use "validate" to check credibility.', enabled: true, tag: '<validate></validate>', metadata_support: true, context_expansion: false },
-  { trigger: 'assess', category: 'Reasoning & Analysis', system_instruction: 'Determine the overall soundness, performance, or impact of a subject against a set of standards or goals. Your assessment should be comprehensive and balanced.', example: 'Use "assess" for a comprehensive evaluation.', enabled: true, tag: '<assess></assess>', metadata_support: true, context_expansion: true },
-  { trigger: 'troubleshoot', category: 'Reasoning & Analysis', system_instruction: 'Identify the root cause of a problem, diagnose its components, and propose concrete steps for resolution. Your approach should be logical and systematic.', example: 'Use "troubleshoot" to solve an issue.', enabled: true, tag: '<troubleshoot></troubleshoot>', metadata_support: true, context_expansion: true },
+// Built-in triggers organized by category
+const BUILT_IN_TRIGGERS: Trigger[] = [
+  // A. Reasoning & Analysis
+  { trigger: 'reason', category: 'Reasoning & Analysis', system_instruction: 'Use logical, step-by-step reasoning to reach conclusions clearly and coherently.', example: 'Use "reason" to analyze complex problems systematically.', enabled: true },
+  { trigger: 'analyze', category: 'Reasoning & Analysis', system_instruction: 'Break down the topic into parts, identify relationships, and explain underlying logic.', example: 'Use "analyze" to examine data or concepts in depth.', enabled: true },
+  { trigger: 'critique', category: 'Reasoning & Analysis', system_instruction: 'Evaluate the strengths, weaknesses, and biases of the subject objectively.', example: 'Use "critique" to assess arguments or work critically.', enabled: true },
+  { trigger: 'debate', category: 'Reasoning & Analysis', system_instruction: 'Present reasoned arguments for and against the issue before summarizing.', example: 'Use "debate" to explore multiple perspectives.', enabled: true },
+  { trigger: 'compare', category: 'Reasoning & Analysis', system_instruction: 'Identify similarities and differences between the provided items or ideas.', example: 'Use "compare" to evaluate similar concepts.', enabled: true },
+  { trigger: 'contrast', category: 'Reasoning & Analysis', system_instruction: 'Highlight distinctions and divergent features between the listed topics.', example: 'Use "contrast" to emphasize differences.', enabled: true },
+  { trigger: 'deduce', category: 'Reasoning & Analysis', system_instruction: 'Apply inference and logic to derive valid conclusions.', example: 'Use "deduce" for logical problem-solving.', enabled: true },
+  { trigger: 'evaluate', category: 'Reasoning & Analysis', system_instruction: 'Judge the quality, relevance, and strength of evidence.', example: 'Use "evaluate" to assess merit or value.', enabled: true },
+  { trigger: 'justify', category: 'Reasoning & Analysis', system_instruction: 'Defend the claim with rational arguments and factual support.', example: 'Use "justify" to provide supporting reasoning.', enabled: true },
+  { trigger: 'hypothesize', category: 'Reasoning & Analysis', system_instruction: 'Formulate plausible explanations or predictions based on evidence.', example: 'Use "hypothesize" for theory building.', enabled: true },
+  { trigger: 'examine', category: 'Reasoning & Analysis', system_instruction: 'Inspect details thoroughly and comment on implications.', example: 'Use "examine" for detailed inspection.', enabled: true },
+  { trigger: 'interpret', category: 'Reasoning & Analysis', system_instruction: 'Explain meaning or significance in clear, contextualized terms.', example: 'Use "interpret" to decode complex information.', enabled: true },
+  { trigger: 'verify', category: 'Reasoning & Analysis', system_instruction: 'Check the accuracy and consistency of statements or data.', example: 'Use "verify" to confirm facts.', enabled: true },
+  { trigger: 'reflect', category: 'Reasoning & Analysis', system_instruction: 'Offer thoughtful insights and implications drawn from the topic.', example: 'Use "reflect" for deeper understanding.', enabled: true },
+  { trigger: 'infer', category: 'Reasoning & Analysis', system_instruction: 'Draw reasonable conclusions based on provided information.', example: 'Use "infer" to read between the lines.', enabled: true },
+  { trigger: 'explore', category: 'Reasoning & Analysis', system_instruction: 'Investigate multiple angles or perspectives on the topic.', example: 'Use "explore" for comprehensive investigation.', enabled: true },
+  { trigger: 'discuss', category: 'Reasoning & Analysis', system_instruction: 'Provide balanced discussion covering several viewpoints.', example: 'Use "discuss" for balanced examination.', enabled: true },
+  { trigger: 'validate', category: 'Reasoning & Analysis', system_instruction: 'Confirm truth or reliability of claims using known facts.', example: 'Use "validate" to check credibility.', enabled: true },
+  { trigger: 'assess', category: 'Reasoning & Analysis', system_instruction: 'Determine overall soundness or performance relative to standards.', example: 'Use "assess" for comprehensive evaluation.', enabled: true },
+  { trigger: 'troubleshoot', category: 'Reasoning & Analysis', system_instruction: 'Identify problems, diagnose causes, and propose corrective steps.', example: 'Use "troubleshoot" to solve issues.', enabled: true },
 
-  // Research & Information
-  { trigger: 'research', category: 'Research & Information', system_instruction: 'Gather information from credible sources to answer a specific question. Synthesize the findings and present them in a clear and organized manner.', example: 'Use "research" to find information on a topic.', enabled: true, tag: '<research></research>', metadata_support: true, context_expansion: false },
-  { trigger: 'summarize', category: 'Research & Information', system_instruction: 'Condense a text or topic to its most important points. The summary should be concise, accurate, and easy to understand.', example: 'Use "summarize" to get the key points of a long article.', enabled: true, tag: '<summarize></summarize>', metadata_support: true, context_expansion: true },
-  { trigger: 'quote', category: 'Research & Information', system_instruction: 'Provide a relevant and verbatim quotation from a source. Ensure the quote is accurately attributed and placed in a meaningful context.', example: 'Use "quote" to cite an expert.', enabled: true, tag: '<quote></quote>', metadata_support: true, context_expansion: false },
-  { trigger: 'deep_research', category: 'Research & Information', system_instruction: 'Conduct an in-depth, multi-source investigation using reliable data. Synthesize complex information and summarize the findings concisely, providing citations where appropriate.', example: 'Use "deep_research" for comprehensive investigation.', enabled: true, tag: '<deep_research></deep_research>', metadata_support: true, context_expansion: false },
+  // B. Research & Information
+  { trigger: 'search', category: 'Research & Information', system_instruction: 'Perform a brief web or knowledge lookup and present concise, factual information.', example: 'Use "search" for quick factual lookups.', enabled: true },
+  { trigger: 'deep research', category: 'Research & Information', system_instruction: 'Conduct an in-depth, multi-source investigation using reliable data and summarize findings.', example: 'Use "deep research" for comprehensive investigations.', enabled: true },
+  { trigger: 'fact-check', category: 'Research & Information', system_instruction: 'Verify the factual accuracy of claims and highlight uncertain or false parts.', example: 'Use "fact-check" to verify claims.', enabled: true },
+  { trigger: 'contextualize', category: 'Research & Information', system_instruction: 'Explain how the topic fits within its historical, cultural, or scientific background.', example: 'Use "contextualize" to provide background.', enabled: true },
+  { trigger: 'summarize', category: 'Research & Information', system_instruction: 'Condense material into its essential meaning and main points.', example: 'Use "summarize" to get key points.', enabled: true },
+  { trigger: 'outline', category: 'Research & Information', system_instruction: 'Produce a structured outline or bullet framework for the requested content.', example: 'Use "outline" to create structure.', enabled: true },
+  { trigger: 'extract', category: 'Research & Information', system_instruction: 'Pull out the most relevant facts, names, or data points.', example: 'Use "extract" to identify key information.', enabled: true },
+  { trigger: 'highlight', category: 'Research & Information', system_instruction: 'Emphasize key ideas or noteworthy information.', example: 'Use "highlight" to focus on important parts.', enabled: true },
+  { trigger: 'define', category: 'Research & Information', system_instruction: 'Provide precise definitions and short explanations of terms.', example: 'Use "define" for term explanations.', enabled: true },
+  { trigger: 'explain', category: 'Research & Information', system_instruction: 'Clarify concepts through simple, clear language and examples.', example: 'Use "explain" for clear understanding.', enabled: true },
+  { trigger: 'describe', category: 'Research & Information', system_instruction: 'Portray the subject with factual detail and specificity.', example: 'Use "describe" for detailed portrayal.', enabled: true },
+  { trigger: 'cite', category: 'Research & Information', system_instruction: 'Include brief reference-style mentions of credible sources when applicable.', example: 'Use "cite" to reference sources.', enabled: true },
+  { trigger: 'reference', category: 'Research & Information', system_instruction: 'Acknowledge where facts or ideas originate.', example: 'Use "reference" to credit sources.', enabled: true },
+  { trigger: 'clarify', category: 'Research & Information', system_instruction: 'Remove ambiguity and restate ideas for better understanding.', example: 'Use "clarify" to remove confusion.', enabled: true },
+  { trigger: 'expand', category: 'Research & Information', system_instruction: 'Develop the concept further with supporting detail and elaboration.', example: 'Use "expand" for more detail.', enabled: true },
+  { trigger: 'compress', category: 'Research & Information', system_instruction: 'Shorten the content while preserving meaning and tone.', example: 'Use "compress" to make content concise.', enabled: true },
 
-  // Planning & Organization
-  { trigger: 'plan', category: 'Planning & Organization', system_instruction: 'Create a step-by-step plan to achieve a specific goal. The plan should be realistic, actionable, and include measurable milestones.', example: 'Use "plan" to create a project timeline.', enabled: true, tag: '<plan></plan>', metadata_support: true, context_expansion: true },
-  { trigger: 'organize', category: 'Planning & Organization', system_instruction: 'Structure information in a logical and coherent way. Use headings, lists, and tables to improve clarity and readability.', example: 'Use "organize" to structure a report.', enabled: true, tag: '<organize></organize>', metadata_support: true, context_expansion: true },
-  { trigger: 'outline', category: 'Planning & Organization', system_instruction: 'Create a hierarchical outline for a document or project. The outline should clearly show the main topics and sub-topics.', example: 'Use "outline" to structure a presentation.', enabled: true, tag: '<outline></outline>', metadata_support: true, context_expansion: true },
-  { trigger: 'brainstorm', category: 'Planning & Organization', system_instruction: 'Generate a wide range of ideas on a given topic. Encourage creativity and suspend judgment during the brainstorming process.', example: 'Use "brainstorm" to generate ideas for a new product.', enabled: true, tag: '<brainstorm></brainstorm>', metadata_support: true, context_expansion: false },
+  // C. Planning & Organization
+  { trigger: 'plan', category: 'Planning & Organization', system_instruction: 'Generate a logical step-by-step plan or process to achieve the stated goal.', example: 'Use "plan" to create action plans.', enabled: true },
+  { trigger: 'roadmap', category: 'Planning & Organization', system_instruction: 'Lay out key milestones and paths toward completion.', example: 'Use "roadmap" for project planning.', enabled: true },
+  { trigger: 'checklist', category: 'Planning & Organization', system_instruction: 'Present a task list of items to complete the objective.', example: 'Use "checklist" for task lists.', enabled: true },
+  { trigger: 'organize', category: 'Planning & Organization', system_instruction: 'Arrange ideas or data into clear, structured categories.', example: 'Use "organize" to structure information.', enabled: true },
+  { trigger: 'prioritize', category: 'Planning & Organization', system_instruction: 'Order tasks or ideas by importance or urgency.', example: 'Use "prioritize" to rank by importance.', enabled: true },
+  { trigger: 'schedule', category: 'Planning & Organization', system_instruction: 'Suggest a time-based arrangement or timeline.', example: 'Use "schedule" for timeline planning.', enabled: true },
+  { trigger: 'brainstorm', category: 'Planning & Organization', system_instruction: 'Generate diverse, creative ideas without immediate evaluation.', example: 'Use "brainstorm" for idea generation.', enabled: true },
+  { trigger: 'propose', category: 'Planning & Organization', system_instruction: 'Offer a structured and reasoned proposal or suggestion.', example: 'Use "propose" to suggest solutions.', enabled: true },
+  { trigger: 'structure', category: 'Planning & Organization', system_instruction: 'Present the information using logical sections or frameworks.', example: 'Use "structure" to organize content.', enabled: true },
+  { trigger: 'map', category: 'Planning & Organization', system_instruction: 'Display conceptual or relational mapping between components.', example: 'Use "map" to show relationships.', enabled: true },
+  { trigger: 'draft', category: 'Planning & Organization', system_instruction: 'Produce an initial written version with key sections in place.', example: 'Use "draft" to create first versions.', enabled: true },
+  { trigger: 'improve', category: 'Planning & Organization', system_instruction: 'Suggest refinements or optimizations to make the text, plan, or argument stronger.', example: 'Use "improve" to enhance quality.', enabled: true },
+  { trigger: 'review', category: 'Planning & Organization', system_instruction: 'Evaluate content and summarize potential revisions or feedback.', example: 'Use "review" for evaluation.', enabled: true },
 
-  // Communication & Style
-  { trigger: 'rewrite', category: 'Communication & Style', system_instruction: 'Revise a piece of text to improve its clarity, tone, or style. The rewritten version should be more effective and engaging for the target audience.', example: 'Use "rewrite" to improve a paragraph.', enabled: true, tag: '<rewrite></rewrite>', metadata_support: true, context_expansion: true },
-  { trigger: 'format', category: 'Communication & Style', system_instruction: 'Structure the output in a specific format (e.g., as a list, table, or JSON). Adhere strictly to the requested format.', example: 'Use "format as a list" for structured output.', enabled: true, tag: '<format></format>', metadata_support: true, context_expansion: false },
-  { trigger: 'roleplay', category: 'Communication & Style', system_instruction: 'Adopt a specific persona or role and respond from that perspective. Maintain the character\'s voice, tone, and knowledge base throughout the interaction.', example: 'Use "roleplay as a pirate" for a themed response.', enabled: true, tag: '<roleplay></roleplay>', metadata_support: true, context_expansion: true },
-  { trigger: 'code', category: 'Communication & Style', system_instruction: 'Generate a code snippet in a specified programming language. The code should be well-commented, efficient, and follow best practices.', example: 'Use "code in Python" to get a script.', enabled: true, tag: '<code_in_python></code_in_python>', metadata_support: true, context_expansion: true }
+  // D. Communication & Style
+  { trigger: 'simplify', category: 'Communication & Style', system_instruction: 'Rephrase complex ideas into plain, accessible language.', example: 'Use "simplify" to make content easier to understand.', enabled: true },
+  { trigger: 'formalize', category: 'Communication & Style', system_instruction: 'Convert the tone and structure into a professional or academic register.', example: 'Use "formalize" for professional tone.', enabled: true },
+  { trigger: 'rephrase', category: 'Communication & Style', system_instruction: 'Rewrite content using different wording but identical meaning.', example: 'Use "rephrase" to reword content.', enabled: true },
+  { trigger: 'rewrite', category: 'Communication & Style', system_instruction: 'Produce a clearer, improved version while keeping intent intact.', example: 'Use "rewrite" to improve clarity.', enabled: true },
+  { trigger: 'summarize-for-kids', category: 'Communication & Style', system_instruction: 'Explain the idea in age-appropriate, child-friendly terms.', example: 'Use "summarize-for-kids" for simple explanations.', enabled: true },
+  { trigger: 'persuasive', category: 'Communication & Style', system_instruction: 'Use logical appeals, emotional resonance, and evidence to persuade effectively.', example: 'Use "persuasive" for convincing arguments.', enabled: true },
+  { trigger: 'informative', category: 'Communication & Style', system_instruction: 'Deliver factual, balanced, and educational information.', example: 'Use "informative" for educational content.', enabled: true },
+  { trigger: 'neutral', category: 'Communication & Style', system_instruction: 'Maintain objectivity and avoid bias in tone or framing.', example: 'Use "neutral" for unbiased responses.', enabled: true },
+  { trigger: 'balanced', category: 'Communication & Style', system_instruction: 'Represent multiple perspectives fairly and evenly.', example: 'Use "balanced" for fair representation.', enabled: true },
+  { trigger: 'empathetic', category: 'Communication & Style', system_instruction: 'Use sensitive, understanding, and supportive phrasing.', example: 'Use "empathetic" for supportive communication.', enabled: true },
 ];
 
-export const allTriggers = [...defaultTriggers, ...customTriggers];
-
-export const getTrigger = (triggerWord: string): Trigger | undefined => {
-  return allTriggers.find(t => t.trigger.toLowerCase() === triggerWord.toLowerCase());
+// Get all triggers (built-in + custom)
+export const getAllTriggers = (): Trigger[] => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const customTriggers = JSON.parse(stored) as Trigger[];
+      // Merge built-in with custom, custom takes precedence
+      const triggerMap = new Map<string, Trigger>();
+      BUILT_IN_TRIGGERS.forEach(t => triggerMap.set(t.trigger.toLowerCase(), t));
+      customTriggers.forEach(t => triggerMap.set(t.trigger.toLowerCase(), t));
+      return Array.from(triggerMap.values());
+    }
+    return BUILT_IN_TRIGGERS;
+  } catch (error) {
+    console.error('Error loading triggers:', error);
+    return BUILT_IN_TRIGGERS;
+  }
 };
 
-export const detectTriggersAndBuildPrompt = (userInput: string): { systemPrompt: string; detectedTriggers: Trigger[] } => {
-  let systemPrompt = "You are OnyxGPT, a powerful AI assistant. Your responses must be helpful, accurate, and well-formatted. ";
-  const detectedTriggers: Trigger[] = [];
-  
-  // Detect triggers by word and in brackets
-  const words = userInput.toLowerCase().match(/\b(\w+)\b/g) || [];
-  const bracketTriggers = userInput.match(/\[(.*?)\]/g) || [];
+// Save triggers
+export const saveTriggers = (triggers: Trigger[]) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(triggers));
+  } catch (error) {
+    console.error('Error saving triggers:', error);
+  }
+};
 
-  const combinedTriggers = [...words, ...bracketTriggers.map(t => t.slice(1, -1))];
+// Add new trigger
+export const addTrigger = (trigger: Trigger) => {
+  const triggers = getAllTriggers();
+  const exists = triggers.some(t => t.trigger.toLowerCase() === trigger.trigger.toLowerCase());
+  if (exists) {
+    throw new Error('Trigger already exists');
+  }
+  triggers.push({ ...trigger, custom: true });
+  saveTriggers(triggers);
+};
 
-  for (const trigger of allTriggers) {
-    if (trigger.enabled && combinedTriggers.includes(trigger.trigger.toLowerCase())) {
-      if (!detectedTriggers.some(t => t.trigger === trigger.trigger)) {
-          detectedTriggers.push(trigger);
+// Update trigger
+export const updateTrigger = (oldTrigger: string, newTrigger: Trigger) => {
+  const triggers = getAllTriggers();
+  const index = triggers.findIndex(t => t.trigger.toLowerCase() === oldTrigger.toLowerCase());
+  if (index !== -1) {
+    triggers[index] = newTrigger;
+    saveTriggers(triggers);
+  }
+};
+
+// Delete trigger (only custom ones)
+export const deleteTrigger = (triggerName: string) => {
+  const triggers = getAllTriggers();
+  const filtered = triggers.filter(t => 
+    t.trigger.toLowerCase() !== triggerName.toLowerCase() || !t.custom
+  );
+  saveTriggers(filtered);
+};
+
+// Toggle trigger enabled state
+export const toggleTrigger = (triggerName: string) => {
+  const triggers = getAllTriggers();
+  const trigger = triggers.find(t => t.trigger.toLowerCase() === triggerName.toLowerCase());
+  if (trigger) {
+    trigger.enabled = !trigger.enabled;
+    saveTriggers(triggers);
+  }
+};
+
+// Export triggers as JSON
+export const exportTriggers = () => {
+  const triggers = getAllTriggers();
+  const dataStr = JSON.stringify(triggers, null, 2);
+  const dataBlob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(dataBlob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `onyxgpt-triggers-${Date.now()}.json`;
+  link.click();
+  URL.revokeObjectURL(url);
+};
+
+// Import triggers from JSON
+export const importTriggers = (file: File): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const imported = JSON.parse(e.target?.result as string) as Trigger[];
+        saveTriggers(imported);
+        resolve();
+      } catch (error) {
+        reject(error);
       }
+    };
+    reader.onerror = reject;
+    reader.readAsText(file);
+  });
+};
+
+// Detect triggers in user message and build system prompt
+export const detectTriggersAndBuildPrompt = (userMessage: string): { systemPrompt: string; detectedTriggers: string[] } => {
+  const triggers = getAllTriggers().filter(t => t.enabled);
+  const detectedTriggers: string[] = [];
+  const instructions: string[] = [];
+
+  const lowerMessage = userMessage.toLowerCase();
+
+  // Check for each trigger
+  triggers.forEach(trigger => {
+    // Match whole words or phrases
+    const regex = new RegExp(`\\b${trigger.trigger.toLowerCase()}\\b`, 'i');
+    if (regex.test(lowerMessage)) {
+      detectedTriggers.push(trigger.trigger);
+      instructions.push(`${trigger.trigger} means ${trigger.system_instruction}`);
     }
+  });
+
+  // Build system prompt
+  let systemPrompt = '';
+  if (instructions.length > 0) {
+    systemPrompt = instructions.join(' ') + '\n\nFor';
+  } else {
+    // Default instruction
+    systemPrompt = 'default means Respond helpfully, truthfully, and concisely.\n\nFor';
   }
-
-  if (detectedTriggers.length > 0) {
-    const triggerInstructions = detectedTriggers
-      .map(t => `For the trigger '${t.trigger}', you must follow this instruction: "${t.system_instruction}".`)
-      .join(' ');
-    
-    const tagInstructions = `When a trigger is active, you MUST wrap any content influenced by it in its corresponding tag (e.g., ${detectedTriggers.map(t => t.tag).join(', ')}). The tag name must be the trigger keyword. Tags can be nested but must be properly closed.`;
-
-    const contextInstructions = detectedTriggers.some(t => t.context_expansion) ? `For triggers with context expansion, you may use the entire conversation history to inform your response. ` : ``;
-
-    const metadataInstructions = `After your complete response, you MUST provide a single, valid, minified JSON array of objects, one for each trigger used. Each object must contain: {"trigger": "trigger_name", "category": "Category Name", "purpose": "System instruction for the trigger.", "context_used": "A brief explanation of why and how you used this trigger in this specific context.", "influence_scope": "A brief description of what aspects of the response this trigger influenced."}. This JSON block must be the absolute final part of your output, with no text after it.`;
-
-    systemPrompt += triggerInstructions + " " + tagInstructions + " " + contextInstructions + " " + metadataInstructions;
-  }
-  
-  // Add a final instruction for the overall user prompt
-  systemPrompt += ` Now, address the following user request:`;
 
   return { systemPrompt, detectedTriggers };
+};
+
+// Reset to built-in triggers
+export const resetToBuiltIn = () => {
+  saveTriggers(BUILT_IN_TRIGGERS);
 };

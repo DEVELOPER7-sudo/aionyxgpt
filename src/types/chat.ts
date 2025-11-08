@@ -1,16 +1,11 @@
-import { Trigger } from './triggers';
-
 export interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   timestamp: number;
-  imageUrl?: string | string[];
+  imageUrl?: string;
   imagePrompt?: string;
   attachments?: string[];
-  triggers?: Trigger[];
-  metadata?: any; // Add this to store trigger metadata
-  rawContent?: string;
 }
 
 export interface Chat {
@@ -20,7 +15,6 @@ export interface Chat {
   createdAt: number;
   updatedAt: number;
   model: string;
-  isIncognito?: boolean;
 }
 
 export interface ImageGeneration {
@@ -55,8 +49,6 @@ export interface AppSettings {
   themeColor?: string;
   accentColor?: string;
   backgroundColor?: string;
-  sidebarColor?: string;
-  enableStreaming?: boolean;
   taskMode?: 'standard' | 'reasoning' | 'research' | 'creative';
   provider?: 'puter' | 'openrouter';
   customOpenRouterKey?: string;
