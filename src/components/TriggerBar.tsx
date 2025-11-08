@@ -1,71 +1,78 @@
+
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Info } from 'lucide-react';
-import { Trigger } from '@/lib/triggers';
 
-interface TriggerBarProps {
-  triggers: Trigger[];
-  metadata: any[];
-  rawContent: string;
-}
+const TriggerBar = ({ triggers, metadata, rawContent }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [selectedTrigger, setSelectedTrigger] = useState(null);
 
-const TriggerBar = ({ triggers, metadata, rawContent }: TriggerBarProps) => {
-  const [expandedTrigger, setExpandedTrigger] = useState<string | null>(null);
+    const toggleExpansion = () => {
+        setIsExpanded(!isExpanded);
+        setSelectedTrigger(null);
+    };
 
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case 'Reasoning & Analysis': return 'bg-blue-500/20 text-blue-300';
-      case 'Research & Information': return 'bg-green-500/20 text-green-300';
-      case 'Planning & Organization': return 'bg-yellow-500/20 text-yellow-300';
-      case 'Communication & Style': return 'bg-purple-500/20 text-purple-300';
-      default: return 'bg-gray-500/20 text-gray-300';
-    }
-  };
+    const handleTriggerClick = (trigger) => {
+        if (selectedTrigger && selectedTrigger.trigger === trigger.trigger) {
+            setSelectedTrigger(null);
+        } else {
+            setSelectedTrigger(trigger);
+        }
+    };
 
-  const handleToggle = (triggerName: string) => {
-    setExpandedTrigger(expandedTrigger === triggerName ? null : triggerName);
-  };
-
-  return (
-    <div className="p-2 bg-background/50 rounded-lg mb-2">
-      <div className="flex flex-wrap gap-2 items-center">
-        <span className="text-sm font-semibold text-muted-foreground mr-2">Triggers:</span>
-        {triggers.map(trigger => (
-          <button 
-            key={trigger.trigger}
-            onClick={() => handleToggle(trigger.trigger)}
-            className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${getCategoryColor(trigger.category)} hover:scale-105`}
-          >
-            {trigger.trigger}
-          </button>
-        ))}
-      </div>
-      <AnimatePresence>
-        {expandedTrigger && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="mt-2 p-4 bg-black/20 rounded-md overflow-hidden"
-          >
-            <h3 className="font-bold text-lg mb-2 capitalize">{expandedTrigger}</h3>
-            {metadata.filter(m => m.trigger === expandedTrigger).map((meta, i) => (
-              <div key={i} className="text-sm">
-                <p className="mb-2"><strong className="text-primary">Purpose:</strong> {meta.purpose}</p>
-                <p className="mb-2"><strong className="text-primary">Context:</strong> {meta.context_used}</p>
-                <p><strong className="text-primary">Influence:</strong> {meta.influence_scope}</p>
-              </div>
-            ))}
-            <div className="mt-4 pt-4 border-t border-border/20">
-                <h4 className="font-semibold mb-2">Raw Content:</h4>
-                <pre className="text-xs whitespace-pre-wrap bg-black/30 p-2 rounded"><code>{rawContent}</code></pre>
+    return (
+        <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-gray-800 text-white">
+            <div className="flex justify-between items-center">
+                <h3 className="text-lg font-bold">Triggers</h3>
+                <button onClick={toggleExpansion} className="px-4 py-2 bg-blue-500 rounded-md">
+                    {isExpanded ? 'Collapse' : 'Expand'}
+                </button>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
+            <AnimatePresence>
+                {isExpanded && (
+                    <motion.div
+                        initial={{ height: 0 }}
+                        animate={{ height: 'auto' }}
+                        exit={{ height: 0 }}
+                        className="overflow-hidden"
+                    >
+                        <div className="mt-4">
+                            <div className="flex gap-2">
+                                {triggers.map((trigger) => (
+                                    <button
+                                        key={trigger.trigger}
+                                        onClick={() => handleTriggerClick(trigger)}
+                                        className={`px-3 py-1 rounded-full text-sm ${
+                                            selectedTrigger?.trigger === trigger.trigger ? 'bg-blue-600' : 'bg-gray-600'
+                                        }`}
+                                    >
+                                        {trigger.trigger}
+                                    </button>
+                                ))}
+                            </div>
+                            {selectedTrigger && (
+                                <div className="mt-4 p-4 bg-gray-700 rounded-md">
+                                    <h4 className="font-bold">{selectedTrigger.trigger}</h4>
+                                    <p className="mt-2 text-sm">{selectedTrigger.system_instruction}</p>
+                                    <div className="mt-4">
+                                        <h5 className="font-bold">Context</h5>
+                                        <pre className="mt-2 p-2 bg-gray-800 rounded-md text-xs">
+                                            {JSON.stringify(metadata[selectedTrigger.trigger], null, 2)}
+                                        </pre>
+                                    </div>
+                                    <div className="mt-4">
+                                        <h5 className="font-bold">Raw Content</h5>
+                                        <pre className="mt-2 p-2 bg-gray-800 rounded-md text-xs">
+                                            {rawContent}
+                                        </pre>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
 };
 
 export default TriggerBar;

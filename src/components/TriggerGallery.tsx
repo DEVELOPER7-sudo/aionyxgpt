@@ -17,17 +17,8 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import {
-  getAllTriggers,
-  addTrigger,
-  updateTrigger,
-  deleteTrigger,
-  toggleTrigger,
-  exportTriggers,
-  importTriggers,
-  resetToBuiltIn,
-  Trigger,
-} from '@/lib/triggers';
+import { allTriggers, Trigger } from '@/lib/triggers';
+import { storage } from '@/lib/storage';
 import {
   Dialog,
   DialogContent,
@@ -47,7 +38,7 @@ import {
 } from '@/components/ui/select';
 
 const TriggerGallery = () => {
-  const [triggers, setTriggers] = useState<Trigger[]>(getAllTriggers());
+  const [triggers, setTriggers] = useState<Trigger[]>(allTriggers);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [showEnabledOnly, setShowEnabledOnly] = useState(false);
@@ -112,7 +103,7 @@ const TriggerGallery = () => {
   }, [filteredTriggers]);
 
   const refreshTriggers = () => {
-    setTriggers(getAllTriggers());
+    setTriggers(storage.getCustomTriggers());
   };
 
   const handleAddNew = () => {
@@ -158,14 +149,13 @@ const TriggerGallery = () => {
         system_instruction: formData.system_instruction.trim(),
         example: formData.example.trim(),
         enabled: formData.enabled,
-        custom: true,
       };
 
       if (isNewTrigger) {
-        addTrigger(newTrigger);
+        storage.addCustomTrigger(newTrigger);
         toast.success('Trigger added successfully');
       } else {
-        updateTrigger(editingTrigger!.trigger, newTrigger);
+        storage.updateCustomTrigger(editingTrigger!.trigger, newTrigger);
         toast.success('Trigger updated successfully');
       }
 
@@ -181,19 +171,33 @@ const TriggerGallery = () => {
       toast.error('Cannot delete built-in triggers');
       return;
     }
-    deleteTrigger(triggerName);
+    storage.deleteCustomTrigger(triggerName);
     toast.success('Trigger deleted');
     refreshTriggers();
   };
 
   const handleToggle = (triggerName: string) => {
-    toggleTrigger(triggerName);
-    refreshTriggers();
+    const trigger = triggers.find(t => t.trigger === triggerName);
+    if (trigger) {
+      const newTrigger = { ...trigger, enabled: !trigger.enabled };
+      storage.updateCustomTrigger(triggerName, newTrigger);
+      refreshTriggers();
+    }
   };
 
   const handleExport = () => {
-    exportTriggers();
-    toast.success('Triggers exported successfully');
+    const customTriggers = storage.getCustomTriggers();
+    const blob = new Blob([JSON.stringify(customTriggers, null, 2)], {
+      type: 'application/json',
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'onyx_triggers.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -201,7 +205,9 @@ const TriggerGallery = () => {
     if (!file) return;
 
     try {
-      await importTriggers(file);
+      const text = await file.text();
+      const importedTriggers = JSON.parse(text) as Trigger[];
+      storage.setCustomTriggers(importedTriggers);
       refreshTriggers();
       toast.success('Triggers imported successfully');
     } catch (error) {
@@ -212,7 +218,7 @@ const TriggerGallery = () => {
 
   const handleReset = () => {
     if (confirm('Reset all triggers to built-in defaults? This will remove all custom triggers.')) {
-      resetToBuiltIn();
+      storage.setCustomTriggers([]);
       refreshTriggers();
       toast.success('Triggers reset to defaults');
     }

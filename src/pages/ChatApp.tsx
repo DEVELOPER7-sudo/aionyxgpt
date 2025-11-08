@@ -13,6 +13,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useChatSync } from '@/hooks/useChatSync';
 import MotionBackground from '@/components/MotionBackground';
 import { detectTriggersAndBuildPrompt, Trigger } from '@/lib/triggers';
+import TriggerBar from '@/components/TriggerBar';
 
 const SettingsPanel = lazy(() => import('@/components/SettingsPanel'));
 const ImagesGallery = lazy(() => import('@/components/ImagesGallery'));
@@ -42,6 +43,7 @@ const ChatApp = () => {
   }, []);
 
   const currentChat = chats.find(c => c.id === currentChatId) || null;
+  const lastMessage = currentChat?.messages[currentChat.messages.length - 1];
 
   const handleError = (error: any, context: string) => {
     console.error(`Error in ${context}:`, error);
@@ -170,7 +172,18 @@ const ChatApp = () => {
         <div className={cn('fixed inset-y-0 left-0 z-40 w-72 md:w-auto md:static md:translate-x-0 transition-all', mobileMenuOpen ? 'translate-x-0' : '-translate-x-full')}><ChatSidebar chats={chats} currentChatId={currentChatId} onNewChat={createNewChat} onNewIncognitoChat={() => createNewChat(true)} onSelectChat={(id) => { setCurrentChatId(id); if(!chats.find(c=>c.id===id)?.isIncognito) storage.setCurrentChatId(id); setCurrentView('chat'); setMobileMenuOpen(false); }} onDeleteChat={async (id) => {const newChats = chats.filter(c => c.id !== id); setChats(newChats); storage.saveChats(newChats);}} onNavigate={(view) => { setCurrentView(view); setMobileMenuOpen(false); }} collapsed={sidebarCollapsed} onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}/></div>
         {mobileMenuOpen && <div className="fixed inset-0 bg-black/50 z-30 md:hidden" onClick={() => setMobileMenuOpen(false)} />}
         <div className="flex-1 overflow-hidden min-h-0 flex flex-col">
-          {currentView === 'chat' && <ChatArea chat={currentChat} onSendMessage={handleSendMessage} onUpdateTitle={(id, title) => {const newChats = chats.map(c => c.id === id ? {...c, title} : c); setChats(newChats); storage.updateChat(id, {title});}} onDeleteChat={async (id) => {const newChats = chats.filter(c => c.id !== id); setChats(newChats); storage.saveChats(newChats);}} onRegenerateMessage={(id) => {}} onEditMessage={(id, content) => {}} isLoading={isLoading} onStopGeneration={() => abortController?.abort()} />}
+          {currentView === 'chat' && (
+            <>
+              <ChatArea chat={currentChat} onSendMessage={handleSendMessage} onUpdateTitle={(id, title) => {const newChats = chats.map(c => c.id === id ? {...c, title} : c); setChats(newChats); storage.updateChat(id, {title});}} onDeleteChat={async (id) => {const newChats = chats.filter(c => c.id !== id); setChats(newChats); storage.saveChats(newChats);}} onRegenerateMessage={(id) => {}} onEditMessage={(id, content) => {}} isLoading={isLoading} onStopGeneration={() => abortController?.abort()} />
+              {lastMessage && lastMessage.role === 'assistant' && lastMessage.triggers && lastMessage.triggers.length > 0 && (
+                <TriggerBar
+                  triggers={lastMessage.triggers}
+                  metadata={lastMessage.metadata}
+                  rawContent={lastMessage.rawContent}
+                />
+              )}
+            </>
+          )}
           <Suspense fallback={<Loader2 className="m-auto animate-spin" />}>
             {currentView === 'settings' && <SettingsPanel settings={settings} onUpdateSettings={(s) => {setSettings(s); storage.saveSettings(s);}} onClearAllData={() => {localStorage.clear(); setChats([]); setCurrentChatId(null);}} onExportChats={storage.exportChats} onImportChats={(file) => storage.importChats(file).then(() => setChats(storage.getChats()))}/>}
             {currentView === 'images' && <ImagesGallery />}
