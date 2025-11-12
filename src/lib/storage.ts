@@ -171,15 +171,18 @@ export const storage = {
         textModel: 'gpt-5-nano',
         imageModel: 'flux',
         temperature: 0.7,
-        maxTokens: 2000,
+        maxTokens: 100000, // Increased to 100k tokens
         enableWebSearch: false,
         enableDeepSearch: false,
         enableDebugLogs: false,
         themeColor: '217 91% 60%',
         accentColor: '217 91% 60%',
         backgroundColor: '0 0% 0%',
+        sidebarColor: '0 0% 10%',
         provider: 'puter',
         customOpenRouterKey: undefined,
+        streamingEnabled: true,
+        incognitoMode: false,
       };
     } catch (error) {
       console.error('Error loading settings:', error);
@@ -187,14 +190,17 @@ export const storage = {
         textModel: 'gpt-5-nano',
         imageModel: 'flux',
         temperature: 0.7,
-        maxTokens: 2000,
+        maxTokens: 100000, // Increased to 100k tokens
         enableWebSearch: false,
         enableDeepSearch: false,
         themeColor: '217 91% 60%',
         accentColor: '217 91% 60%',
         backgroundColor: '0 0% 0%',
+        sidebarColor: '0 0% 10%',
         provider: 'puter',
         customOpenRouterKey: undefined,
+        streamingEnabled: true,
+        incognitoMode: false,
       };
     }
   },

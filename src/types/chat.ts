@@ -1,3 +1,5 @@
+import { DetectedTrigger } from '@/lib/triggers';
+
 export interface Message {
   id: string;
   role: 'user' | 'assistant';
@@ -6,6 +8,9 @@ export interface Message {
   imageUrl?: string;
   imagePrompt?: string;
   attachments?: string[];
+  triggers?: DetectedTrigger[]; // Triggers detected in user message
+  rawContent?: string; // Original content with tags (for assistant messages)
+  taggedSegments?: Array<{ tag: string; content: string; startIndex: number; endIndex: number }>;
 }
 
 export interface Chat {
@@ -49,7 +54,24 @@ export interface AppSettings {
   themeColor?: string;
   accentColor?: string;
   backgroundColor?: string;
+  sidebarColor?: string; // New: sidebar color customization
   taskMode?: 'standard' | 'reasoning' | 'research' | 'creative';
   provider?: 'puter' | 'openrouter';
   customOpenRouterKey?: string;
+  streamingEnabled?: boolean; // New: toggle streaming
+  incognitoMode?: boolean; // New: private chat mode
+}
+
+export interface CustomBot {
+  id: string;
+  name: string;
+  description: string;
+  systemPrompt: string;
+  logo?: string;
+  category?: string;
+  isPublic: boolean;
+  createdBy?: string;
+  createdAt: number;
+  updatedAt: number;
+  usageCount?: number;
 }

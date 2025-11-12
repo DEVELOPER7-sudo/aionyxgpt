@@ -25,6 +25,7 @@ const MemoryEditor = lazy(() => import('@/components/MemoryEditor'));
 const SearchPanel = lazy(() => import('@/components/SearchPanel'));
 const LogCenter = lazy(() => import('@/components/LogCenter'));
 const TriggerGallery = lazy(() => import('@/components/TriggerGallery'));
+const CustomBotsManager = lazy(() => import('@/components/CustomBotsManager'));
 
 const ChatApp = () => {
   const [chats, setChats] = useState<Chat[]>([]);
@@ -33,7 +34,7 @@ const ChatApp = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [currentView, setCurrentView] = useState<'chat' | 'images' | 'memory' | 'search' | 'settings' | 'logs' | 'triggers'>('chat');
+  const [currentView, setCurrentView] = useState<'chat' | 'images' | 'memory' | 'search' | 'settings' | 'logs' | 'triggers' | 'bots'>('chat');
   const [webSearchEnabled, setWebSearchEnabled] = useState(settings.enableWebSearch);
   const [deepSearchEnabled, setDeepSearchEnabled] = useState(settings.enableDeepSearch);
   const [taskMode, setTaskMode] = useState<'standard' | 'reasoning' | 'research' | 'creative'>(settings.taskMode || 'standard');

@@ -1,5 +1,13 @@
 // Trigger Framework - Storage and Utilities
 
+export interface TriggerMetadata {
+  trigger: string;
+  category: string;
+  purpose: string;
+  context_used: string;
+  influence_scope: string;
+}
+
 export interface Trigger {
   trigger: string;
   category: 'Reasoning & Analysis' | 'Research & Information' | 'Planning & Organization' | 'Communication & Style';
@@ -7,6 +15,16 @@ export interface Trigger {
   example: string;
   enabled: boolean;
   custom?: boolean;
+  tag?: string; // XML tag format
+  metadata_support?: boolean;
+}
+
+export interface DetectedTrigger {
+  name: string;
+  tag: string;
+  category: string;
+  instruction: string;
+  metadata: TriggerMetadata;
 }
 
 const STORAGE_KEY = 'onyxgpt_triggers';
@@ -533,10 +551,30 @@ export const importTriggers = (file: File): Promise<void> => {
   });
 };
 
-// Detect triggers in user message and build system prompt
-export const detectTriggersAndBuildPrompt = (userMessage: string): { systemPrompt: string; detectedTriggers: string[] } => {
+// Generate tag name from trigger name (spaces to underscores, lowercase)
+export const generateTagName = (triggerName: string): string => {
+  return triggerName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+};
+
+// Generate metadata for a trigger
+export const generateTriggerMetadata = (trigger: Trigger, userPrompt: string): TriggerMetadata => {
+  const tagName = generateTagName(trigger.trigger);
+  return {
+    trigger: trigger.trigger,
+    category: trigger.category,
+    purpose: trigger.system_instruction.replace(/Use tags.*?final_response\.\s*/i, '').trim(),
+    context_used: `Applied to user prompt: "${userPrompt.substring(0, 100)}${userPrompt.length > 100 ? '...' : ''}"`,
+    influence_scope: `Affects response structure, tone, and content based on ${trigger.category.toLowerCase()} requirements.`,
+  };
+};
+
+// Detect triggers in user message and build system prompt with metadata
+export const detectTriggersAndBuildPrompt = (userMessage: string): { 
+  systemPrompt: string; 
+  detectedTriggers: DetectedTrigger[] 
+} => {
   const triggers = getAllTriggers().filter(t => t.enabled);
-  const detectedTriggers: string[] = [];
+  const detectedTriggers: DetectedTrigger[] = [];
   const instructions: string[] = [];
 
   const lowerMessage = userMessage.toLowerCase();
@@ -546,7 +584,14 @@ export const detectTriggersAndBuildPrompt = (userMessage: string): { systemPromp
     // Match whole words or phrases
     const regex = new RegExp(`\\b${trigger.trigger.toLowerCase()}\\b`, 'i');
     if (regex.test(lowerMessage)) {
-      detectedTriggers.push(trigger.trigger);
+      const tagName = generateTagName(trigger.trigger);
+      detectedTriggers.push({
+        name: trigger.trigger,
+        tag: tagName,
+        category: trigger.category,
+        instruction: trigger.system_instruction,
+        metadata: generateTriggerMetadata(trigger, userMessage),
+      });
       instructions.push(`${trigger.trigger} means ${trigger.system_instruction}`);
     }
   });
@@ -561,6 +606,34 @@ export const detectTriggersAndBuildPrompt = (userMessage: string): { systemPromp
   }
 
   return { systemPrompt, detectedTriggers };
+};
+
+// Parse trigger tags from AI response
+export const parseTriggeredResponse = (content: string): {
+  cleanContent: string;
+  taggedSegments: Array<{ tag: string; content: string; startIndex: number; endIndex: number }>;
+} => {
+  const taggedSegments: Array<{ tag: string; content: string; startIndex: number; endIndex: number }> = [];
+  let cleanContent = content;
+  
+  // Find all XML-style trigger tags
+  const tagRegex = /<(\w+)>(.*?)<\/\1>/gs;
+  let match;
+  
+  while ((match = tagRegex.exec(content)) !== null) {
+    const [fullMatch, tagName, tagContent] = match;
+    taggedSegments.push({
+      tag: tagName,
+      content: tagContent,
+      startIndex: match.index,
+      endIndex: match.index + fullMatch.length,
+    });
+  }
+  
+  // Remove tags from clean content but keep the content inside
+  cleanContent = content.replace(/<(\w+)>(.*?)<\/\1>/gs, '$2');
+  
+  return { cleanContent, taggedSegments };
 };
 
 // Reset to built-in triggers
