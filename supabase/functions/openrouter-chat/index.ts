@@ -114,7 +114,7 @@ serve(async (req) => {
       );
     }
 
-    const { messages, model, temperature, max_tokens } = await req.json();
+    const { messages, model, temperature, max_tokens, customApiKey } = await req.json();
     
     // Use custom API key if provided, otherwise use default
     const OPENROUTER_API_KEY = customApiKey || Deno.env.get('OPENROUTER_API_KEY');
