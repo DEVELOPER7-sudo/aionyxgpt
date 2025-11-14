@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Mail, Lock, ArrowRight, Sparkles } from 'lucide-react';
 import { z } from 'zod';
 import MotionBackground from '@/components/MotionBackground';
 import { supabase } from '@/integrations/supabase/client';
@@ -69,7 +69,6 @@ const Auth = () => {
   const handleGuestMode = async () => {
     try {
       setIsSubmitting(true);
-      // Enable guest mode without backend auth; restrict access via guard
       localStorage.setItem('guestMode', 'true');
       toast.success('Guest session started');
       navigate('/chat');
@@ -82,8 +81,11 @@ const Auth = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+        <div className="text-center space-y-4">
+          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
+          <p className="text-muted-foreground">Loading your session...</p>
+        </div>
       </div>
     );
   }
@@ -92,126 +94,178 @@ const Auth = () => {
     <>
       <MotionBackground />
       <div className="min-h-screen flex items-center justify-center p-4 relative z-10">
-        <Card className="w-full max-w-md">
-          <CardHeader className="space-y-2 text-center">
-            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+        {/* Gradient orbs background */}
+        <div className="absolute top-20 left-10 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse" />
+        
+        <div className="w-full max-w-md relative z-20">
+          {/* Logo/Brand section */}
+          <div className="text-center mb-8 space-y-2">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-purple-600 shadow-lg">
+              <Sparkles className="w-7 h-7 text-white" />
+            </div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent">
               OnyxGPT
-            </CardTitle>
-            <CardDescription>
-              {isSignUp ? 'Create an account to sync your chats' : 'Sign in to access your chats'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    setErrors(prev => ({ ...prev, email: undefined }));
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              {isSignUp ? 'Create your account to get started' : 'Welcome back to your AI companion'}
+            </p>
+          </div>
+
+          {/* Main Card */}
+          <Card className="border border-white/10 bg-slate-900/80 backdrop-blur-xl shadow-2xl">
+            <CardContent className="pt-6 space-y-6">
+              {/* Signup/Signin toggle */}
+              <div className="grid grid-cols-2 gap-2 bg-slate-800/50 p-1 rounded-lg">
+                <button
+                  onClick={() => {
+                    setIsSignUp(false);
+                    setErrors({});
                   }}
-                  disabled={isSubmitting}
-                  className={errors.email ? 'border-destructive' : ''}
-                />
-                {errors.email && (
-                  <p className="text-sm text-destructive">{errors.email}</p>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setErrors(prev => ({ ...prev, password: undefined }));
+                  className={`py-2 px-3 rounded-md font-medium text-sm transition-all ${
+                    !isSignUp
+                      ? 'bg-primary text-white shadow-lg'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={() => {
+                    setIsSignUp(true);
+                    setErrors({});
                   }}
-                  disabled={isSubmitting}
-                  className={errors.password ? 'border-destructive' : ''}
-                />
-                {errors.password && (
-                  <p className="text-sm text-destructive">{errors.password}</p>
-                )}
+                  className={`py-2 px-3 rounded-md font-medium text-sm transition-all ${
+                    isSignUp
+                      ? 'bg-primary text-white shadow-lg'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  Sign Up
+                </button>
               </div>
 
-              <Button 
-                type="submit" 
-                className="w-full" 
+              {/* Form */}
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Email Input */}
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-medium">
+                    Email Address
+                  </Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        setErrors(prev => ({ ...prev, email: undefined }));
+                      }}
+                      disabled={isSubmitting}
+                      className={`pl-10 border-white/10 bg-slate-800/50 focus:border-primary/50 transition-colors ${
+                        errors.email ? 'border-destructive' : ''
+                      }`}
+                    />
+                  </div>
+                  {errors.email && (
+                    <p className="text-xs text-destructive flex items-center gap-1">
+                      {errors.email}
+                    </p>
+                  )}
+                </div>
+                
+                {/* Password Input */}
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-sm font-medium">
+                    Password
+                  </Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        setErrors(prev => ({ ...prev, password: undefined }));
+                      }}
+                      disabled={isSubmitting}
+                      className={`pl-10 border-white/10 bg-slate-800/50 focus:border-primary/50 transition-colors ${
+                        errors.password ? 'border-destructive' : ''
+                      }`}
+                    />
+                  </div>
+                  {errors.password && (
+                    <p className="text-xs text-destructive">{errors.password}</p>
+                  )}
+                </div>
+
+                {/* Submit Button */}
+                <Button 
+                  type="submit" 
+                  className="w-full h-10 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-700 text-white font-medium shadow-lg" 
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      {isSignUp ? 'Creating account...' : 'Signing in...'}
+                    </>
+                  ) : (
+                    <>
+                      {isSignUp ? 'Create Account' : 'Sign In'}
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </>
+                  )}
+                </Button>
+              </form>
+
+              {/* Divider */}
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-white/10" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-slate-900/80 px-2 text-muted-foreground font-medium">
+                    Or continue as
+                  </span>
+                </div>
+              </div>
+
+              {/* Guest Button */}
+              <Button
+                variant="outline"
+                className="w-full h-10 border-white/10 hover:bg-slate-800/50 font-medium"
+                onClick={handleGuestMode}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {isSignUp ? 'Creating account...' : 'Signing in...'}
-                  </>
-                ) : (
-                  isSignUp ? 'Sign Up' : 'Sign In'
-                )}
-              </Button>
-            </form>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                  Or
+                <span className="flex items-center justify-center gap-2">
+                  Guest Mode
+                  <ArrowRight className="w-4 h-4" />
                 </span>
-              </div>
-            </div>
+              </Button>
+            </CardContent>
+          </Card>
 
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={handleGuestMode}
-              disabled={isSubmitting}
-            >
-              Continue as Guest
-            </Button>
-
-            <div className="text-center text-sm">
-              {isSignUp ? (
-                <>
-                  Already have an account?{' '}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsSignUp(false);
-                      setErrors({});
-                    }}
-                    className="text-primary hover:underline"
-                    disabled={isSubmitting}
-                  >
-                    Sign In
-                  </button>
-                </>
-              ) : (
-                <>
-                  Don't have an account?{' '}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsSignUp(true);
-                      setErrors({});
-                    }}
-                    className="text-primary hover:underline"
-                    disabled={isSubmitting}
-                  >
-                    Sign Up
-                  </button>
-                </>
-              )}
+          {/* Features hint */}
+          <div className="mt-8 grid grid-cols-3 gap-4 text-center text-xs">
+            <div className="space-y-1">
+              <div className="text-lg">🤖</div>
+              <p className="text-muted-foreground">AI Powered</p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="space-y-1">
+              <div className="text-lg">🔒</div>
+              <p className="text-muted-foreground">Secure</p>
+            </div>
+            <div className="space-y-1">
+              <div className="text-lg">⚡</div>
+              <p className="text-muted-foreground">Fast</p>
+            </div>
+          </div>
+        </div>
       </div>
     </>
   );
