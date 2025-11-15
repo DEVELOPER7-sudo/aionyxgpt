@@ -130,12 +130,14 @@ const ChatApp = () => {
        model: settings.textModel,
      };
      storage.addChat(newChat);
-     setChats([newChat, ...chats]);
+     const updatedChats = [newChat, ...chats];
+     setChats(updatedChats);
      setCurrentChatId(newChat.id);
      storage.setCurrentChatId(newChat.id);
      setCurrentView('chat');
      setMobileMenuOpen(false);
-     };
+     console.log('Created new chat:', newChat.id, 'Current chats:', updatedChats.length);
+   };
 
   // Generate chat title based on first prompt and selected model
   const generateChatTitle = async (firstPrompt: string, modelId: string) => {

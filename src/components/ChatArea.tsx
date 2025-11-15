@@ -254,13 +254,15 @@ const ChatArea = ({
 
   if (!chat) {
     return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
-            <ImageIcon className="w-8 h-8 text-primary" />
+      <div className="flex flex-col h-full w-full overflow-hidden">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
+              <ImageIcon className="w-8 h-8 text-primary" />
+            </div>
+            <h3 className="text-xl font-semibold">No chat selected</h3>
+            <p className="text-muted-foreground">Start a new chat or select an existing one</p>
           </div>
-          <h3 className="text-xl font-semibold">No chat selected</h3>
-          <p className="text-muted-foreground">Start a new chat or select an existing one</p>
         </div>
       </div>
     );
