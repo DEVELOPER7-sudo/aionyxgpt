@@ -36,6 +36,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -294,86 +299,88 @@ const TriggerGallery = ({
           );
         })}
 
-        {/* Gallery Dialog */}
-        <Dialog open={galleryOpen} onOpenChange={setGalleryOpen}>
-          <DialogContent className="max-w-4xl max-h-[85vh] p-0 flex flex-col">
-            <DialogHeader className="px-6 pt-6 pb-4 border-b border-border flex-shrink-0">
-              <div className="flex items-center justify-between">
-                <div>
-                  <DialogTitle>Trigger Gallery</DialogTitle>
-                  <DialogDescription>
-                    Browse available triggers to understand their purpose
-                  </DialogDescription>
+        {/* Gallery Popover */}
+        <Popover open={galleryOpen} onOpenChange={setGalleryOpen}>
+          <PopoverTrigger asChild>
+            <div />
+          </PopoverTrigger>
+          <PopoverContent className="w-[600px] p-0" align="start" side="top">
+            <div className="flex flex-col max-h-[500px]">
+              <div className="px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h3 className="text-sm font-semibold">Trigger Gallery</h3>
+                    <p className="text-xs text-muted-foreground">
+                      Browse available triggers
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setGalleryOpen(false)}
+                    className="h-6 w-6 -mr-2"
+                  >
+                    <X className="w-3 h-3" />
+                  </Button>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setGalleryOpen(false)}
-                  className="h-8 w-8 -mr-2"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
+                
+                {/* Filters */}
+                <div className="flex gap-2">
+                  <div className="flex-1 relative">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                    <Input
+                      placeholder="Search triggers..."
+                      value={searchQuery}
+                      onChange={e => setSearchQuery(e.target.value)}
+                      className="pl-8 h-8 text-sm"
+                    />
+                  </div>
+                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                    <SelectTrigger className="w-[160px] h-8 text-sm">
+                      <SelectValue placeholder="All" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Categories</SelectItem>
+                      {categories.map(cat => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            </DialogHeader>
 
-            <div className="flex-1 overflow-hidden flex flex-col px-6 py-4 gap-4">
-              {/* Filters */}
-              <div className="flex gap-2 flex-shrink-0">
-                <div className="flex-1 relative">
-                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                   <Input
-                     placeholder="Search triggers..."
-                     value={searchQuery}
-                     onChange={e => setSearchQuery(e.target.value)}
-                     className="pl-10"
-                     autoFocus
-                   />
-                 </div>
-                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                   <SelectTrigger className="w-[200px]">
-                     <SelectValue placeholder="All Categories" />
-                   </SelectTrigger>
-                   <SelectContent>
-                     <SelectItem value="all">All Categories</SelectItem>
-                     {categories.map(cat => (
-                       <SelectItem key={cat} value={cat}>
-                         {cat}
-                       </SelectItem>
-                     ))}
-                   </SelectContent>
-                 </Select>
-               </div>
-
-               {/* Trigger Cards - Scrollable */}
-               <ScrollArea className="flex-1 border rounded-md pr-4">
-                <div className="space-y-4">
+              {/* Trigger Cards - Scrollable */}
+              <ScrollArea className="flex-1 px-4 py-3">
+                <div className="space-y-3">
                   {Object.keys(groupedTriggers).length === 0 ? (
-                    <div className="text-center py-12 text-muted-foreground">
+                    <div className="text-center py-8 text-muted-foreground text-sm">
                       No triggers found
                     </div>
                   ) : (
                     Object.entries(groupedTriggers).map(([category, categoryTriggers]) => (
                       <div key={category}>
-                        <h4 className="text-sm font-semibold mb-3">
-                          <Badge className={getCategoryColor(category as Trigger['category'])}>
+                        <h4 className="text-xs font-semibold mb-2">
+                          <Badge className={cn(getCategoryColor(category as Trigger['category']), 'text-xs h-5')}>
                             {category}
                           </Badge>
                         </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <div className="space-y-1.5">
                           {categoryTriggers.map(trigger => (
                             <div
                               key={trigger.trigger}
                               className={cn(
-                                'p-3 rounded-lg border transition-all text-sm',
+                                'p-2.5 rounded-md border transition-all',
                                 'border-border hover:border-primary/50 hover:shadow-sm',
-                                'bg-card/50 hover:bg-card'
+                                'bg-card/50 hover:bg-card cursor-default'
                               )}
                             >
                               <div className="flex items-start justify-between mb-1">
-                                <span className="font-medium">{trigger.trigger}</span>
+                                <span className="font-medium text-xs">{trigger.trigger}</span>
                               </div>
-                              <p className="text-xs text-muted-foreground line-clamp-3">
-                                {trigger.system_instruction.replace(/Use tags.*?final_response\.\s*/i, '')}
+                              <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
+                                {trigger.system_instruction.replace(/When.*?as follows:\s*/i, '').replace(/<.*?>/g, '').replace(/Then provide.*$/i, '').trim()}
                               </p>
                             </div>
                           ))}
@@ -384,8 +391,8 @@ const TriggerGallery = ({
                 </div>
               </ScrollArea>
             </div>
-          </DialogContent>
-        </Dialog>
+          </PopoverContent>
+        </Popover>
       </div>
     );
   }
