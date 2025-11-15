@@ -72,6 +72,16 @@ const ChatApp = () => {
   }, []);
 
   const currentChat = chats.find(c => c.id === currentChatId) || null;
+  
+  // Debug logging
+  useEffect(() => {
+    console.log('State update:', { 
+      chatsLength: chats.length, 
+      currentChatId, 
+      currentChatExists: !!currentChat,
+      currentView 
+    });
+  }, [chats, currentChatId, currentChat, currentView]);
 
   const createNewChat = (botName?: string) => {
        const welcomeMessage: Message = {

@@ -34,6 +34,7 @@ import {
   Square,
   X,
   Paperclip,
+  Edit2,
 } from 'lucide-react';
 import { Chat, Message } from '@/types/chat';
 import { cn } from '@/lib/utils';
