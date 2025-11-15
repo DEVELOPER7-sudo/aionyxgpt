@@ -136,6 +136,45 @@ const ChatApp = () => {
      setMobileMenuOpen(false);
    };
 
+  // Generate chat title based on first prompt and selected model
+  const generateChatTitle = async (firstPrompt: string, modelId: string) => {
+    try {
+      // @ts-ignore - Puter is loaded via script tag
+      const puter = (window as any)?.puter;
+      if (!puter?.ai?.chat) {
+        console.warn('Puter AI not available for title generation');
+        return null;
+      }
+
+      const systemPrompt = `Generate a concise, meaningful chat title in one sentence (max 8 words) based on the user's prompt and model. Focus on the main topic or intent. No quotes, no emojis, no punctuation marks.`;
+      
+      const titlePrompt = `User prompt: "${firstPrompt}"\nSelected model: ${modelId}\n\nGenerate appropriate chat title:`;
+
+      const response = await puter.ai.chat([
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: titlePrompt }
+      ], {
+        model: 'gpt-4o-mini'
+      });
+
+      let generatedTitle = response?.trim() || null;
+      
+      // Clean up the title - remove quotes and extra whitespace
+      if (generatedTitle) {
+        generatedTitle = generatedTitle.replace(/^["']|["']$/g, '').trim();
+        // Ensure it's not empty and under 100 characters
+        if (generatedTitle.length > 0 && generatedTitle.length <= 100) {
+          return generatedTitle;
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error generating chat title:', error);
+      return null;
+    }
+  };
+
   const handleSendMessage = async (content: string, imageData?: { imageUrl: string; prompt: string }) => {
     if (!currentChatId) return;
 
@@ -156,6 +195,16 @@ const ChatApp = () => {
     setChats(chats.map(c => c.id === currentChatId ? updatedChat : c));
 
     setIsLoading(true);
+
+    // Generate title if this is the first user message
+    const isFirstMessage = updatedChat.messages.filter(m => m.role === 'user').length === 1;
+    if (isFirstMessage && !isImageCommand) {
+      const generatedTitle = await generateChatTitle(content.substring(0, 200), settings.textModel);
+      if (generatedTitle) {
+        storage.updateChat(currentChatId, { title: generatedTitle });
+        setChats(chats.map(c => c.id === currentChatId ? { ...c, title: generatedTitle } : c));
+      }
+    }
 
     try {
       if (isImageCommand) {
