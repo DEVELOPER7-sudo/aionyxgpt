@@ -30,17 +30,27 @@ export const useChatSync = (
           const cloudChats: Chat[] = data.map(row => ({
             id: row.id,
             title: row.title,
-            messages: row.messages as any[],
+            messages: Array.isArray(row.messages) ? row.messages as any[] : [],
             createdAt: row.created_at,
             updatedAt: row.updated_at,
             model: row.model || 'gpt-5-nano'
           }));
 
-          // Merge with local chats (cloud takes priority)
-          const localChats = chats.filter(
+          // Merge with local chats (cloud takes priority, but preserve local messages if cloud has none)
+          const mergedChats = cloudChats.map(cloudChat => {
+            const localChat = chats.find(c => c.id === cloudChat.id);
+            // If cloud chat has no messages but local does, keep local messages
+            if (cloudChat.messages.length === 0 && localChat && localChat.messages.length > 0) {
+              return { ...cloudChat, messages: localChat.messages };
+            }
+            return cloudChat;
+          });
+          
+          const localOnlyChats = chats.filter(
             chat => !cloudChats.find(c => c.id === chat.id)
           );
-          setChats([...cloudChats, ...localChats]);
+          
+          setChats([...mergedChats, ...localOnlyChats]);
         }
       } catch (error) {
         // Only log in development

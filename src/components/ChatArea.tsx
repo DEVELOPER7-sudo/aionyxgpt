@@ -397,7 +397,7 @@ const ChatArea = ({
                               remarkPlugins={[remarkGfm, remarkMath]}
                               rehypePlugins={[rehypeKatex]}
                             >
-                              {main || (isThinking ? '' : message.content)}
+                              {main || message.content || ''}
                             </ReactMarkdown>
                           </div>
                         )}

@@ -73,14 +73,18 @@ const ChatApp = () => {
 
   const currentChat = chats.find(c => c.id === currentChatId) || null;
   
-  // Debug logging
+  // Debug logging for chat state
   useEffect(() => {
-    console.log('State update:', { 
-      chatsLength: chats.length, 
-      currentChatId, 
-      currentChatExists: !!currentChat,
-      currentView 
-    });
+    if (import.meta.env.DEV) {
+      console.log('Chat state:', { 
+        chatsLength: chats.length, 
+        currentChatId, 
+        currentChatExists: !!currentChat,
+        currentChatMessagesLength: currentChat?.messages.length || 0,
+        messages: currentChat?.messages.map(m => ({ role: m.role, contentLength: m.content?.length || 0 })),
+        currentView 
+      });
+    }
   }, [chats, currentChatId, currentChat, currentView]);
 
   const createNewChat = (botName?: string) => {
