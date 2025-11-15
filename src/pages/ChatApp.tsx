@@ -441,8 +441,10 @@ const ChatApp = () => {
     } catch (streamError: any) {
       logger.logError('puter.ai.chat (streaming)', chatParams, streamError);
       
-      // Check for rate limit errors
+      // Check for specific errors
       const errorMsg = streamError?.message || String(streamError);
+      const errorJson = typeof streamError === 'object' && streamError?.error ? streamError.error : errorMsg;
+      
       if (errorMsg.toLowerCase().includes('rate limit') || errorMsg.toLowerCase().includes('429')) {
         toast.error('⚠️ Puter Rate Limit Reached', {
           description: 'Please wait a moment before trying again. Too many requests.',
@@ -451,6 +453,16 @@ const ChatApp = () => {
       } else if (errorMsg.toLowerCase().includes('quota') || errorMsg.toLowerCase().includes('credit')) {
         toast.error('💳 Puter Credit Limit', {
           description: 'Your Puter credits may be exhausted. Please check your account.',
+          duration: 5000,
+        });
+      } else if (String(errorJson).toLowerCase().includes('moderation')) {
+        toast.error('🛡️ Moderation Service Unavailable', {
+          description: 'Puter\'s moderation service is temporarily down. Try switching to OpenRouter models in Settings.',
+          duration: 6000,
+        });
+      } else {
+        toast.error('AI Service Error', {
+          description: 'Failed to get response from Puter. Try switching to OpenRouter models in Settings.',
           duration: 5000,
         });
       }
