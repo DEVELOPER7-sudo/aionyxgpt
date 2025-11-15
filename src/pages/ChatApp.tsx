@@ -199,13 +199,17 @@ const ChatApp = () => {
 
     setIsLoading(true);
 
-    // Generate title if this is the first user message
+    // Generate title if this is the first user message (non-blocking)
     if (isFirstMessage && !isImageCommand) {
-      const generatedTitle = await generateChatTitle(content.substring(0, 200), settings.textModel);
-      if (generatedTitle) {
-        storage.updateChat(currentChatId, { title: generatedTitle });
-        setChats(chats.map(c => c.id === currentChatId ? { ...c, title: generatedTitle } : c));
-      }
+      // Run in background without blocking the UI
+      generateChatTitle(content.substring(0, 200), settings.textModel).then((generatedTitle) => {
+        if (generatedTitle) {
+          storage.updateChat(currentChatId, { title: generatedTitle });
+          setChats(prev => prev.map(c => c.id === currentChatId ? { ...c, title: generatedTitle } : c));
+        }
+      }).catch((err) => {
+        console.error('Failed to generate title:', err);
+      });
     }
 
     try {
