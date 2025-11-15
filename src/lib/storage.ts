@@ -182,7 +182,6 @@ export const storage = {
         provider: 'puter',
         customOpenRouterKey: undefined,
         streamingEnabled: true,
-        incognitoMode: false,
       };
     } catch (error) {
       console.error('Error loading settings:', error);
@@ -200,7 +199,6 @@ export const storage = {
         provider: 'puter',
         customOpenRouterKey: undefined,
         streamingEnabled: true,
-        incognitoMode: false,
       };
     }
   },

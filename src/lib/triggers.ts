@@ -35,140 +35,140 @@ const BUILT_IN_TRIGGERS: Trigger[] = [
   {
     "trigger": "reason",
     "category": "Reasoning & Analysis",
-    "system_instruction": "Use tags to separate response and after give the final response <reason></reason>final_response. Use logical, step-by-step reasoning to reach conclusions clearly and coherently.",
+    "system_instruction": "When 'reason' is detected, structure your response as follows:\n\n<reason>\nProvide your step-by-step logical thinking and reasoning process here. Break down the problem, identify key considerations, and work through your analysis.\n</reason>\n\nThen provide your final response in clear, coherent paragraphs.\n\nUse logical, step-by-step reasoning to reach conclusions clearly and coherently.",
     "example": "Use \"reason\" to analyze complex problems systematically.",
     "enabled": true
   },
   {
     "trigger": "analyze",
     "category": "Reasoning & Analysis",
-    "system_instruction": "Use tags to separate response and after give the final response <analyze></analyze>final_response. Break down the topic into parts, identify relationships, and explain underlying logic.",
+    "system_instruction": "When 'analyze' is detected, structure your response as follows:\n\n<analyze>\nBreak down the topic into key components, identify relationships between parts, and explain the underlying logic and connections.\n</analyze>\n\nThen provide your detailed analysis in clear sections.",
     "example": "Use \"analyze\" to examine data or concepts in depth.",
     "enabled": true
   },
   {
     "trigger": "critique",
     "category": "Reasoning & Analysis",
-    "system_instruction": "Use tags to separate response and after give the final response <critique></critique>final_response. Evaluate the strengths, weaknesses, and biases of the subject objectively.",
+    "system_instruction": "When 'critique' is detected, structure your response as follows:\n\n<critique>\nEvaluate the strengths and weaknesses objectively. Consider biases, limitations, and areas for improvement.\n</critique>\n\nThen provide your comprehensive critique.",
     "example": "Use \"critique\" to assess arguments or work critically.",
     "enabled": true
   },
   {
     "trigger": "debate",
     "category": "Reasoning & Analysis",
-    "system_instruction": "Use tags to separate response and after give the final response <debate></debate>final_response. Present arguments for and against the issue before summarizing.",
+    "system_instruction": "When 'debate' is detected, structure your response as follows:\n\n<debate>\nPresent arguments supporting both sides of the issue fairly and thoroughly before drawing conclusions.\n</debate>\n\nThen provide your balanced summary.",
     "example": "Use \"debate\" to explore multiple perspectives.",
     "enabled": true
   },
   {
     "trigger": "compare",
     "category": "Reasoning & Analysis",
-    "system_instruction": "Use tags to separate response and after give the final response <compare></compare>final_response. Identify similarities and differences between the items or ideas.",
+    "system_instruction": "When 'compare' is detected, structure your response as follows:\n\n<compare>\nIdentify and explain similarities and shared characteristics between the items or concepts being compared.\n</compare>\n\nThen provide a structured comparison.",
     "example": "Use \"compare\" to evaluate similar concepts.",
     "enabled": true
   },
   {
     "trigger": "contrast",
     "category": "Reasoning & Analysis",
-    "system_instruction": "Use tags to separate response and after give the final response <contrast></contrast>final_response. Highlight distinctions and divergent features between the listed topics.",
+    "system_instruction": "When 'contrast' is detected, structure your response as follows:\n\n<contrast>\nHighlight and explain the key differences and distinguishing features between the topics.\n</contrast>\n\nThen provide detailed contrasts.",
     "example": "Use \"contrast\" to emphasize differences.",
     "enabled": true
   },
   {
     "trigger": "deduce",
     "category": "Reasoning & Analysis",
-    "system_instruction": "Use tags to separate response and after give the final response <deduce></deduce>final_response. Apply inference and logic to derive valid conclusions.",
+    "system_instruction": "When 'deduce' is detected, structure your response as follows:\n\n<deduce>\nApply logical inference from given premises to derive valid conclusions.\n</deduce>\n\nThen provide your deductive conclusions.",
     "example": "Use \"deduce\" for logical problem-solving.",
     "enabled": true
   },
   {
     "trigger": "evaluate",
     "category": "Reasoning & Analysis",
-    "system_instruction": "Use tags to separate response and after give the final response <evaluate></evaluate>final_response. Judge the quality, relevance, and strength of evidence.",
+    "system_instruction": "When 'evaluate' is detected, structure your response as follows:\n\n<evaluate>\nAssess the quality, relevance, and strength of evidence. Judge merit and value objectively.\n</evaluate>\n\nThen provide your evaluation.",
     "example": "Use \"evaluate\" to assess merit or value.",
     "enabled": true
   },
   {
     "trigger": "justify",
     "category": "Reasoning & Analysis",
-    "system_instruction": "Use tags to separate response and after give the final response <justify></justify>final_response. Defend the claim with rational arguments and factual support.",
+    "system_instruction": "When 'justify' is detected, structure your response as follows:\n\n<justify>\nDefend the claim with rational arguments, logical reasoning, and factual support.\n</justify>\n\nThen provide your justification.",
     "example": "Use \"justify\" to provide supporting reasoning.",
     "enabled": true
   },
   {
     "trigger": "hypothesize",
     "category": "Reasoning & Analysis",
-    "system_instruction": "Use tags to separate response and after give the final response <hypothesize></hypothesize>final_response. Formulate plausible explanations or predictions based on evidence.",
+    "system_instruction": "When 'hypothesize' is detected, structure your response as follows:\n\n<hypothesize>\nFormulate plausible explanations or predictions grounded in available evidence.\n</hypothesize>\n\nThen provide your hypothesis and supporting reasoning.",
     "example": "Use \"hypothesize\" for theory building.",
     "enabled": true
   },
   {
     "trigger": "examine",
     "category": "Reasoning & Analysis",
-    "system_instruction": "Use tags to separate response and after give the final response <examine></examine>final_response. Inspect details thoroughly and comment on implications.",
+    "system_instruction": "When 'examine' is detected, structure your response as follows:\n\n<examine>\nInspect details thoroughly, analyze implications, and comment on significance.\n</examine>\n\nThen provide your detailed examination.",
     "example": "Use \"examine\" for detailed inspection.",
     "enabled": true
   },
   {
     "trigger": "interpret",
     "category": "Reasoning & Analysis",
-    "system_instruction": "Use tags to separate response and after give the final response <interpret></interpret>final_response. Explain meaning or significance in clear, contextualized terms.",
+    "system_instruction": "When 'interpret' is detected, structure your response as follows:\n\n<interpret>\nExplain meaning and significance in clear, contextualized terms with proper context.\n</interpret>\n\nThen provide your interpretation.",
     "example": "Use \"interpret\" to decode complex information.",
     "enabled": true
   },
   {
     "trigger": "verify",
     "category": "Reasoning & Analysis",
-    "system_instruction": "Use tags to separate response and after give the final response <verify></verify>final_response. Check the accuracy and consistency of statements or data.",
+    "system_instruction": "When 'verify' is detected, structure your response as follows:\n\n<verify>\nCheck accuracy and consistency of statements against known facts and reliable sources.\n</verify>\n\nThen provide your verification results.",
     "example": "Use \"verify\" to confirm facts.",
     "enabled": true
   },
   {
     "trigger": "reflect",
     "category": "Reasoning & Analysis",
-    "system_instruction": "Use tags to separate response and after give the final response <reflect></reflect>final_response. Offer thoughtful insights and implications drawn from the topic.",
+    "system_instruction": "When 'reflect' is detected, structure your response as follows:\n\n<reflect>\nOffer thoughtful insights, meta-analysis, and broader implications drawn from the topic.\n</reflect>\n\nThen provide your reflections.",
     "example": "Use \"reflect\" for deeper understanding.",
     "enabled": true
   },
   {
     "trigger": "infer",
     "category": "Reasoning & Analysis",
-    "system_instruction": "Use tags to separate response and after give the final response <infer></infer>final_response. Draw reasonable conclusions based on provided information.",
+    "system_instruction": "When 'infer' is detected, structure your response as follows:\n\n<infer>\nDraw reasonable conclusions based on provided information and logical deduction.\n</infer>\n\nThen provide your inferences.",
     "example": "Use \"infer\" to read between the lines.",
     "enabled": true
   },
   {
     "trigger": "explore",
     "category": "Reasoning & Analysis",
-    "system_instruction": "Use tags to separate response and after give the final response <explore></explore>final_response. Investigate multiple angles or perspectives on the topic.",
+    "system_instruction": "When 'explore' is detected, structure your response as follows:\n\n<explore>\nInvestigate multiple angles, perspectives, and possibilities on the topic comprehensively.\n</explore>\n\nThen provide your exploration.",
     "example": "Use \"explore\" for comprehensive investigation.",
     "enabled": true
   },
   {
     "trigger": "discuss",
     "category": "Reasoning & Analysis",
-    "system_instruction": "Use tags to separate response and after give the final response <discuss></discuss>final_response. Provide balanced discussion covering several viewpoints.",
+    "system_instruction": "When 'discuss' is detected, structure your response as follows:\n\n<discuss>\nProvide balanced discussion covering multiple viewpoints and perspectives fairly.\n</discuss>\n\nThen provide your discussion summary.",
     "example": "Use \"discuss\" for balanced examination.",
     "enabled": true
   },
   {
     "trigger": "validate",
     "category": "Reasoning & Analysis",
-    "system_instruction": "Use tags to separate response and after give the final response <validate></validate>final_response. Confirm truth or reliability of claims using known facts.",
+    "system_instruction": "When 'validate' is detected, structure your response as follows:\n\n<validate>\nConfirm truth and reliability of claims using known facts, evidence, and verified sources.\n</validate>\n\nThen provide your validation assessment.",
     "example": "Use \"validate\" to check credibility.",
     "enabled": true
   },
   {
     "trigger": "assess",
     "category": "Reasoning & Analysis",
-    "system_instruction": "Use tags to separate response and after give the final response <assess></assess>final_response. Determine overall soundness or performance relative to standards.",
+    "system_instruction": "When 'assess' is detected, structure your response as follows:\n\n<assess>\nDetermine overall soundness, quality, and performance relative to established standards and benchmarks.\n</assess>\n\nThen provide your assessment.",
     "example": "Use \"assess\" for comprehensive evaluation.",
     "enabled": true
   },
   {
     "trigger": "troubleshoot",
     "category": "Reasoning & Analysis",
-    "system_instruction": "Use tags to separate response and after give the final response <troubleshoot></troubleshoot>final_response. Identify problems, diagnose causes, and propose corrective steps.",
+    "system_instruction": "When 'troubleshoot' is detected, structure your response as follows:\n\n<troubleshoot>\nIdentify problems, diagnose root causes, and propose specific corrective steps.\n</troubleshoot>\n\nThen provide your troubleshooting recommendations.",
     "example": "Use \"troubleshoot\" to solve issues.",
     "enabled": true
   },

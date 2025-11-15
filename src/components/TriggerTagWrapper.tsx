@@ -44,43 +44,58 @@ const TriggerTagWrapper = ({ tagName, content, category }: TriggerTagWrapperProp
 
   return (
     <Card className={cn(
-      'my-4 p-4 border-2 transition-all duration-200 hover:shadow-lg',
+      'my-4 p-4 border-2 transition-all duration-200 hover:shadow-lg overflow-hidden',
       getCategoryColor(category)
     )}>
-      {/* Header with tag name */}
-      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-current/20">
-        <span className="text-lg">{getCategoryIcon(category)}</span>
-        <Badge 
-          variant="outline" 
-          className={cn('font-mono text-xs', getBadgeColor(category))}
-        >
-          &lt;{tagName}&gt;
-        </Badge>
-        {category && (
-          <span className="text-xs text-muted-foreground ml-auto">
-            {category}
-          </span>
-        )}
+      {/* Header with tag name and category */}
+      <div className="flex items-center justify-between gap-2 mb-4 pb-3 border-b border-current/30">
+        <div className="flex items-center gap-2">
+          <span className="text-xl">{getCategoryIcon(category)}</span>
+          <div>
+            <Badge 
+              variant="outline" 
+              className={cn('font-mono text-xs font-bold', getBadgeColor(category))}
+            >
+              &lt;{tagName}/&gt;
+            </Badge>
+            {category && (
+              <p className="text-xs text-muted-foreground mt-1">
+                {category}
+              </p>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Content */}
-      <div className="prose prose-sm dark:prose-invert max-w-none">
+      {/* Content - Enhanced markdown rendering */}
+      <div className="prose prose-sm dark:prose-invert max-w-none space-y-3">
         <ReactMarkdown 
           remarkPlugins={[remarkGfm, remarkMath]}
           rehypePlugins={[rehypeKatex]}
+          components={{
+            h1: ({node, ...props}) => <h2 className="text-lg font-bold mt-3 mb-2" {...props} />,
+            h2: ({node, ...props}) => <h3 className="text-base font-bold mt-2 mb-1" {...props} />,
+            h3: ({node, ...props}) => <h4 className="text-sm font-semibold mt-2 mb-1" {...props} />,
+            p: ({node, ...props}) => <p className="text-sm leading-relaxed" {...props} />,
+            ul: ({node, ...props}) => <ul className="list-disc list-inside space-y-1 text-sm" {...props} />,
+            ol: ({node, ...props}) => <ol className="list-decimal list-inside space-y-1 text-sm" {...props} />,
+            li: ({node, ...props}) => <li className="text-sm" {...props} />,
+            code: ({node, inline, ...props}) => 
+              inline ? 
+                <code className="bg-black/20 px-1.5 py-0.5 rounded text-xs font-mono" {...props} /> :
+                <code className="block bg-black/30 p-2 rounded text-xs font-mono overflow-x-auto" {...props} />,
+            blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-current/30 pl-3 italic opacity-80" {...props} />,
+          }}
         >
           {content}
         </ReactMarkdown>
       </div>
 
-      {/* Footer with closing tag */}
-      <div className="flex items-center gap-2 mt-3 pt-2 border-t border-current/20 opacity-60">
-        <Badge 
-          variant="outline" 
-          className={cn('font-mono text-xs', getBadgeColor(category))}
-        >
-          &lt;/{tagName}&gt;
-        </Badge>
+      {/* Footer - visual separator */}
+      <div className="flex items-center gap-2 mt-4 pt-3 border-t border-current/20 opacity-70">
+        <span className="text-xs font-mono text-muted-foreground">
+          /{tagName}
+        </span>
       </div>
     </Card>
   );

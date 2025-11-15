@@ -316,36 +316,36 @@ const TriggerGallery = ({
               </div>
             </DialogHeader>
 
-            <div className="flex-1 overflow-hidden flex flex-col px-6 py-4">
+            <div className="flex-1 overflow-hidden flex flex-col px-6 py-4 gap-4">
               {/* Filters */}
-              <div className="flex gap-2 mb-4 flex-shrink-0">
+              <div className="flex gap-2 flex-shrink-0">
                 <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search triggers..."
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                    autoFocus
-                  />
-                </div>
-                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                  <SelectTrigger className="w-[200px]">
-                    <SelectValue placeholder="All Categories" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Categories</SelectItem>
-                    {categories.map(cat => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                   <Input
+                     placeholder="Search triggers..."
+                     value={searchQuery}
+                     onChange={e => setSearchQuery(e.target.value)}
+                     className="pl-10"
+                     autoFocus
+                   />
+                 </div>
+                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                   <SelectTrigger className="w-[200px]">
+                     <SelectValue placeholder="All Categories" />
+                   </SelectTrigger>
+                   <SelectContent>
+                     <SelectItem value="all">All Categories</SelectItem>
+                     {categories.map(cat => (
+                       <SelectItem key={cat} value={cat}>
+                         {cat}
+                       </SelectItem>
+                     ))}
+                   </SelectContent>
+                 </Select>
+               </div>
 
-              {/* Trigger Cards - Scrollable */}
-              <ScrollArea className="flex-1 pr-4">
+               {/* Trigger Cards - Scrollable */}
+               <ScrollArea className="flex-1 border rounded-md pr-4">
                 <div className="space-y-4">
                   {Object.keys(groupedTriggers).length === 0 ? (
                     <div className="text-center py-12 text-muted-foreground">

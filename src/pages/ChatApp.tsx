@@ -73,58 +73,61 @@ const ChatApp = () => {
 
   const currentChat = chats.find(c => c.id === currentChatId) || null;
 
-  const createNewChat = () => {
-      const welcomeMessage: Message = {
-      id: 'welcome',
-      role: 'assistant',
-      content: `# 👋 Welcome to OnyxGPT!
+  const createNewChat = (botName?: string) => {
+       const welcomeMessage: Message = {
+       id: 'welcome',
+       role: 'assistant',
+       content: `# 👋 Welcome to OnyxGPT!
 
-I'm your intelligent companion powered by cutting-edge AI models. Here's what I can do for you:
+  I'm your intelligent companion powered by cutting-edge AI models. Here's what I can do for you:
 
-## 💬 **Chat & Conversations**
-- Answer questions and have natural conversations
-- Help with coding, writing, research, and problem-solving
-- Multiple AI models: GPT-5, Claude Sonnet 4.5, Gemini 2.5 Pro, DeepSeek R1, Grok 3, and more!
+  ## 💬 **Chat & Conversations**
+  - Answer questions and have natural conversations
+  - Help with coding, writing, research, and problem-solving
+  - Multiple AI models: GPT-5, Claude Sonnet 4.5, Gemini 2.5 Pro, DeepSeek R1, Grok 3, and more!
 
-## 🎨 **Image Generation**
-- Create stunning images from text descriptions
-- Just type your prompt and I'll generate images for you
-- Powered by advanced image generation models
+  ## 🎨 **Image Generation**
+  - Create stunning images from text descriptions
+  - Just type your prompt and I'll generate images for you
+  - Powered by advanced image generation models
 
-## 🔍 **Image Analysis**
-- Upload any image and I'll analyze it
-- Get detailed descriptions, identify objects, read text
-- Ask questions about your uploaded images
-- Supports vision-capable models (GPT-5, Gemini, Claude)
+  ## 🔍 **Image Analysis**
+  - Upload any image and I'll analyze it
+  - Get detailed descriptions, identify objects, read text
+  - Ask questions about your uploaded images
+  - Supports vision-capable models (GPT-5, Gemini, Claude)
 
-## 🌐 **Web & Deep Search**
-- Enable web search to get real-time information
-- Deep search for comprehensive research
-- Toggle these features using the buttons below
+  ## 🌐 **Web & Deep Search**
+  - Enable web search to get real-time information
+  - Deep search for comprehensive research
+  - Toggle these features using the buttons below
 
-## ⚙️ **Customize Your Experience**
-- Access Settings to choose your preferred AI model
-- Adjust temperature and creativity settings
-- Switch between reasoning modes (Standard, Reasoning, Research, Creative)
+  ## ⚙️ **Customize Your Experience**
+  - Access Settings to choose your preferred AI model
+  - Adjust temperature and creativity settings
+  - Switch between reasoning modes (Standard, Reasoning, Research, Creative)
 
-**Ready to start?** Just type your message or upload an image below! 🚀`,
-      timestamp: Date.now(),
-    };
+  **Ready to start?** Just type your message or upload an image below! 🚀`,
+       timestamp: Date.now(),
+     };
 
-    const newChat: Chat = {
-      id: Date.now().toString(),
-      title: 'New Chat',
-      messages: [welcomeMessage],
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      model: settings.textModel,
-    };
-    storage.addChat(newChat);
-    setChats([newChat, ...chats]);
-    setCurrentChatId(newChat.id);
-    storage.setCurrentChatId(newChat.id);
-    setMobileMenuOpen(false);
-  };
+     // Generate chat title: if botName provided, use format "botName:new chat"
+     const chatTitle = botName ? `${botName}:new chat` : 'New Chat';
+
+     const newChat: Chat = {
+       id: Date.now().toString(),
+       title: chatTitle,
+       messages: [welcomeMessage],
+       createdAt: Date.now(),
+       updatedAt: Date.now(),
+       model: settings.textModel,
+     };
+     storage.addChat(newChat);
+     setChats([newChat, ...chats]);
+     setCurrentChatId(newChat.id);
+     storage.setCurrentChatId(newChat.id);
+     setMobileMenuOpen(false);
+   };
 
   const handleSendMessage = async (content: string, imageData?: { imageUrl: string; prompt: string }) => {
     if (!currentChatId) return;
@@ -347,9 +350,7 @@ I'm your intelligent companion powered by cutting-edge AI models. Here's what I 
             taggedSegments: taggedSegments.length > 0 ? taggedSegments : undefined,
           }];
           
-          if (!settings.incognitoMode) {
-            storage.updateChat(chatId, { messages: currentMessages });
-          }
+          storage.updateChat(chatId, { messages: currentMessages });
           setChats(prevChats => prevChats.map(c => c.id === chatId ? { ...c, messages: currentMessages } : c));
         }
       } finally {
@@ -957,9 +958,9 @@ I'm your intelligent companion powered by cutting-edge AI models. Here's what I 
           {currentView === 'bots' && (
             <CustomBotsManager 
               onSelectBot={(bot) => {
-                toast.success(`Selected bot: ${bot.name}`, {
-                  description: 'Bot will be applied to new chats',
-                });
+                // Create new chat with bot name format: "botName:new chat"
+                createNewChat(bot.name);
+                toast.success(`Started chat with ${bot.name}`);
                 setCurrentView('chat');
               }}
             />

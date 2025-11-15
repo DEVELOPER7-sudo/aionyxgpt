@@ -35,7 +35,6 @@ export const settingsSchema = z.object({
   provider: z.enum(['puter', 'openrouter']).optional(),
   customOpenRouterKey: z.string().optional(),
   streamingEnabled: z.boolean().optional().default(true),
-  incognitoMode: z.boolean().optional().default(false),
 });
 
 export type AppSettings = z.infer<typeof settingsSchema>;

@@ -59,7 +59,6 @@ export interface AppSettings {
   provider?: 'puter' | 'openrouter';
   customOpenRouterKey?: string;
   streamingEnabled?: boolean; // New: toggle streaming
-  incognitoMode?: boolean; // New: private chat mode
   defaultTriggers?: string[]; // Default triggers to apply to all messages
 }
 

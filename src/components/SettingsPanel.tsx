@@ -456,25 +456,6 @@ const SettingsPanel = ({
             />
           </div>
 
-          {/* Incognito Mode */}
-          <div className="flex items-center justify-between p-4 bg-secondary/30 rounded-lg">
-            <div className="space-y-1">
-              <Label htmlFor="incognito" className="text-base font-medium cursor-pointer flex items-center gap-2">
-                🔒 Incognito Mode
-              </Label>
-              <p className="text-xs text-muted-foreground">
-                Private mode - chats won't be saved to storage or synced to cloud
-              </p>
-            </div>
-            <Switch
-              id="incognito"
-              checked={localSettings.incognitoMode || false}
-              onCheckedChange={(checked) =>
-                setLocalSettings({ ...localSettings, incognitoMode: checked })
-              }
-            />
-          </div>
-
           {/* Debug Logs */}
           <div className="flex items-center justify-between p-4 bg-secondary/30 rounded-lg">
             <div className="space-y-1">
