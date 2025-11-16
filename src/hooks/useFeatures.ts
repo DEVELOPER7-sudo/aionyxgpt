@@ -137,7 +137,7 @@ export const useCollections = (workspaceId?: string) => {
   };
 };
 
-export const useAnalytics = () => {
+export const useAnalytics = (daysBack: number = 30) => {
   const { user } = useAuth();
   const [analytics, setAnalytics] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -149,24 +149,41 @@ export const useAnalytics = () => {
     setError(null);
     try {
       const data = await featuresLib.getAggregatedAnalytics(user.id);
-      setAnalytics(data);
+      // Filter data based on daysBack
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - daysBack);
+      const cutoffString = cutoffDate.toISOString().split('T')[0];
+      
+      const filteredData = {
+        ...data,
+        dailyMessages: data.dailyMessages.filter((d: any) => d.date >= cutoffString),
+        dailyTokens: data.dailyTokens.filter((d: any) => d.date >= cutoffString),
+      };
+      
+      setAnalytics(filteredData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load analytics');
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, daysBack]);
+
+  useEffect(() => {
+    loadAnalytics();
+  }, [loadAnalytics]);
 
   const recordStats = useCallback(
     async (model: string, tokens: number, responseTime?: number) => {
       if (!user) return;
       try {
         await featuresLib.incrementDailyStats(user.id, model, tokens, responseTime);
+        // Reload analytics after recording stats
+        await loadAnalytics();
       } catch (err) {
         console.error('Failed to record stats:', err);
       }
     },
-    [user]
+    [user, loadAnalytics]
   );
 
   return {
