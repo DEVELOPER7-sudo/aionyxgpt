@@ -63,38 +63,146 @@ export const getUserAnalytics = async (
     .gte('analytics_date', startDate.toISOString().split('T')[0])
     .order('analytics_date', { ascending: true });
 
-  // If table doesn't exist, return mock data
+  // If table doesn't exist, generate from chat history
   if (error && error.message.includes('Could not find the table')) {
-    return generateMockAnalytics(daysBack);
+    return await generateMockAnalytics(daysBack);
   }
 
   if (error) throw new Error(`Failed to fetch user analytics: ${error.message}`);
   return data || [];
 };
 
-// Generate mock analytics data for demo/development
-const generateMockAnalytics = (daysBack: number = 30): UserAnalytics[] => {
+// Generate real analytics from chat history
+const generateMockAnalytics = async (daysBack: number = 30): Promise<UserAnalytics[]> => {
+  try {
+    // Fetch chat messages from Supabase
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - daysBack);
+    const startDateStr = startDate.toISOString().split('T')[0];
+
+    const { data: messages, error } = await supabase
+      .from('messages')
+      .select('*')
+      .gte('created_at', startDate.toISOString())
+      .order('created_at', { ascending: true });
+
+    if (error || !messages) {
+      return generateFallbackAnalytics(daysBack);
+    }
+
+    // Group messages by date and model
+    const analyticsByDate: Record<string, {
+      message_count: number;
+      token_count: number;
+      models_used: Record<string, number>;
+      response_times: number[];
+    }> = {};
+
+    for (const message of messages) {
+      const dateStr = message.created_at.split('T')[0];
+      if (!analyticsByDate[dateStr]) {
+        analyticsByDate[dateStr] = {
+          message_count: 0,
+          token_count: 0,
+          models_used: {},
+          response_times: [],
+        };
+      }
+
+      // Count messages (only assistant responses)
+      if (message.role === 'assistant') {
+        analyticsByDate[dateStr].message_count++;
+        
+        // Estimate tokens (roughly 1 token per 4 characters)
+        const tokens = Math.ceil((message.content?.length || 0) / 4);
+        analyticsByDate[dateStr].token_count += tokens;
+
+        // Track model usage
+        const model = message.metadata?.model || 'unknown';
+        analyticsByDate[dateStr].models_used[model] =
+          (analyticsByDate[dateStr].models_used[model] || 0) + 1;
+
+        // Track response time if available
+        if (message.metadata?.response_time) {
+          analyticsByDate[dateStr].response_times.push(message.metadata.response_time);
+        }
+      }
+    }
+
+    // Convert to UserAnalytics format
+    const data: UserAnalytics[] = Object.entries(analyticsByDate).map(
+      ([dateStr, metrics]) => ({
+        id: crypto.randomUUID(),
+        user_id: 'real-user',
+        analytics_date: dateStr,
+        message_count: metrics.message_count,
+        token_count: metrics.token_count,
+        models_used: metrics.models_used,
+        avg_response_time_ms:
+          metrics.response_times.length > 0
+            ? Math.round(
+                metrics.response_times.reduce((a, b) => a + b, 0) /
+                  metrics.response_times.length
+              )
+            : 0,
+        created_at: new Date().toISOString(),
+      })
+    );
+
+    // Fill in missing dates with zeros
+    const allDates: UserAnalytics[] = [];
+    for (let i = daysBack - 1; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+
+      const existing = data.find((d) => d.analytics_date === dateStr);
+      if (existing) {
+        allDates.push(existing);
+      } else {
+        allDates.push({
+          id: crypto.randomUUID(),
+          user_id: 'real-user',
+          analytics_date: dateStr,
+          message_count: 0,
+          token_count: 0,
+          models_used: {},
+          avg_response_time_ms: 0,
+          created_at: new Date().toISOString(),
+        });
+      }
+    }
+
+    return allDates;
+  } catch (err) {
+    // Fall back to dummy data if anything fails
+    return generateFallbackAnalytics(daysBack);
+  }
+};
+
+// Fallback dummy data
+const generateFallbackAnalytics = (daysBack: number = 30): UserAnalytics[] => {
   const data: UserAnalytics[] = [];
   const today = new Date();
-  
+
   for (let i = daysBack - 1; i >= 0; i--) {
     const date = new Date(today);
     date.setDate(date.getDate() - i);
     const dateStr = date.toISOString().split('T')[0];
-    
+
     const messageCount = Math.floor(Math.random() * 50) + 10;
     const tokenCount = Math.floor(Math.random() * 5000) + 1000;
     const avgResponseTime = Math.floor(Math.random() * 500) + 100;
-    
+
     const models = ['gpt-4', 'gpt-3.5-turbo', 'claude-3'];
     const modelsUsed: Record<string, number> = {};
-    models.forEach(model => {
+    models.forEach((model) => {
       modelsUsed[model] = Math.floor(Math.random() * messageCount) || 1;
     });
-    
+
     data.push({
       id: crypto.randomUUID(),
-      user_id: 'mock-user',
+      user_id: 'demo-user',
       analytics_date: dateStr,
       message_count: messageCount,
       token_count: tokenCount,
@@ -103,7 +211,7 @@ const generateMockAnalytics = (daysBack: number = 30): UserAnalytics[] => {
       created_at: new Date().toISOString(),
     });
   }
-  
+
   return data;
 };
 
