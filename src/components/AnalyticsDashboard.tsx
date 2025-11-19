@@ -141,34 +141,19 @@ export const AnalyticsDashboard = () => {
 
             {/* Customization Settings */}
             {showSettings && (
-                <Card>
+                <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
                     <CardHeader>
                         <CardTitle className="text-sm">Dashboard Customization</CardTitle>
+                        <CardDescription>Configure layout and chart display options</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">Layout: {config.cardLayout}</label>
-                                <div className="flex gap-2">
-                                    <Button
-                                        variant={config.cardLayout === 'grid' ? 'default' : 'outline'}
-                                        size="sm"
-                                        onClick={() => updateConfig('cardLayout', 'grid')}
-                                    >
-                                        Grid
-                                    </Button>
-                                    <Button
-                                        variant={config.cardLayout === 'single' ? 'default' : 'outline'}
-                                        size="sm"
-                                        onClick={() => updateConfig('cardLayout', 'single')}
-                                    >
-                                        Single Column
-                                    </Button>
+                    <CardContent className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Chart Height */}
+                            <div className="space-y-3">
+                                <div className="flex justify-between">
+                                    <label className="text-sm font-semibold">Chart Height</label>
+                                    <span className="text-sm font-medium text-blue-600 dark:text-blue-400">{config.chartHeight}px</span>
                                 </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">Chart Height: {config.chartHeight}px</label>
                                 <input
                                     type="range"
                                     min="200"
@@ -176,53 +161,99 @@ export const AnalyticsDashboard = () => {
                                     step="50"
                                     value={config.chartHeight}
                                     onChange={(e) => updateConfig('chartHeight', parseInt(e.target.value))}
-                                    className="w-full"
+                                    className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
                                 />
+                                <div className="flex justify-between text-xs text-muted-foreground">
+                                    <span>200px</span>
+                                    <span>600px</span>
+                                </div>
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="flex items-center gap-2 text-sm font-medium">
+                            {/* Card Layout */}
+                            <div className="space-y-3">
+                                <label className="text-sm font-semibold">Summary Cards Layout</label>
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant={config.cardLayout === 'grid' ? 'default' : 'outline'}
+                                        size="sm"
+                                        className="flex-1"
+                                        onClick={() => updateConfig('cardLayout', 'grid')}
+                                    >
+                                        Grid
+                                    </Button>
+                                    <Button
+                                        variant={config.cardLayout === 'single' ? 'default' : 'outline'}
+                                        size="sm"
+                                        className="flex-1"
+                                        onClick={() => updateConfig('cardLayout', 'single')}
+                                    >
+                                        Single
+                                    </Button>
+                                </div>
+                            </div>
+
+                            {/* Full Width */}
+                            <div className="space-y-3">
+                                <label className="flex items-center gap-3 text-sm font-semibold cursor-pointer">
                                     <input
                                         type="checkbox"
                                         checked={config.fullWidth}
                                         onChange={(e) => updateConfig('fullWidth', e.target.checked)}
+                                        className="w-4 h-4 rounded"
                                     />
-                                    Full Width
+                                    <span>Full Width Layout</span>
+                                    {config.fullWidth && <span className="text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-0.5 rounded">Active</span>}
                                 </label>
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="flex items-center gap-2 text-sm font-medium">
+                            {/* Compact View */}
+                            <div className="space-y-3">
+                                <label className="flex items-center gap-3 text-sm font-semibold cursor-pointer">
                                     <input
                                         type="checkbox"
                                         checked={config.compactView}
                                         onChange={(e) => updateConfig('compactView', e.target.checked)}
+                                        className="w-4 h-4 rounded"
                                     />
-                                    Compact View
+                                    <span>Compact View</span>
+                                    {config.compactView && <span className="text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-0.5 rounded">Active</span>}
                                 </label>
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="flex items-center gap-2 text-sm font-medium">
+                            {/* Grid Lines */}
+                            <div className="space-y-3">
+                                <label className="flex items-center gap-3 text-sm font-semibold cursor-pointer">
                                     <input
                                         type="checkbox"
                                         checked={config.showGridLines}
                                         onChange={(e) => updateConfig('showGridLines', e.target.checked)}
+                                        className="w-4 h-4 rounded"
                                     />
-                                    Show Grid Lines
+                                    <span>Show Grid Lines</span>
+                                    {config.showGridLines && <span className="text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-0.5 rounded">Active</span>}
                                 </label>
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="flex items-center gap-2 text-sm font-medium">
+                            {/* Animations */}
+                            <div className="space-y-3">
+                                <label className="flex items-center gap-3 text-sm font-semibold cursor-pointer">
                                     <input
                                         type="checkbox"
                                         checked={config.hideAnimations}
                                         onChange={(e) => updateConfig('hideAnimations', e.target.checked)}
+                                        className="w-4 h-4 rounded"
                                     />
-                                    Reduce Animations
+                                    <span>Reduce Animations</span>
+                                    {config.hideAnimations && <span className="text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-0.5 rounded">Active</span>}
                                 </label>
                             </div>
+                        </div>
+
+                        {/* Settings Summary */}
+                        <div className="mt-6 pt-4 border-t border-blue-200 dark:border-blue-800">
+                            <p className="text-xs text-muted-foreground">
+                                <strong>Current Settings:</strong> {config.fullWidth ? 'Full width' : 'Max width'} • {config.cardLayout} layout • {config.chartHeight}px charts {config.showGridLines ? '+ gridlines' : ''} {config.hideAnimations ? '• No animations' : '• With animations'}
+                            </p>
                         </div>
                     </CardContent>
                 </Card>
@@ -328,7 +359,7 @@ export const AnalyticsDashboard = () => {
                             ) : puterUsage ? (
                                 <div className="space-y-6">
                                     {/* Usage Summary Cards */}
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div className={`${config.cardLayout === 'grid' ? 'grid grid-cols-1 md:grid-cols-3' : 'flex flex-col'} gap-4`}>
                                         <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border">
                                             <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Used</p>
                                             <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 mt-2">
@@ -373,8 +404,9 @@ export const AnalyticsDashboard = () => {
                                         {Object.keys(puterUsage.models).length > 0 ? (
                                             <>
                                                 {/* Bar Chart */}
-                                                <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border">
-                                                    <ResponsiveContainer width="100%" height={400}>
+                                                <div className={`bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border ${config.compactView ? 'md:col-span-2' : ''}`}>
+                                                    <h4 className="text-sm font-semibold mb-4">Cost by Model</h4>
+                                                    <ResponsiveContainer width="100%" height={config.chartHeight}>
                                                         <BarChart data={getTopModels(puterUsage.models, 10)}>
                                                             {config.showGridLines && <CartesianGrid strokeDasharray="3 3" />}
                                                             <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
@@ -386,26 +418,27 @@ export const AnalyticsDashboard = () => {
                                                 </div>
 
                                                 {/* Models Table */}
-                                                <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border overflow-x-auto">
-                                                    <table className="w-full text-sm">
+                                                <div className={`bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border overflow-x-auto ${!config.compactView ? 'md:col-span-1' : ''}`}>
+                                                    <h4 className="text-sm font-semibold mb-4">All Models</h4>
+                                                    <table className={`w-full text-sm`}>
                                                         <thead>
                                                             <tr className="border-b">
                                                                 <th className="text-left py-2 px-2">Model</th>
-                                                                <th className="text-center py-2 px-2">Calls</th>
+                                                                {!config.compactView && <th className="text-center py-2 px-2">Calls</th>}
                                                                 <th className="text-right py-2 px-2">Cost ($M)</th>
-                                                                <th className="text-right py-2 px-2">Units</th>
+                                                                {!config.compactView && <th className="text-right py-2 px-2">Units</th>}
                                                             </tr>
                                                         </thead>
                                                         <tbody>
                                                             {Object.entries(puterUsage.models)
                                                                 .sort((a, b) => (b[1].cost || 0) - (a[1].cost || 0))
-                                                                .slice(0, 15)
+                                                                .slice(0, config.compactView ? 8 : 15)
                                                                 .map(([model, data], idx) => (
-                                                                    <tr key={model} className="border-b hover:bg-gray-100 dark:hover:bg-gray-800">
-                                                                        <td className="py-2 px-2 font-medium">{formatModelName(model)}</td>
-                                                                        <td className="text-center py-2 px-2">{data.count || 0}</td>
-                                                                        <td className="text-right py-2 px-2">${((data.cost || 0) / 1000000).toFixed(2)}</td>
-                                                                        <td className="text-right py-2 px-2">{data.units || 0}</td>
+                                                                    <tr key={model} className="border-b hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                                                                        <td className="py-2 px-2 font-medium truncate">{formatModelName(model)}</td>
+                                                                        {!config.compactView && <td className="text-center py-2 px-2">{data.count || 0}</td>}
+                                                                        <td className="text-right py-2 px-2 font-semibold text-blue-600 dark:text-blue-400">${((data.cost || 0) / 1000000).toFixed(2)}</td>
+                                                                        {!config.compactView && <td className="text-right py-2 px-2">{data.units || 0}</td>}
                                                                     </tr>
                                                                 ))}
                                                         </tbody>
