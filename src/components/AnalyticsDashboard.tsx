@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { useAnalytics } from '@/hooks/useFeatures';
-import ReactMarkdown from 'react-markdown';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
@@ -310,129 +309,10 @@ export const AnalyticsDashboard = () => {
                 </CardContent>
             </Card>
 
-            <Tabs defaultValue="messages" className="w-full">
+            <Tabs defaultValue="api-usage" className="w-full">
                 <TabsList>
-                    <TabsTrigger value="messages">Messages Trend</TabsTrigger>
-                    <TabsTrigger value="tokens">Tokens Trend</TabsTrigger>
-                    <TabsTrigger value="models">Model Breakdown</TabsTrigger>
                     <TabsTrigger value="api-usage">API Usage</TabsTrigger>
                 </TabsList>
-
-                <TabsContent value="messages" className="space-y-4">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Messages Over Time</CardTitle>
-                            <CardDescription>Daily message count for the last {daysBack} days</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            {analytics.dailyMessages.length > 0 ? (
-                                <ResponsiveContainer width="100%" height={config.chartHeight}>
-                                    <LineChart data={analytics.dailyMessages}>
-                                        {config.showGridLines && <CartesianGrid strokeDasharray="3 3" />}
-                                        <XAxis dataKey="date" />
-                                        <YAxis />
-                                        <Tooltip />
-                                        <Line
-                                            type="monotone"
-                                            dataKey="count"
-                                            stroke="#3b82f6"
-                                            dot={false}
-                                            isAnimationActive={!config.hideAnimations}
-                                        />
-                                    </LineChart>
-                                </ResponsiveContainer>
-                            ) : (
-                                <div className="flex items-center justify-center h-80">
-                                    <p className="text-muted-foreground">No message data available for this period</p>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-
-                <TabsContent value="tokens" className="space-y-4">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Tokens Over Time</CardTitle>
-                            <CardDescription>Daily token consumption</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            {analytics.dailyTokens.length > 0 ? (
-                                <ResponsiveContainer width="100%" height={config.chartHeight}>
-                                    <BarChart data={analytics.dailyTokens}>
-                                        {config.showGridLines && <CartesianGrid strokeDasharray="3 3" />}
-                                        <XAxis dataKey="date" />
-                                        <YAxis />
-                                        <Tooltip />
-                                        <Bar
-                                            dataKey="count"
-                                            fill="#10b981"
-                                            isAnimationActive={!config.hideAnimations}
-                                        />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            ) : (
-                                <div className="flex items-center justify-center h-80">
-                                    <p className="text-muted-foreground">No token data available for this period</p>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-
-                <TabsContent value="models" className="space-y-4">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Model Usage Distribution</CardTitle>
-                            <CardDescription>Breakdown by AI model used</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            {analytics.modelBreakdown.length > 0 ? (
-                                <div className={`${config.compactView ? 'flex flex-col' : 'grid grid-cols-1 md:grid-cols-2'} gap-6`}>
-                                    <ResponsiveContainer width="100%" height={config.chartHeight}>
-                                        <PieChart>
-                                            <Pie
-                                                data={analytics.modelBreakdown}
-                                                cx="50%"
-                                                cy="50%"
-                                                labelLine={false}
-                                                label={({ model, percentage }: any) => `${model} (${percentage.toFixed(1)}%)`}
-                                                outerRadius={config.compactView ? 60 : 80}
-                                                fill="#8884d8"
-                                                dataKey="count"
-                                                isAnimationActive={!config.hideAnimations}
-                                            >
-                                                {analytics.modelBreakdown.map((entry: any, index: number) => (
-                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                                ))}
-                                            </Pie>
-                                            <Tooltip />
-                                        </PieChart>
-                                    </ResponsiveContainer>
-
-                                    <div className="flex flex-col justify-center">
-                                        {analytics.modelBreakdown.map((item: any, index: number) => (
-                                            <div key={item.model} className="flex items-center gap-2 mb-2">
-                                                <div
-                                                    className="w-3 h-3 rounded-full"
-                                                    style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                                                />
-                                                <span className="text-sm font-medium">{item.model}</span>
-                                                <span className="text-sm text-muted-foreground ml-auto">
-                                                    {item.count} uses ({item.percentage.toFixed(1)}%)
-                                                </span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="flex items-center justify-center h-80">
-                                    <p className="text-muted-foreground">No model usage data available for this period</p>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                </TabsContent>
 
                 <TabsContent value="api-usage" className="space-y-4">
                     <Card>
@@ -458,7 +338,7 @@ export const AnalyticsDashboard = () => {
                                         <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg border">
                                             <p className="text-sm font-medium text-green-600 dark:text-green-400">Remaining</p>
                                             <p className="text-2xl font-bold text-green-900 dark:text-green-100 mt-2">
-                                                ${(puterUsage.remaining / 1000000).toFixed(2)}M
+                                                ${((puterUsage.monthUsageAllowance - puterUsage.total) / 1000000).toFixed(2)}M
                                             </p>
                                         </div>
                                         <div className="bg-purple-50 dark:bg-purple-950 p-4 rounded-lg border">
@@ -487,14 +367,56 @@ export const AnalyticsDashboard = () => {
                                         </div>
                                     </div>
 
-                                    {/* Models Markdown Summary */}
-                                    <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border">
-                                        <h3 className="font-semibold mb-3">Model Usage</h3>
-                                        <div className="prose prose-sm dark:prose-invert max-w-none">
-                                            <ReactMarkdown>
-                                                {generateModelMarkdown(puterUsage.models)}
-                                            </ReactMarkdown>
-                                        </div>
+                                    {/* Models Chart and List */}
+                                    <div className="space-y-4">
+                                        <h3 className="font-semibold text-lg">Model Usage Breakdown</h3>
+                                        {Object.keys(puterUsage.models).length > 0 ? (
+                                            <>
+                                                {/* Bar Chart */}
+                                                <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border">
+                                                    <ResponsiveContainer width="100%" height={400}>
+                                                        <BarChart data={getTopModels(puterUsage.models, 10)}>
+                                                            {config.showGridLines && <CartesianGrid strokeDasharray="3 3" />}
+                                                            <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
+                                                            <YAxis />
+                                                            <Tooltip />
+                                                            <Bar dataKey="cost" fill="#3b82f6" isAnimationActive={!config.hideAnimations} />
+                                                        </BarChart>
+                                                    </ResponsiveContainer>
+                                                </div>
+
+                                                {/* Models Table */}
+                                                <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border overflow-x-auto">
+                                                    <table className="w-full text-sm">
+                                                        <thead>
+                                                            <tr className="border-b">
+                                                                <th className="text-left py-2 px-2">Model</th>
+                                                                <th className="text-center py-2 px-2">Calls</th>
+                                                                <th className="text-right py-2 px-2">Cost ($M)</th>
+                                                                <th className="text-right py-2 px-2">Units</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {Object.entries(puterUsage.models)
+                                                                .sort((a, b) => (b[1].cost || 0) - (a[1].cost || 0))
+                                                                .slice(0, 15)
+                                                                .map(([model, data], idx) => (
+                                                                    <tr key={model} className="border-b hover:bg-gray-100 dark:hover:bg-gray-800">
+                                                                        <td className="py-2 px-2 font-medium">{formatModelName(model)}</td>
+                                                                        <td className="text-center py-2 px-2">{data.count || 0}</td>
+                                                                        <td className="text-right py-2 px-2">${((data.cost || 0) / 1000000).toFixed(2)}</td>
+                                                                        <td className="text-right py-2 px-2">{data.units || 0}</td>
+                                                                    </tr>
+                                                                ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="text-center py-8 text-muted-foreground">
+                                                No model usage data available
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Last Updated */}
@@ -515,25 +437,22 @@ export const AnalyticsDashboard = () => {
     );
 };
 
-function generateModelMarkdown(models: Record<string, any>): string {
-    if (!models || Object.keys(models).length === 0) {
-        return '## No model data available';
-    }
+function formatModelName(model: string): string {
+    return model
+        .replace(/^openrouter:/, '')
+        .replace(/:.*$/, '')
+        .replace(/_/g, ' ')
+        .split('/')
+        .pop() || model;
+}
 
-    const sortedModels = Object.entries(models)
-        .sort((a, b) => (b[1].cost || 0) - (a[1].cost || 0))
-        .slice(0, 15);
-
-    let markdown = '| Model | Calls | Cost | Units |\n';
-    markdown += '|-------|-------|------|-------|\n';
-
-    for (const [model, data] of sortedModels) {
-        const modelName = model.replace(/^openrouter:/, '').replace(/:.*$/, '');
-        const calls = data.count || 0;
-        const cost = ((data.cost || 0) / 1000000).toFixed(2);
-        const units = data.units || 0;
-        markdown += `| ${modelName} | ${calls} | $${cost}M | ${units} |\n`;
-    }
-
-    return markdown;
+function getTopModels(models: Record<string, any>, limit: number = 10) {
+    return Object.entries(models)
+        .map(([model, data]) => ({
+            name: formatModelName(model),
+            cost: (data.cost || 0) / 1000000,
+            count: data.count || 0,
+        }))
+        .sort((a, b) => b.cost - a.cost)
+        .slice(0, limit);
 }
