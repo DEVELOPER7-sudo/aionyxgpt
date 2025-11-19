@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { useAnalytics } from '@/hooks/useFeatures';
+import ReactMarkdown from 'react-markdown';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
@@ -14,6 +15,15 @@ interface DashboardConfig {
     hideAnimations: boolean;
     cardLayout: 'grid' | 'single';
     chartHeight: number;
+}
+
+interface PuterUsageData {
+    total: number;
+    remaining: number;
+    monthUsageAllowance: number;
+    models: Record<string, { count: number; cost: number; units: number }>;
+    appTotals: any;
+    lastUpdated: Date;
 }
 
 export const AnalyticsDashboard = () => {
@@ -27,7 +37,39 @@ export const AnalyticsDashboard = () => {
         chartHeight: 300,
     });
     const [showSettings, setShowSettings] = useState(false);
+    const [puterUsage, setPuterUsage] = useState<PuterUsageData | null>(null);
+    const [puterLoading, setPuterLoading] = useState(false);
     const { analytics, loadAnalytics, loading, error } = useAnalytics(daysBack);
+
+    // Fetch Puter API usage every 10 seconds
+    useEffect(() => {
+        const fetchPuterUsage = async () => {
+            try {
+                setPuterLoading(true);
+                // @ts-ignore - puter is a global object
+                if (typeof puter !== 'undefined' && puter.auth) {
+                    // @ts-ignore
+                    const usage = await puter.auth.getMonthlyUsage();
+                    setPuterUsage({
+                        total: usage.total || 0,
+                        remaining: usage.allowanceInfo?.remaining || 0,
+                        monthUsageAllowance: usage.allowanceInfo?.monthUsageAllowance || 0,
+                        models: usage.models || {},
+                        appTotals: usage.appTotals || {},
+                        lastUpdated: new Date(),
+                    });
+                }
+            } catch (err) {
+                console.error('Error fetching Puter usage:', err);
+            } finally {
+                setPuterLoading(false);
+            }
+        };
+
+        fetchPuterUsage();
+        const interval = setInterval(fetchPuterUsage, 10000); // Update every 10 seconds
+        return () => clearInterval(interval);
+    }, []);
 
     const handleDaysChange = (days: number) => {
         setDaysBack(days);
@@ -256,6 +298,7 @@ export const AnalyticsDashboard = () => {
                     <TabsTrigger value="messages">Messages Trend</TabsTrigger>
                     <TabsTrigger value="tokens">Tokens Trend</TabsTrigger>
                     <TabsTrigger value="models">Model Breakdown</TabsTrigger>
+                    <TabsTrigger value="api-usage">API Usage</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="messages" className="space-y-4">
@@ -373,7 +416,107 @@ export const AnalyticsDashboard = () => {
                         </CardContent>
                     </Card>
                 </TabsContent>
+
+                <TabsContent value="api-usage" className="space-y-4">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>API Token Usage & Models</CardTitle>
+                            <CardDescription>Real-time usage statistics (updates every 10 seconds)</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {puterLoading ? (
+                                <div className="flex items-center justify-center h-80">
+                                    <p className="text-muted-foreground">Loading API usage data...</p>
+                                </div>
+                            ) : puterUsage ? (
+                                <div className="space-y-6">
+                                    {/* Usage Summary Cards */}
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border">
+                                            <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Used</p>
+                                            <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 mt-2">
+                                                ${(puterUsage.total / 1000000).toFixed(2)}M
+                                            </p>
+                                        </div>
+                                        <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg border">
+                                            <p className="text-sm font-medium text-green-600 dark:text-green-400">Remaining</p>
+                                            <p className="text-2xl font-bold text-green-900 dark:text-green-100 mt-2">
+                                                ${(puterUsage.remaining / 1000000).toFixed(2)}M
+                                            </p>
+                                        </div>
+                                        <div className="bg-purple-50 dark:bg-purple-950 p-4 rounded-lg border">
+                                            <p className="text-sm font-medium text-purple-600 dark:text-purple-400">Monthly Allowance</p>
+                                            <p className="text-2xl font-bold text-purple-900 dark:text-purple-100 mt-2">
+                                                ${(puterUsage.monthUsageAllowance / 1000000).toFixed(2)}M
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Usage Progress */}
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-sm">
+                                            <span className="font-medium">Usage Progress</span>
+                                            <span className="text-muted-foreground">
+                                                {((puterUsage.total / puterUsage.monthUsageAllowance) * 100).toFixed(1)}%
+                                            </span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                            <div
+                                                className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all"
+                                                style={{
+                                                    width: `${Math.min((puterUsage.total / puterUsage.monthUsageAllowance) * 100, 100)}%`,
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Models Markdown Summary */}
+                                    <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border">
+                                        <h3 className="font-semibold mb-3">Model Usage</h3>
+                                        <div className="prose prose-sm dark:prose-invert max-w-none">
+                                            <ReactMarkdown>
+                                                {generateModelMarkdown(puterUsage.models)}
+                                            </ReactMarkdown>
+                                        </div>
+                                    </div>
+
+                                    {/* Last Updated */}
+                                    <div className="text-xs text-muted-foreground text-right">
+                                        Last updated: {puterUsage.lastUpdated.toLocaleTimeString()}
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-center h-80">
+                                    <p className="text-muted-foreground">No API usage data available. Puter API may not be loaded.</p>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                </TabsContent>
             </Tabs>
         </div>
     );
 };
+
+function generateModelMarkdown(models: Record<string, any>): string {
+    if (!models || Object.keys(models).length === 0) {
+        return '## No model data available';
+    }
+
+    const sortedModels = Object.entries(models)
+        .sort((a, b) => (b[1].cost || 0) - (a[1].cost || 0))
+        .slice(0, 15);
+
+    let markdown = '| Model | Calls | Cost | Units |\n';
+    markdown += '|-------|-------|------|-------|\n';
+
+    for (const [model, data] of sortedModels) {
+        const modelName = model.replace(/^openrouter:/, '').replace(/:.*$/, '');
+        const calls = data.count || 0;
+        const cost = ((data.cost || 0) / 1000000).toFixed(2);
+        const units = data.units || 0;
+        markdown += `| ${modelName} | ${calls} | $${cost}M | ${units} |\n`;
+    }
+
+    return markdown;
+}
