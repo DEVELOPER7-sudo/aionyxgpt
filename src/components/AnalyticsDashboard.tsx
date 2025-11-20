@@ -53,10 +53,15 @@ export const AnalyticsDashboard = () => {
                     const usage = await puter.auth.getMonthlyUsage();
 
                     if (usage) {
+                        console.log('Puter API Response:', usage);
+                        const total = usage.total || 0;
+                        const allowance = usage.allowanceInfo?.monthUsageAllowance || usage.monthUsageAllowance || 0;
+                        const remaining = usage.allowanceInfo?.remaining || (allowance - total) || 0;
+
                         setPuterUsage({
-                            total: usage.total || 0,
-                            remaining: usage.allowanceInfo?.remaining || 0,
-                            monthUsageAllowance: usage.allowanceInfo?.monthUsageAllowance || 0,
+                            total: total,
+                            remaining: remaining,
+                            monthUsageAllowance: allowance,
                             models: usage.models || {},
                             appTotals: usage.appTotals || {},
                             lastUpdated: new Date(),
@@ -369,7 +374,7 @@ export const AnalyticsDashboard = () => {
                                         <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg border">
                                             <p className="text-sm font-medium text-green-600 dark:text-green-400">Remaining</p>
                                             <p className="text-2xl font-bold text-green-900 dark:text-green-100 mt-2">
-                                                ${((puterUsage.monthUsageAllowance - puterUsage.total) / 1000000).toFixed(2)}M
+                                                ${(puterUsage.remaining / 1000000).toFixed(2)}M
                                             </p>
                                         </div>
                                         <div className="bg-purple-50 dark:bg-purple-950 p-4 rounded-lg border">
