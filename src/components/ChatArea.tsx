@@ -21,6 +21,7 @@ import LoadingDots from '@/components/LoadingDots';
 import WelcomeMessage from '@/components/WelcomeMessage';
 import TriggerBar from '@/components/TriggerBar';
 import TriggerTagWrapper from '@/components/TriggerTagWrapper';
+import CollapsibleTriggerTag from '@/components/CollapsibleTriggerTag';
 import { BookmarkButton } from '@/components/BookmarkButton';
 import {
   Send,
@@ -368,42 +369,44 @@ const ChatArea = ({
                           </Card>
                         )}
                         
-                        {/* Wrapped trigger tags */}
-                        {message.taggedSegments && message.taggedSegments.length > 0 ? (
-                          <>
-                            {message.taggedSegments.map((segment, idx) => {
-                              const trigger = message.triggers?.find(t => t.tag === segment.tag);
-                              return (
-                                <TriggerTagWrapper
-                                  key={`${message.id}-${segment.tag}-${idx}`}
-                                  tagName={segment.tag}
-                                  content={segment.content}
-                                  category={trigger?.category}
-                                />
-                              );
-                            })}
-                            {/* Show any remaining content after all tags */}
-                            {main && main.trim() && (
-                              <div className="prose prose-sm dark:prose-invert max-w-none min-w-0 overflow-hidden mt-4">
-                                <ReactMarkdown 
-                                  remarkPlugins={[remarkGfm, remarkMath]}
-                                  rehypePlugins={[rehypeKatex]}
-                                >
-                                  {main}
-                                </ReactMarkdown>
-                              </div>
-                            )}
-                          </>
-                        ) : (
-                          <div className="prose prose-sm dark:prose-invert max-w-none min-w-0 overflow-hidden">
-                            <ReactMarkdown 
-                              remarkPlugins={[remarkGfm, remarkMath]}
-                              rehypePlugins={[rehypeKatex]}
-                            >
-                              {main || message.content || ''}
-                            </ReactMarkdown>
-                          </div>
-                        )}
+                        {/* Wrapped trigger tags - Using Collapsible Component */}
+                         {message.taggedSegments && message.taggedSegments.length > 0 ? (
+                           <>
+                             {message.taggedSegments.map((segment, idx) => {
+                               const trigger = message.triggers?.find(t => t.tag === segment.tag);
+                               return (
+                                 <CollapsibleTriggerTag
+                                   key={`${message.id}-${segment.tag}-${idx}`}
+                                   tagName={segment.tag}
+                                   content={segment.content}
+                                   category={trigger?.category}
+                                   autoExpand={true}
+                                   onCopy={() => {}}
+                                 />
+                               );
+                             })}
+                             {/* Show any remaining content after all tags */}
+                             {main && main.trim() && (
+                               <div className="prose prose-sm dark:prose-invert max-w-none min-w-0 overflow-hidden mt-4">
+                                 <ReactMarkdown 
+                                   remarkPlugins={[remarkGfm, remarkMath]}
+                                   rehypePlugins={[rehypeKatex]}
+                                 >
+                                   {main}
+                                 </ReactMarkdown>
+                               </div>
+                             )}
+                           </>
+                         ) : (
+                           <div className="prose prose-sm dark:prose-invert max-w-none min-w-0 overflow-hidden">
+                             <ReactMarkdown 
+                               remarkPlugins={[remarkGfm, remarkMath]}
+                               rehypePlugins={[rehypeKatex]}
+                             >
+                               {main || message.content || ''}
+                             </ReactMarkdown>
+                           </div>
+                         )}
                       </div>
                     );
                   })()

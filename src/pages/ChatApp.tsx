@@ -19,6 +19,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { detectTriggersAndBuildPrompt, parseTriggeredResponse, getAllTriggers } from '@/lib/triggers';
 import { chatMessageSchema } from '@/lib/validation';
+import { generateEnhancedSystemPrompt, TRIGGER_TAG_ENFORCEMENT_PREFIX } from '@/lib/enhanced-system-prompts';
 
 // Lazy load heavy components
 const SettingsPanel = lazy(() => import('@/components/SettingsPanel'));
@@ -341,19 +342,37 @@ const ChatApp = () => {
       triggerPrompt += '\n\n' + extraInstructions.join('\n\n');
     }
     
-    // Build final system prompt with triggers (backend only - not visible to user)
-    let finalSystemPrompt = triggerPrompt;
+    // Build final system prompt with enhanced trigger tag enforcement
+    // This forces the AI to use XML-style trigger tags in responses
+    let baseSystemPrompt = triggerPrompt;
+    
+    // Add enhanced system prompt with trigger tag enforcement
+    let finalSystemPrompt = `${TRIGGER_TAG_ENFORCEMENT_PREFIX}\n\n${baseSystemPrompt}`;
+    
+    // Add task mode specific instructions
+    if (taskMode !== 'standard') {
+      finalSystemPrompt += `\n\nTask Mode: ${taskMode.charAt(0).toUpperCase() + taskMode.slice(1)}`;
+      if (taskMode === 'reasoning') {
+        finalSystemPrompt += '\nEmphasis: Use <reason> and <step_by_step> tags extensively to show your thinking.';
+      } else if (taskMode === 'research') {
+        finalSystemPrompt += '\nEmphasis: Use <deep_research>, <fact_check>, and <research> tags for thorough investigation.';
+      } else if (taskMode === 'creative') {
+        finalSystemPrompt += '\nEmphasis: Use <brainstorm> and <evaluate> tags for creative exploration.';
+      }
+    }
+    
     if (webSearchEnabled) {
-      finalSystemPrompt += '\n\nNote: You may use web knowledge if your model supports it.';
+      finalSystemPrompt += '\n\nNote: You may use web knowledge if your model supports it. Wrap web search findings in <research> tags.';
     }
     if (deepSearchEnabled) {
-      finalSystemPrompt += '\n\nNote: Prefer deeper step-by-step reasoning when needed.';
+      finalSystemPrompt += '\n\nNote: Prefer deeper step-by-step reasoning when needed. Use <step_by_step> tags for detailed breakdowns.';
     }
     
     // Log detected triggers in dev mode
     if (import.meta.env.DEV && settings.enableDebugLogs && detectedTriggers.length > 0) {
       console.log('[DEBUG] Detected triggers:', detectedTriggers);
-      console.log('[DEBUG] System prompt:', finalSystemPrompt);
+      console.log('[DEBUG] Task Mode:', taskMode);
+      console.log('[DEBUG] System prompt (first 500 chars):', finalSystemPrompt.substring(0, 500));
     }
     
     // Store triggers in user message for later reference
