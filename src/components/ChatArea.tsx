@@ -22,21 +22,22 @@ import WelcomeMessage from '@/components/WelcomeMessage';
 import CollapsibleTriggerTag from '@/components/CollapsibleTriggerTag';
 import { BookmarkButton } from '@/components/BookmarkButton';
 import {
-  Send,
-  Mic,
-  Image as ImageIcon,
-  Copy,
-  ThumbsUp,
-  ThumbsDown,
-  RotateCcw,
-  Loader2,
-  Globe,
-  Search as SearchIcon,
-  Square,
-  X,
-  Paperclip,
-  Edit2,
-} from 'lucide-react';
+   Send,
+   Mic,
+   Image as ImageIcon,
+   Copy,
+   ThumbsUp,
+   ThumbsDown,
+   RotateCcw,
+   Loader2,
+   Globe,
+   Search as SearchIcon,
+   Square,
+   X,
+   Paperclip,
+   Edit2,
+   ChevronDown,
+ } from 'lucide-react';
 import { Chat, Message } from '@/types/chat';
 import { cn } from '@/lib/utils';
 
@@ -78,9 +79,10 @@ const ChatArea = ({
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [expandedThinking, setExpandedThinking] = useState<Set<string>>(new Set());
   const [selectedTriggers, setSelectedTriggers] = useState<string[]>([]);
-  const [messageFeedback, setMessageFeedback] = useState<Record<string, 'up' | 'down' | null>>({});
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
+   const [messageFeedback, setMessageFeedback] = useState<Record<string, 'up' | 'down' | null>>({});
+   const [showScrollBottom, setShowScrollBottom] = useState(false);
+   const scrollRef = useRef<HTMLDivElement>(null);
+   const bottomRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const userHasScrolled = useRef(false);
   const lastMessageCount = useRef(0);
@@ -130,10 +132,28 @@ const ChatArea = ({
       const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
       const isAtBottom = scrollHeight - scrollTop - clientHeight < 100;
       userHasScrolled.current = !isAtBottom;
+      setShowScrollBottom(!isAtBottom);
     };
 
     scrollContainer.addEventListener('scroll', handleScroll);
     return () => scrollContainer.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Allow free scrolling - disable auto-scroll when user scrolls up
+  useEffect(() => {
+    const scrollContainer = scrollRef.current;
+    if (!scrollContainer) return;
+
+    const handleWheel = () => {
+      const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+      const isAtBottom = scrollHeight - scrollTop - clientHeight < 50;
+      if (!isAtBottom) {
+        userHasScrolled.current = true;
+      }
+    };
+
+    scrollContainer.addEventListener('wheel', handleWheel, { passive: true });
+    return () => scrollContainer.removeEventListener('wheel', handleWheel);
   }, []);
 
   // Reset scroll lock when chat changes or new message from user
@@ -272,9 +292,9 @@ const ChatArea = ({
   }
 
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden">
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-2 md:p-4" ref={scrollRef}>
+     <div className="flex flex-col h-full w-full overflow-hidden">
+       {/* Messages */}
+       <div className="flex-1 overflow-y-auto p-2 md:p-4 relative" ref={scrollRef}>
         {chat.messages.length === 0 ? (
           <WelcomeMessage />
         ) : (
@@ -500,31 +520,43 @@ const ChatArea = ({
               </div>
             </div>
           ))}
-          {/* Show loading spinner only when there isn't a streaming assistant message */}
-          {(() => {
-            const last = chat.messages[chat.messages.length - 1];
-            const showSpinner = isLoading && !(last && last.role === 'assistant');
-            return showSpinner ? (
-              <div className="flex gap-3 animate-bounce-in items-start">
-                <div className="bg-card border border-border rounded-2xl p-4 shadow-lg flex items-center gap-3 animate-pulse-glow">
-                  <LoadingDots />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={onStopGeneration}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Square className="w-4 h-4 mr-1" />
-                    Stop
-                  </Button>
-                </div>
+          {/* Show loading spinner with stop button visible */}
+          {isLoading && (
+            <div className="flex gap-3 animate-bounce-in items-start">
+              <div className="bg-card border border-border rounded-2xl p-4 shadow-lg flex items-center gap-3 animate-pulse-glow">
+                <LoadingDots />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onStopGeneration}
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10 transition-all duration-200 font-semibold"
+                >
+                  <Square className="w-4 h-4 mr-1" />
+                  Stop
+                </Button>
               </div>
-            ) : null;
-          })()}
+            </div>
+          )}
            </div>
-         )}
-         <div ref={bottomRef} />
-       </div>
+          )}
+          <div ref={bottomRef} />
+          
+          {/* Scroll to Bottom Button */}
+          {showScrollBottom && (
+           <div className="fixed bottom-24 right-8 animate-bounce-in">
+             <Button
+               onClick={() => {
+                 userHasScrolled.current = false;
+                 scrollToBottom();
+               }}
+               className="rounded-full h-12 w-12 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-110 bg-primary hover:bg-primary/90"
+               size="icon"
+             >
+               <ChevronDown className="w-5 h-5" />
+             </Button>
+           </div>
+          )}
+          </div>
 
       {/* Input Area */}
       <div className="border-t border-border p-2 md:p-4 bg-card/50 backdrop-blur-sm flex-shrink-0 z-10 safe-bottom">
