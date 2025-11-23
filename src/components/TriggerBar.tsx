@@ -14,36 +14,76 @@ interface TriggerBarProps {
 }
 
 const TriggerBar = ({ triggers, taggedSegments = [], onTriggerClick }: TriggerBarProps) => {
-  const [expandedTriggers, setExpandedTriggers] = useState<Set<string>>(new Set());
-  const [viewAll, setViewAll] = useState(false);
-  const [isBarCollapsed, setIsBarCollapsed] = useState(false);
+   const [expandedTriggers, setExpandedTriggers] = useState<Set<string>>(new Set());
+   const [viewAll, setViewAll] = useState(false);
+   const [isBarCollapsed, setIsBarCollapsed] = useState(false);
 
-  if (triggers.length === 0) return null;
+   if (triggers.length === 0) return null;
 
-  const toggleTrigger = (triggerTag: string) => {
-    const newExpanded = new Set(expandedTriggers);
-    if (newExpanded.has(triggerTag)) {
-      newExpanded.delete(triggerTag);
-    } else {
-      newExpanded.add(triggerTag);
-    }
-    setExpandedTriggers(newExpanded);
-  };
+   const toggleTrigger = (triggerTag: string) => {
+     const newExpanded = new Set(expandedTriggers);
+     if (newExpanded.has(triggerTag)) {
+       newExpanded.delete(triggerTag);
+     } else {
+       newExpanded.add(triggerTag);
+     }
+     setExpandedTriggers(newExpanded);
+   };
 
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case 'Reasoning & Analysis':
-        return 'bg-gradient-to-r from-blue-500/20 to-blue-600/20 text-blue-600 border-blue-500/50 hover:from-blue-500/30 hover:to-blue-600/30 shadow-lg shadow-blue-500/20';
-      case 'Research & Information':
-        return 'bg-gradient-to-r from-emerald-500/20 to-green-600/20 text-emerald-600 border-emerald-500/50 hover:from-emerald-500/30 hover:to-green-600/30 shadow-lg shadow-emerald-500/20';
-      case 'Planning & Organization':
-        return 'bg-gradient-to-r from-violet-500/20 to-purple-600/20 text-violet-600 border-violet-500/50 hover:from-violet-500/30 hover:to-purple-600/30 shadow-lg shadow-violet-500/20';
-      case 'Communication & Style':
-        return 'bg-gradient-to-r from-amber-500/20 to-orange-600/20 text-amber-600 border-amber-500/50 hover:from-amber-500/30 hover:to-orange-600/30 shadow-lg shadow-amber-500/20';
-      default:
-        return 'bg-gradient-to-r from-slate-500/20 to-gray-600/20 text-slate-600 border-slate-500/50 hover:from-slate-500/30 hover:to-gray-600/30 shadow-lg shadow-slate-500/20';
-    }
-  };
+   const getCategoryColor = (category: string) => {
+     switch (category) {
+       case 'Reasoning & Analysis':
+         return {
+           bg: 'bg-blue-500/15',
+           text: 'text-blue-700 dark:text-blue-400',
+           border: 'border-blue-500/40',
+           hover: 'hover:bg-blue-500/25 hover:border-blue-500/60',
+           shadow: 'shadow-lg shadow-blue-500/15',
+           cardBg: 'linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(96, 165, 250, 0.06))',
+           borderLeft: '#3b82f6'
+         };
+       case 'Research & Information':
+         return {
+           bg: 'bg-emerald-500/15',
+           text: 'text-emerald-700 dark:text-emerald-400',
+           border: 'border-emerald-500/40',
+           hover: 'hover:bg-emerald-500/25 hover:border-emerald-500/60',
+           shadow: 'shadow-lg shadow-emerald-500/15',
+           cardBg: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(52, 211, 153, 0.06))',
+           borderLeft: '#10b981'
+         };
+       case 'Planning & Organization':
+         return {
+           bg: 'bg-violet-500/15',
+           text: 'text-violet-700 dark:text-violet-400',
+           border: 'border-violet-500/40',
+           hover: 'hover:bg-violet-500/25 hover:border-violet-500/60',
+           shadow: 'shadow-lg shadow-violet-500/15',
+           cardBg: 'linear-gradient(135deg, rgba(168, 85, 247, 0.12), rgba(196, 108, 250, 0.06))',
+           borderLeft: '#a855f7'
+         };
+       case 'Communication & Style':
+         return {
+           bg: 'bg-amber-500/15',
+           text: 'text-amber-700 dark:text-amber-400',
+           border: 'border-amber-500/40',
+           hover: 'hover:bg-amber-500/25 hover:border-amber-500/60',
+           shadow: 'shadow-lg shadow-amber-500/15',
+           cardBg: 'linear-gradient(135deg, rgba(249, 115, 22, 0.12), rgba(251, 146, 60, 0.06))',
+           borderLeft: '#f97316'
+         };
+       default:
+         return {
+           bg: 'bg-slate-500/15',
+           text: 'text-slate-700 dark:text-slate-400',
+           border: 'border-slate-500/40',
+           hover: 'hover:bg-slate-500/25 hover:border-slate-500/60',
+           shadow: 'shadow-lg shadow-slate-500/15',
+           cardBg: 'linear-gradient(135deg, rgba(107, 114, 128, 0.12), rgba(148, 163, 184, 0.06))',
+           borderLeft: '#6b7280'
+         };
+     }
+   };
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -61,8 +101,8 @@ const TriggerBar = ({ triggers, taggedSegments = [], onTriggerClick }: TriggerBa
   };
 
   return (
-    <Card className="mb-4 bg-gradient-to-r from-background/60 via-primary/5 to-background/60 border-2 border-primary/40 shadow-lg shadow-primary/20 backdrop-blur-sm">
-      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-primary/10 to-primary/5 rounded-t-lg">
+    <Card className="mb-4 bg-gradient-to-r from-background/80 via-background/60 to-background/80 border border-foreground/10 shadow-lg backdrop-blur-sm">
+      <div className="flex items-center justify-between p-4 bg-foreground/5 rounded-t-lg border-b border-foreground/10">
         <div className="flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-primary animate-pulse" />
           <span className="text-sm font-bold text-foreground">
@@ -96,6 +136,7 @@ const TriggerBar = ({ triggers, taggedSegments = [], onTriggerClick }: TriggerBa
           {triggers.map((trigger) => {
             const isExpanded = expandedTriggers.has(trigger.tag) || viewAll;
             const matchingSegment = taggedSegments.find(seg => seg.tag === trigger.tag);
+            const categoryColor = getCategoryColor(trigger.category);
             
             return (
               <Collapsible
@@ -107,8 +148,12 @@ const TriggerBar = ({ triggers, taggedSegments = [], onTriggerClick }: TriggerBa
                 <CollapsibleTrigger asChild>
                    <Badge
                      className={cn(
-                       'cursor-pointer transition-all duration-300 px-4 py-2 text-xs font-bold border-2 hover:scale-105 hover:-translate-y-1',
-                       getCategoryColor(trigger.category)
+                       'cursor-pointer transition-all duration-300 px-4 py-2 text-xs font-bold border hover:scale-105 hover:-translate-y-1',
+                       categoryColor.bg,
+                       categoryColor.text,
+                       categoryColor.border,
+                       categoryColor.hover,
+                       categoryColor.shadow
                      )}
                      onClick={() => onTriggerClick?.(trigger)}
                    >
@@ -123,15 +168,10 @@ const TriggerBar = ({ triggers, taggedSegments = [], onTriggerClick }: TriggerBa
                  </CollapsibleTrigger>
 
                 <CollapsibleContent className="mt-3 animate-slide-down">
-                   <Card className="p-4 bg-gradient-to-r border-l-4 border-2 shadow-lg" style={{
-                     borderLeftColor: getCategoryColor(trigger.category).includes('blue') ? '#3b82f6' :
-                       getCategoryColor(trigger.category).includes('emerald') ? '#10b981' :
-                       getCategoryColor(trigger.category).includes('violet') ? '#a855f7' :
-                       getCategoryColor(trigger.category).includes('amber') ? '#f97316' : '#6b7280',
-                     backgroundImage: getCategoryColor(trigger.category).includes('blue') ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(96, 165, 250, 0.04))' :
-                       getCategoryColor(trigger.category).includes('emerald') ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(52, 211, 153, 0.04))' :
-                       getCategoryColor(trigger.category).includes('violet') ? 'linear-gradient(135deg, rgba(168, 85, 247, 0.08), rgba(196, 108, 250, 0.04))' :
-                       getCategoryColor(trigger.category).includes('amber') ? 'linear-gradient(135deg, rgba(249, 115, 22, 0.08), rgba(251, 146, 60, 0.04))' : 'linear-gradient(135deg, rgba(107, 114, 128, 0.08), rgba(148, 163, 184, 0.04))'
+                   <Card className="p-4 border-l-4 border-2 shadow-lg" style={{
+                     borderLeftColor: categoryColor.borderLeft,
+                     backgroundImage: categoryColor.cardBg,
+                     backgroundColor: 'transparent'
                    }}>
                     <div className="space-y-2 text-xs">
                       <div>
