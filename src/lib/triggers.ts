@@ -654,6 +654,7 @@ export const parseTriggeredResponse = (content: string): {
 
   const taggedSegments: Array<{ tag: string; content: string; startIndex: number; endIndex: number }> = [];
   let cleanContent = content;
+  const replacements: Array<{ start: number; end: number }> = [];
   
   // Find all XML-style trigger tags - ONLY valid registered triggers
   // Match: <tag>content</tag> or <tag_name>content</tag_name>
@@ -674,6 +675,8 @@ export const parseTriggeredResponse = (content: string): {
         startIndex: match.index,
         endIndex: match.index + fullMatch.length,
       });
+      // Mark this region for removal from clean content
+      replacements.push({ start: match.index, end: match.index + fullMatch.length });
     }
   }
   
@@ -682,6 +685,7 @@ export const parseTriggeredResponse = (content: string): {
   // Detect any opening tag that doesn't have a corresponding closing tag
   const allOpeningsRegex = /<([a-zA-Z_][a-zA-Z0-9_]*)>/g;
   let openingMatch;
+  const openTagMatches: Array<{ tagName: string; index: number; endIndex: number }> = [];
   
   while ((openingMatch = allOpeningsRegex.exec(content)) !== null) {
     const tagName = openingMatch[1];
@@ -695,34 +699,43 @@ export const parseTriggeredResponse = (content: string): {
       
       if (!hasClosingTag && !alreadyExists) {
         // This is an opening tag without a closing tag - capture it immediately
-        const openingIndex = openingMatch.index;
-        const openingTagEnd = openingMatch.index + openingMatch[0].length;
-        const contentAfterTag = content.substring(openingTagEnd).trim();
-        
-        taggedSegments.push({
-          tag: tagName,
-          content: contentAfterTag,
-          startIndex: openingIndex,
-          endIndex: content.length,
+        openTagMatches.push({
+          tagName,
+          index: openingMatch.index,
+          endIndex: openingMatch.index + openingMatch[0].length,
         });
       }
     }
   }
   
-  // Remove ONLY valid trigger tags from clean content
-  // First, remove all valid registered trigger tags with their content
-  cleanContent = content;
-  for (const tag of VALID_TRIGGER_TAGS) {
-    const regex = new RegExp(`<${tag}>[\\s\\S]*?<\/${tag}>`, 'g');
-    cleanContent = cleanContent.replace(regex, '');
+  // For streaming unclosed tags, extract content between opening tag and end of content
+  // But we need to be smart - only include content if the tag is at the end
+  for (const openTag of openTagMatches) {
+    const contentAfterTag = content.substring(openTag.endIndex);
+    // Check if there's any other content pattern that suggests the tag should end
+    // For now, include all remaining content
+    taggedSegments.push({
+      tag: openTag.tagName,
+      content: contentAfterTag.trim(),
+      startIndex: openTag.index,
+      endIndex: content.length,
+    });
+    // Mark the opening tag for removal
+    replacements.push({ start: openTag.index, end: openTag.endIndex });
   }
   
-  // Remove any remaining unclosed valid trigger tags (orphaned opening/closing tags)
-  // Only remove tags that are in the VALID_TRIGGER_TAGS list
+  // Remove ONLY valid trigger tags from clean content using tracked replacements
+  // Sort replacements in reverse order to maintain indices
+  const sortedReplacements = replacements.sort((a, b) => b.start - a.start);
+  
+  for (const replacement of sortedReplacements) {
+    cleanContent = cleanContent.substring(0, replacement.start) + cleanContent.substring(replacement.end);
+  }
+  
+  // Also remove unclosed opening/closing tags that weren't part of paired segments
   for (const tag of VALID_TRIGGER_TAGS) {
-    const openingRegex = new RegExp(`<${tag}>`, 'g');
+    // Only remove orphaned tags (those not already handled)
     const closingRegex = new RegExp(`</${tag}>`, 'g');
-    cleanContent = cleanContent.replace(openingRegex, '');
     cleanContent = cleanContent.replace(closingRegex, '');
   }
   
