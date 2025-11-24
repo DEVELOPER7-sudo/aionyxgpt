@@ -627,7 +627,23 @@ export const detectTriggersAndBuildPrompt = (userMessage: string): {
   return { systemPrompt, detectedTriggers };
 };
 
+// Helper function to check if a position is inside a code block
+const isInsideCodeBlock = (content: string, position: number): boolean => {
+  // Find all code blocks (``` markers)
+  const codeBlockRegex = /```[\s\S]*?```/g;
+  let match;
+  
+  while ((match = codeBlockRegex.exec(content)) !== null) {
+    if (position >= match.index && position < match.index + match[0].length) {
+      return true;
+    }
+  }
+  
+  return false;
+};
+
 // Parse trigger tags from AI response - ONLY extract valid registered triggers
+// Also detect immediate opening tags and create bars right away
 export const parseTriggeredResponse = (content: string): {
   cleanContent: string;
   taggedSegments: Array<{ tag: string; content: string; startIndex: number; endIndex: number }>;
@@ -650,14 +666,39 @@ export const parseTriggeredResponse = (content: string): {
   
   while ((match = tagRegex.exec(content)) !== null) {
     const [fullMatch, tagName, tagContent] = match;
-    // ONLY include valid registered trigger tags
-    if (isValidTriggerTag(tagName)) {
+    // ONLY include valid registered trigger tags AND not inside code blocks
+    if (isValidTriggerTag(tagName) && !isInsideCodeBlock(content, match.index)) {
       taggedSegments.push({
         tag: tagName,
         content: tagContent.trim(),
         startIndex: match.index,
         endIndex: match.index + fullMatch.length,
       });
+    }
+  }
+  
+  // Also detect IMMEDIATELY OPENED trigger tags (for real-time display)
+  // Pattern: <validtag> at start, content streaming, no closing tag yet
+  for (const tag of VALID_TRIGGER_TAGS) {
+    const openingTagPattern = new RegExp(`<${tag}>([\\s\\S]*)$`);
+    const openMatch = openingTagPattern.exec(content);
+    
+    if (openMatch && !isInsideCodeBlock(content, openMatch.index)) {
+      // Check if this tag is not already in taggedSegments (with closing tag)
+      const alreadyExists = taggedSegments.some(seg => seg.tag === tag && seg.endIndex > openMatch.index);
+      
+      if (!alreadyExists) {
+        // This is an opening tag without a closing tag - capture it immediately
+        const openingIndex = openMatch.index;
+        const contentAfterTag = openMatch[1];
+        
+        taggedSegments.push({
+          tag,
+          content: contentAfterTag.trim(),
+          startIndex: openingIndex,
+          endIndex: content.length,
+        });
+      }
     }
   }
   
