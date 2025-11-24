@@ -342,12 +342,17 @@ const ChatApp = () => {
       triggerPrompt += '\n\n' + extraInstructions.join('\n\n');
     }
     
-    // Build final system prompt with enhanced trigger tag enforcement
-    // This forces the AI to use XML-style trigger tags in responses
+    // Build final system prompt - ONLY add trigger tag enforcement if triggers detected or explicitly selected
     let baseSystemPrompt = triggerPrompt;
+    let finalSystemPrompt = baseSystemPrompt;
     
-    // Add enhanced system prompt with trigger tag enforcement
-    let finalSystemPrompt = `${TRIGGER_TAG_ENFORCEMENT_PREFIX}\n\n${baseSystemPrompt}`;
+    // ONLY add trigger tag enforcement if triggers were actually detected OR selected
+    if (detectedTriggers.length > 0 || extraInstructions.length > 0) {
+      finalSystemPrompt = `${TRIGGER_TAG_ENFORCEMENT_PREFIX}\n\n${baseSystemPrompt}`;
+    } else {
+      // No triggers - use basic system prompt
+      finalSystemPrompt = 'Respond helpfully, truthfully, and concisely.';
+    }
     
     // Add task mode specific instructions
     if (taskMode !== 'standard') {
@@ -540,36 +545,45 @@ const ChatApp = () => {
      }
      
      // Detect triggers and build system prompt
-     let { systemPrompt: triggerPrompt, detectedTriggers } = detectTriggersAndBuildPrompt(userText);
+      let { systemPrompt: triggerPrompt, detectedTriggers } = detectTriggersAndBuildPrompt(userText);
 
-    // Merge default triggers (from settings) + selected triggers
-    let extraInstructions: string[] = [];
-    if (settings.defaultTriggers && settings.defaultTriggers.length > 0) {
-      const allTriggersData = getAllTriggers();
-      settings.defaultTriggers.forEach((trigName) => {
-        const found = allTriggersData.find(a => a.trigger.toLowerCase() === trigName.toLowerCase());
-        if (found) {
-          extraInstructions.push(found.system_instruction);
-        }
-      });
-    }
+     // Merge default triggers (from settings) + selected triggers
+     let extraInstructions: string[] = [];
+     if (settings.defaultTriggers && settings.defaultTriggers.length > 0) {
+       const allTriggersData = getAllTriggers();
+       settings.defaultTriggers.forEach((trigName) => {
+         const found = allTriggersData.find(a => a.trigger.toLowerCase() === trigName.toLowerCase());
+         if (found) {
+           extraInstructions.push(found.system_instruction);
+         }
+       });
+     }
 
-    if (selectedTriggers && selectedTriggers.length > 0) {
-      const allTriggersData = getAllTriggers();
-      selectedTriggers.forEach((trigName) => {
-        const found = allTriggersData.find(a => a.trigger.toLowerCase() === trigName.toLowerCase());
-        if (found && !extraInstructions.includes(found.system_instruction)) {
-          extraInstructions.push(found.system_instruction);
-        }
-      });
-    }
+     if (selectedTriggers && selectedTriggers.length > 0) {
+       const allTriggersData = getAllTriggers();
+       selectedTriggers.forEach((trigName) => {
+         const found = allTriggersData.find(a => a.trigger.toLowerCase() === trigName.toLowerCase());
+         if (found && !extraInstructions.includes(found.system_instruction)) {
+           extraInstructions.push(found.system_instruction);
+         }
+       });
+     }
 
-    if (extraInstructions.length > 0) {
-      triggerPrompt += '\n\n' + extraInstructions.join('\n\n');
-    }
-     
-     // Build final system prompt with triggers
-     let finalSystemPrompt = triggerPrompt + ' ' + userText;
+     if (extraInstructions.length > 0) {
+       triggerPrompt += '\n\n' + extraInstructions.join('\n\n');
+     }
+      
+      // Build final system prompt - ONLY add trigger tag enforcement if triggers detected or explicitly selected
+      let baseSystemPrompt = triggerPrompt;
+      let finalSystemPrompt = baseSystemPrompt;
+      
+      // ONLY add trigger tag enforcement if triggers were actually detected OR selected
+      if (detectedTriggers.length > 0 || extraInstructions.length > 0) {
+        finalSystemPrompt = `${TRIGGER_TAG_ENFORCEMENT_PREFIX}\n\n${baseSystemPrompt}`;
+      } else {
+        // No triggers - use basic system prompt
+        finalSystemPrompt = 'Respond helpfully, truthfully, and concisely.';
+      }
     if (webSearchEnabled) {
       finalSystemPrompt += '\n\nNote: You may use web knowledge if your model supports it.';
     }

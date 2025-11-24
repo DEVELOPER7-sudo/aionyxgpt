@@ -72,16 +72,11 @@ const CollapsibleTriggerTag = ({
   // Show confirmation that trigger bar was created
   useEffect(() => {
     console.log(`✓ TRIGGER BAR CREATED: <${tagName}> with ${content.length} chars`);
-    // Show a brief toast notification
-    toast.success(`Trigger bar created: <${tagName}>`, {
-      duration: 2000,
-      description: `Content: ${content.substring(0, 30)}${content.length > 30 ? '...' : ''}`,
-    });
     
-    // Hide confirmation after 3 seconds
+    // Hide confirmation after 2 seconds (no toast to reduce notification spam)
     const timer = setTimeout(() => {
       setShowCreationConfirm(false);
-    }, 3000);
+    }, 2000);
     
     return () => clearTimeout(timer);
   }, [tagName]);

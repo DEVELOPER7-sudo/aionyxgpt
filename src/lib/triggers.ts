@@ -615,13 +615,13 @@ export const detectTriggersAndBuildPrompt = (userMessage: string): {
     }
   });
 
-  // Build system prompt
+  // Build system prompt - ONLY add instructions if triggers were actually detected
   let systemPrompt = '';
   if (instructions.length > 0) {
     systemPrompt = instructions.join(' ') + '\n\nFor';
   } else {
-    // Default instruction
-    systemPrompt = 'default means Respond helpfully, truthfully, and concisely.\n\nFor';
+    // NO default instruction - return empty to avoid forcing unwanted behavior
+    systemPrompt = '';
   }
 
   return { systemPrompt, detectedTriggers };
