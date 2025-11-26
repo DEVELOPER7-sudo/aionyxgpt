@@ -1696,7 +1696,6 @@ export const parseTriggeredResponse = (content: string): {
   cleanContent = cleanContent.replace(leakedLabelRegex, '');
 
   const tagRegex = /<([a-zA-Z_][a-zA-Z0-9_]*?)>([\s\S]*?)<\/\1>/g;
-  let match;
   
   tagRegex.lastIndex = 0;
   
