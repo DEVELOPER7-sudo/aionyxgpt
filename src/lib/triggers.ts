@@ -66,10 +66,49 @@ export const VALID_TRIGGER_TAGS = [
 
 // Helper function to check if a tag is valid
 export const isValidTriggerTag = (tagName: string): boolean => {
-  return VALID_TRIGGER_TAGS.includes(tagName.toLowerCase());
+  // Check against valid tags case-insensitively
+  return VALID_TRIGGER_TAGS.map(t => t.toLowerCase()).includes(tagName.toLowerCase());
 };
 
-// Built in triggers organized by category
+export const generateTagName = (triggerName: string): string => {
+  // Standardize tag generation: lowercase, only alphanumeric
+  return triggerName.toLowerCase().replace(/[^a-z0-9]/g, '');
+};
+
+export const buildDefaultSystemPromptTemplate = (trigger: Trigger): string => {
+  const triggerTag = generateTagName(trigger.trigger);
+  const category = trigger.category;
+  
+  return `# SYSTEM-LEVEL ENFORCEMENT: ${trigger.trigger.toUpperCase()} TRIGGER ACTIVATED
+## CATEGORY: ${category.toUpperCase()}
+## OPERATIONAL MODE: STRICT COMPLIANCE REQUIRED
+
+You are now operating under the DIRECTIVE of the "${trigger.trigger}" trigger. This is a high-priority system instruction.
+
+### 1. CORE SYSTEM INSTRUCTION
+${trigger.systemInstruction}
+
+### 2. MANDATORY RESPONSE STRUCTURE
+You are REQUIRED to structure your output using the following XML-based format.
+
+**Template:**
+"🔴 ${trigger.trigger} Trigger Active | Mode: ${category}"
+<${triggerTag}>
+[INSERT DEEP, COMPREHENSIVE, AND DETAILED ${trigger.trigger.toUpperCase()} CONTENT HERE.
+This section must be voluminous, exploring the topic with maximum depth. 
+Do not summarize. Expand on every point. 
+Use the specific methodologies associated with "${trigger.trigger}".]
+</${triggerTag}>
+
+[Your final, polished response to the user goes here.]
+
+### 3. COMPLIANCE CHECK
+- Did you include the "🔴" header?
+- Did you wrap the internal content in <${triggerTag}>...</${triggerTag}>?
+- Is the content inside the tags detailed and verbose?
+
+Proceed with the generation of the "${trigger.trigger}" response now.`;
+};
 const BUILT_IN_TRIGGERS: Trigger[] = [
   {
     trigger: "reason",
@@ -1458,9 +1497,7 @@ export const importTriggers = (file: File): Promise<void> => {
   });
 };
 
-export const generateTagName = (triggerName: string): string => {
-  return triggerName.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
-};
+
 
 export const generateTriggerMetadata = (trigger: Trigger, userPrompt: string): TriggerMetadata => {
   const tagName = generateTagName(trigger.trigger);
@@ -1524,26 +1561,7 @@ export const detectTriggersAndBuildPrompt = (userMessage: string): {
   return { systemPrompt, detectedTriggers, enhancedSystemPrompt };
 };
 
-export const buildDefaultSystemPromptTemplate = (trigger: Trigger): string => {
-  const triggerTag = generateTagName(trigger.trigger);
-  
-  return `Trigger ${trigger.trigger} ${trigger.category}
 
-System Instruction ${trigger.systemInstruction}
-
-Response Format 
-Begin your response by clearly indicating which trigger is active Activating ${trigger.trigger} trigger
-Provide comprehensive in depth analysis using the tags to structure your thinking
-After the tagged section provide a complete polished response that incorporates the trigger guidance
-Ensure the final response is long form and thorough for better user experience
-
-Context Metadata
-Category ${trigger.category}
-Trigger Type ${trigger.custom ? 'Custom' : 'Built in'}
-Use for ${trigger.example}
-
----`;
-};
 
 export const buildEnhancedSystemPromptWithMemory = (
   detectedTriggers: DetectedTrigger[],

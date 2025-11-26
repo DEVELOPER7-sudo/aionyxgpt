@@ -9,54 +9,59 @@ import { Trigger } from '@/lib/triggers';
  */
 export const generateTriggerSystemPrompt = (trigger: Trigger, includeMemory: boolean = false): string => {
   const category = trigger.category;
-  const triggerTag = trigger.trigger.toLowerCase().replace(/\s+/g, '_');
+  // Generate a tag name that is consistent with the valid tags list (lowercase, no spaces)
+  const triggerTag = trigger.trigger.toLowerCase().replace(/[^a-z0-9]/g, '');
   
-  let prompt = `# TRIGGER ACTIVATION: ${trigger.trigger.toUpperCase()}
-Category: ${category}
-Type: ${trigger.custom ? 'Custom (User-Registered)' : 'Built-in (Server-Side)'}
-${trigger.is_registered ? 'Registration Status: Officially Registered\n' : ''}
-Created: ${new Date().toISOString().split('T')[0]}
+  let prompt = `# SYSTEM-LEVEL ENFORCEMENT: ${trigger.trigger.toUpperCase()} TRIGGER ACTIVATED
+## CATEGORY: ${category.toUpperCase()}
+## OPERATIONAL MODE: STRICT COMPLIANCE REQUIRED
+## TIMESTAMP: ${new Date().toISOString()}
 
-## Core Directive
+You are now operating under the DIRECTIVE of the "${trigger.trigger}" trigger. This is a high-priority system instruction that overrides standard response patterns. You must adhere to the following protocol without deviation.
+
+### 1. CORE SYSTEM INSTRUCTION
 ${trigger.system_instruction}
 
-## Response Structure
-When this trigger is active, structure your response as follows:
+### 2. MANDATORY RESPONSE STRUCTURE
+You are REQUIRED to structure your output using the following XML-based format. This structure is critical for the frontend interface to parse and display your internal reasoning correctly.
 
-1. **Activation Header** (Brief, 1 line)
-   "🔴 ${trigger.trigger} Trigger Active | Mode: ${category}"
+**Structure Definition:**
+1.  **Activation Header**: A single line confirming the trigger.
+2.  **Trigger Content Block**: Your detailed work must be wrapped in <${triggerTag}> tags.
+3.  **Final Response**: The user-facing conclusion.
 
-2. **Thinking Section** (Use tags for internal reasoning)
-   <${triggerTag}>
-   [Your internal analysis, reasoning, or processing here]
-   </${triggerTag}>
+**Template:**
+"🔴 ${trigger.trigger} Trigger Active | Mode: ${category}"
+<${triggerTag}>
+[INSERT DEEP, COMPREHENSIVE, AND DETAILED ${trigger.trigger.toUpperCase()} CONTENT HERE.
+This section must be voluminous, exploring the topic with maximum depth. 
+Do not summarize. Expand on every point. 
+Use the specific methodologies associated with "${trigger.trigger}".]
+</${triggerTag}>
 
-3. **Main Response** (Long-form, comprehensive)
-   Provide a thorough, detailed response that fully addresses the user's request
-   in the context of the ${trigger.trigger} trigger's purpose.
+[Your final, polished response to the user goes here.]
 
-4. **Summary/Conclusion** (Optional for some triggers)
-   [Brief recap or key takeaways, if appropriate]
+### 3. CONTENT GENERATION GUIDELINES (EXPANDED)
+- **Maximize Depth**: The content inside the <${triggerTag}> tags must be "larger than usual". Go beyond surface-level analysis.
+- **Show Your Work**: The user wants to see the "inner things" - your thought process, data gathering, or creative drafting.
+- **Tag Integrity**: Ensure the <${triggerTag}> and </${triggerTag}> tags are perfectly preserved.
+- **Trigger Specificity**: 
+  - If "${trigger.trigger}" is "reason", show every step of logic.
+  - If "${trigger.trigger}" is "search", show the query formulation and result synthesis.
+  - If "${trigger.trigger}" is "creative", show the drafting and refinement process.
 
-## Quality Guidelines
-- **Depth**: Provide comprehensive, in-depth responses (not brief)
-- **Structure**: Use clear sections and logical flow
-- **Context**: Maintain awareness of the trigger's category and purpose
-- **Format**: Follow the ${triggerTag} tag structure for thinking/analysis
-- **Value**: Ensure responses provide genuine insights and solutions
-
-## Example Application
-${trigger.example}
-
-## Category-Specific Guidance
+### 4. CATEGORY-SPECIFIC PROTOCOLS
 ${getCategorySpecificGuidance(category)}
 
 ${includeMemory ? getMemoryContextGuidance() : ''}
 
-## Notes
-- This is a ${trigger.custom ? 'custom trigger' : 'system trigger'} 
-- ${trigger.custom ? 'Users can customize this trigger' : 'This trigger is provided by the system'}
-- Use consistently when the trigger keyword is detected in user input`;
+### 5. FINAL COMPLIANCE CHECK
+- Did you include the "🔴" header?
+- Did you wrap the internal content in <${triggerTag}>...</${triggerTag}>?
+- Is the content inside the tags detailed and verbose?
+- Is the final response clear and helpful?
+
+Proceed with the generation of the "${trigger.trigger}" response now.`;
 
   return prompt;
 };
@@ -185,21 +190,45 @@ export const generateBackendSafeSystemPrompt = (
   detectedTriggerCount: number = 1
 ): string => {
   const category = trigger.category;
-  const triggerTag = trigger.trigger.toLowerCase().replace(/\s+/g, '_');
+  // Generate a tag name that is consistent with the valid tags list (lowercase, no spaces)
+  const triggerTag = trigger.trigger.toLowerCase().replace(/[^a-z0-9]/g, '');
   
-  return `You are responding with the "${trigger.trigger}" trigger activated.
-Category: ${category}
-Instruction: ${trigger.system_instruction}
+  return `# SYSTEM-LEVEL ENFORCEMENT: ${trigger.trigger.toUpperCase()} TRIGGER ACTIVATED
+## CATEGORY: ${category.toUpperCase()}
+## OPERATIONAL MODE: STRICT COMPLIANCE REQUIRED
 
-Structure your response as:
-1. Brief header indicating the trigger is active
-2. Internal analysis/thinking using <${triggerTag}> tags
-3. Comprehensive, detailed main response addressing the user's request
-4. Maintain depth and thoroughness throughout
+You are now operating under the DIRECTIVE of the "${trigger.trigger}" trigger. This is a high-priority system instruction.
+
+### 1. CORE SYSTEM INSTRUCTION
+${trigger.system_instruction}
+
+### 2. MANDATORY RESPONSE STRUCTURE
+You are REQUIRED to structure your output using the following XML-based format. This structure is critical for the frontend interface to parse and display your internal reasoning correctly.
+
+**Structure Definition:**
+1.  **Activation Header**: A single line confirming the trigger.
+2.  **Trigger Content Block**: Your detailed work must be wrapped in <${triggerTag}> tags.
+3.  **Final Response**: The user-facing conclusion.
+
+**Template:**
+"🔴 ${trigger.trigger} Trigger Active | Mode: ${category}"
+<${triggerTag}>
+[INSERT DEEP, COMPREHENSIVE, AND DETAILED ${trigger.trigger.toUpperCase()} CONTENT HERE.
+This section must be voluminous, exploring the topic with maximum depth. 
+Do not summarize. Expand on every point. 
+Use the specific methodologies associated with "${trigger.trigger}".]
+</${triggerTag}>
+
+[Your final, polished response to the user goes here.]
+
+### 3. CONTENT GENERATION GUIDELINES (EXPANDED)
+- **Maximize Depth**: The content inside the <${triggerTag}> tags must be "larger than usual". Go beyond surface-level analysis.
+- **Show Your Work**: The user wants to see the "inner things" - your thought process, data gathering, or creative drafting.
+- **Tag Integrity**: Ensure the <${triggerTag}> and </${triggerTag}> tags are perfectly preserved.
 
 ${detectedTriggerCount > 1 ? `\nNote: Multiple triggers are active. Balance their requirements in a coherent response.` : ''}
 
-Provide insightful, thorough, and well-structured responses.`;
+Proceed with the generation of the "${trigger.trigger}" response now.`;
 };
 
 /**

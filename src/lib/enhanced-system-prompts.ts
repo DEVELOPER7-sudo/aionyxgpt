@@ -6,12 +6,12 @@
 export const TRIGGER_TAG_ENFORCEMENT_PREFIX = `You MUST structure your response using XML-style trigger tags for specific task types.
 
 **VALID TRIGGER TAGS - ONLY use these:**
-reason, analyze, critique, debate, compare, contrast, deduce, evaluate, justify, hypothesize, examine, interpret, verify, reflect, infer, explore, discuss, validate, assess, troubleshoot, search, deep_research, fact_check, contextualize, summarize, outline, extract, highlight, define, explain, describe, cite, reference, clarify, expand, compress, plan, roadmap, checklist, organize, prioritize, schedule, brainstorm, propose, structure, map, draft, improve, review, simplify, formalize, rephrase, rewrite, summarize_for_kids, persuasive, informative, neutral, balanced, empathetic
+reason, analyze, critique, debate, compare, contrast, deduce, evaluate, justify, hypothesize, examine, interpret, verify, reflect, infer, explore, discuss, validate, assess, troubleshoot, search, deepresearch, factcheck, contextualize, summarize, outline, extract, highlight, define, explain, describe, cite, reference, clarify, expand, compress, plan, roadmap, checklist, organize, prioritize, schedule, brainstorm, propose, structure, map, draft, improve, review, simplify, formalize, rephrase, rewrite, summarizeforkids, persuasive, informative, neutral, balanced, empathetic
 
 **CRITICAL RULES:**
 1. ONLY use the registered trigger tags listed above - NO OTHER TAGS
 2. Each tag MUST be properly closed: <tagname>content</tagname>
-3. Use lowercase tag names with underscores: <deep_research>, <fact_check>
+3. Use lowercase tag names with NO underscores or spaces: <deepresearch>, <factcheck>
 4. Do NOT use ANY other HTML tags or random tags
 5. Do NOT nest tags of different types
 6. ALWAYS provide a response AFTER trigger tags - never end with just trigger content
@@ -50,7 +50,7 @@ Respond helpfully, truthfully, and concisely. Use trigger tags to organize your 
 When answering questions, emphasize logical reasoning and step-by-step thinking:
 1. Start with a <reason> tag explaining your logical approach
 2. Break down complex problems into manageable parts
-3. Use <step_by_step> tags for procedural explanations
+3. Use <stepbystep> tags for procedural explanations
 4. Provide evidence and reasoning for your conclusions
 5. Use <analyze> tags for deeper examination of topics
 6. Always show your work and make your thinking process transparent`,
@@ -58,8 +58,8 @@ When answering questions, emphasize logical reasoning and step-by-step thinking:
   research: `${TRIGGER_TAG_ENFORCEMENT_PREFIX}
 
 When researching or providing information:
-1. Use <deep_research> tags for thorough investigations
-2. Use <fact_check> tags when verifying information
+1. Use <deepresearch> tags for thorough investigations
+2. Use <factcheck> tags when verifying information
 3. Cite sources and evidence within research tags
 4. Use <summary> tags to synthesize findings
 5. Compare different perspectives using <compare> tags
@@ -201,11 +201,11 @@ export const generateTagUsageSummary = (tags: string[]): string => {
     evaluate: 'Evaluations',
     critique: 'Critical assessment',
     summary: 'Summary',
-    step_by_step: 'Step-by-step explanation',
+    stepbystep: 'Step-by-step explanation',
     example: 'Examples',
     code: 'Code/technical content',
-    deep_research: 'In-depth research',
-    fact_check: 'Fact verification',
+    deepresearch: 'In-depth research',
+    factcheck: 'Fact verification',
     brainstorm: 'Creative brainstorming',
   };
 

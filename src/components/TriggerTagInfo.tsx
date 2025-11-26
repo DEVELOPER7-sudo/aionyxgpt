@@ -34,14 +34,14 @@ const TRIGGER_INFO_MAP: Record<string, TriggerInfo> = {
     description: 'Contains research findings and information gathering',
     icon: '🔍',
   },
-  deep_research: {
-    tag: 'deep_research',
+  deepresearch: {
+    tag: 'deepresearch',
     category: 'Research & Information',
     description: 'In-depth investigation and comprehensive research results',
     icon: '🔎',
   },
-  fact_check: {
-    tag: 'fact_check',
+  factcheck: {
+    tag: 'factcheck',
     category: 'Research & Information',
     description: 'Verification and validation of facts and claims',
     icon: '✓',
@@ -52,8 +52,8 @@ const TRIGGER_INFO_MAP: Record<string, TriggerInfo> = {
     description: 'Strategic planning and organization approach',
     icon: '📋',
   },
-  step_by_step: {
-    tag: 'step_by_step',
+  stepbystep: {
+    tag: 'stepbystep',
     category: 'Planning & Organization',
     description: 'Detailed procedural breakdown with sequential steps',
     icon: '📍',

@@ -358,9 +358,9 @@ const ChatApp = () => {
     if (taskMode !== 'standard') {
       finalSystemPrompt += `\n\nTask Mode: ${taskMode.charAt(0).toUpperCase() + taskMode.slice(1)}`;
       if (taskMode === 'reasoning') {
-        finalSystemPrompt += '\nEmphasis: Use <reason> and <step_by_step> tags extensively to show your thinking.';
+        finalSystemPrompt += '\nEmphasis: Use <reason> and <stepbystep> tags extensively to show your thinking.';
       } else if (taskMode === 'research') {
-        finalSystemPrompt += '\nEmphasis: Use <deep_research>, <fact_check>, and <research> tags for thorough investigation.';
+        finalSystemPrompt += '\nEmphasis: Use <deepresearch>, <factcheck>, and <research> tags for thorough investigation.';
       } else if (taskMode === 'creative') {
         finalSystemPrompt += '\nEmphasis: Use <brainstorm> and <evaluate> tags for creative exploration.';
       }
@@ -370,7 +370,7 @@ const ChatApp = () => {
       finalSystemPrompt += '\n\nNote: You may use web knowledge if your model supports it. Wrap web search findings in <research> tags.';
     }
     if (deepSearchEnabled) {
-      finalSystemPrompt += '\n\nNote: Prefer deeper step-by-step reasoning when needed. Use <step_by_step> tags for detailed breakdowns.';
+      finalSystemPrompt += '\n\nNote: Prefer deeper step-by-step reasoning when needed. Use <stepbystep> tags for detailed breakdowns.';
     }
     
     // Log detected triggers in dev mode
