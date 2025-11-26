@@ -60,6 +60,7 @@ export interface AppSettings {
   customOpenRouterKey?: string;
   streamingEnabled?: boolean; // New: toggle streaming
   defaultTriggers?: string[]; // Default triggers to apply to all messages
+  customModelPrefix?: 'openrouter' | 'togetherai'; // Custom model API prefix
 }
 
 export interface CustomBot {

@@ -1,27 +1,27 @@
-// Trigger Framework - Storage and Utilities
-// Expanded with 9 categories and 250+ triggers
+// Trigger Framework Storage and Utilities
+// Expanded with 9 categories and 250 plus triggers
 
 export interface TriggerMetadata {
   trigger: string;
   category: string;
   purpose: string;
-  context_used: string;
-  influence_scope: string;
+  contextUsed: string;
+  influenceScope: string;
   custom?: boolean;
 }
 
 export interface Trigger {
   trigger: string;
-  category: 'Reasoning & Analysis' | 'Research & Information' | 'Planning & Organization' | 'Communication & Style' | 'Coding & Development' | 'Creative & Writing' | 'Data & Analytics' | 'Business & Strategy' | 'Education & Learning';
-  system_instruction: string;
+  category: 'Reasoning and Analysis' | 'Research and Information' | 'Planning and Organization' | 'Communication and Style' | 'Coding and Development' | 'Creative and Writing' | 'Data and Analytics' | 'Business and Strategy' | 'Education and Learning';
+  systemInstruction: string;
   example: string;
   enabled: boolean;
   custom?: boolean;
-  tag?: string; // XML tag format
-  metadata_support?: boolean;
-  system_prompt_template?: string; // Enhanced system prompt with metadata
-  trigger_response_format?: string; // How AI should structure long responses for this trigger
-  is_registered?: boolean; // True for custom/server-side registered triggers
+  tag?: string;
+  metadataSupport?: boolean;
+  systemPromptTemplate?: string;
+  triggerResponseFormat?: string;
+  isRegistered?: boolean;
 }
 
 export interface DetectedTrigger {
@@ -32,41 +32,36 @@ export interface DetectedTrigger {
   metadata: TriggerMetadata;
 }
 
-const STORAGE_KEY = 'onyxgpt_triggers';
+const STORAGE_KEY = 'onyxgptTriggers';
 
 // List of valid trigger tags that the system recognizes
 export const VALID_TRIGGER_TAGS = [
   'reason', 'analyze', 'critique', 'debate', 'compare', 'contrast', 'deduce', 'evaluate', 'justify',
   'hypothesize', 'examine', 'interpret', 'verify', 'reflect', 'infer', 'explore', 'discuss', 'validate',
-  'assess', 'troubleshoot', 'search', 'deep_research', 'fact_check', 'contextualize', 'summarize',
+  'assess', 'troubleshoot', 'search', 'deepResearch', 'factCheck', 'contextualize', 'summarize',
   'outline', 'extract', 'highlight', 'define', 'explain', 'describe', 'cite', 'reference', 'clarify',
   'expand', 'compress', 'plan', 'roadmap', 'checklist', 'organize', 'prioritize', 'schedule', 'brainstorm',
   'propose', 'structure', 'map', 'draft', 'improve', 'review', 'simplify', 'formalize', 'rephrase',
-  'rewrite', 'summarize_for_kids', 'persuasive', 'informative', 'neutral', 'balanced', 'empathetic',
-  // Coding & Development triggers
-  'code', 'debug', 'refactor', 'optimize', 'document', 'test', 'review_code', 'architecture', 'security_review',
-  'performance', 'error_handling', 'logging', 'api_design', 'database_design', 'algorithm', 'pattern',
-  'lint', 'unit_test', 'integration_test', 'edge_case', 'dependency_check', 'compatibility', 'scalability',
-  'accessibility', 'usability', 'ui_ux', 'responsive_design', 'mobile_first', 'cross_browser',
-  // Creative & Writing triggers
-  'storytelling', 'narrative', 'poem', 'dialogue', 'character_development', 'worldbuilding', 'plot_twist',
-  'metaphor', 'symbolism', 'tone', 'mood', 'pacing', 'tension', 'foreshadowing', 'dramatic_irony',
-  'alliteration', 'descriptive', 'sensory', 'emotional_appeal', 'voice', 'style', 'grammar_check',
-  'punctuation_check', 'plagiarism_check', 'editing', 'proofreading', 'flow', 'coherence', 'readability',
-  // Data & Analytics triggers
-  'analyze_data', 'statistics', 'correlation', 'trend', 'anomaly', 'prediction', 'classification',
-  'clustering', 'regression', 'visualization', 'data_quality', 'outlier_detection', 'hypothesis_testing',
-  'ab_test', 'metric', 'kpi', 'dashboard', 'reporting', 'data_storytelling', 'benchmark',
-  // Business & Strategy triggers
-  'swot', 'market_analysis', 'competitor_analysis', 'business_model', 'revenue_model', 'pricing_strategy',
-  'customer_journey', 'user_persona', 'stakeholder_analysis', 'risk_assessment', 'mitigation', 'opportunity',
-  'competitive_advantage', 'value_proposition', 'go_to_market', 'product_strategy', 'scaling', 'automation',
-  'efficiency', 'cost_optimization', 'roi_analysis', 'financial_planning', 'budget', 'forecast',
-  // Education & Learning triggers
-  'learning_path', 'concept_explanation', 'skill_building', 'practice_exercise', 'quiz', 'assessment',
-  'rubric', 'feedback', 'metacognition', 'learning_objective', 'prerequisite', 'scaffolding', 'differentiation',
-  'multiple_intelligences', 'learning_style', 'active_learning', 'peer_learning', 'socratic_method',
-  'case_study', 'simulation', 'game_based', 'microlearning', 'spaced_repetition', 'retention'
+  'rewrite', 'summarizeForKids', 'persuasive', 'informative', 'neutral', 'balanced', 'empathetic',
+  'code', 'debug', 'refactor', 'optimize', 'document', 'test', 'reviewCode', 'architecture', 'securityReview',
+  'performance', 'errorHandling', 'logging', 'apiDesign', 'databaseDesign', 'algorithm', 'pattern',
+  'lint', 'unitTest', 'integrationTest', 'edgeCase', 'dependencyCheck', 'compatibility', 'scalability',
+  'accessibility', 'usability', 'uiux', 'responsiveDesign', 'mobileFirst', 'crossBrowser',
+  'storytelling', 'narrative', 'poem', 'dialogue', 'characterDevelopment', 'worldbuilding', 'plotTwist',
+  'metaphor', 'symbolism', 'tone', 'mood', 'pacing', 'tension', 'foreshadowing', 'dramaticIrony',
+  'alliteration', 'descriptive', 'sensory', 'emotionalAppeal', 'voice', 'style', 'grammarCheck',
+  'punctuationCheck', 'plagiarismCheck', 'editing', 'proofreading', 'flow', 'coherence', 'readability',
+  'analyzeData', 'statistics', 'correlation', 'trend', 'anomaly', 'prediction', 'classification',
+  'clustering', 'regression', 'visualization', 'dataQuality', 'outlierDetection', 'hypothesisTesting',
+  'abTest', 'metric', 'kpi', 'dashboard', 'reporting', 'dataStorytelling', 'benchmark',
+  'swot', 'marketAnalysis', 'competitorAnalysis', 'businessModel', 'revenueModel', 'pricingStrategy',
+  'customerJourney', 'userPersona', 'stakeholderAnalysis', 'riskAssessment', 'mitigation', 'opportunity',
+  'competitiveAdvantage', 'valueProposition', 'goToMarket', 'productStrategy', 'scaling', 'automation',
+  'efficiency', 'costOptimization', 'roiAnalysis', 'financialPlanning', 'budget', 'forecast',
+  'learningPath', 'conceptExplanation', 'skillBuilding', 'practiceExercise', 'quiz', 'assessment',
+  'rubric', 'feedback', 'metacognition', 'learningObjective', 'prerequisite', 'scaffolding', 'differentiation',
+  'multipleIntelligences', 'learningStyle', 'activeLearning', 'peerLearning', 'socraticMethod',
+  'caseStudy', 'simulation', 'gameBased', 'microlearning', 'spacedRepetition', 'retention'
 ];
 
 // Helper function to check if a tag is valid
@@ -74,1463 +69,1305 @@ export const isValidTriggerTag = (tagName: string): boolean => {
   return VALID_TRIGGER_TAGS.includes(tagName.toLowerCase());
 };
 
-// Built-in triggers organized by category
+// Built in triggers organized by category
 const BUILT_IN_TRIGGERS: Trigger[] = [
-  /* ==================== Reasoning & Analysis (20 triggers) ==================== */
   {
     trigger: "reason",
-    category: "Reasoning & Analysis",
-    system_instruction: "When 'reason' is detected, structure your response as follows:\n\n<reason>\nProvide your step-by-step logical thinking and reasoning process here. Break down the problem, identify key considerations, and work through your analysis.\n</reason>\n\nThen provide your response in clear, coherent paragraphs.",
-    example: "Use \"reason\" to analyze complex problems systematically.",
+    category: "Reasoning and Analysis",
+    systemInstruction: "When reason is detected structure your response as follows:\n\nProvide your step by step logical thinking and reasoning process here. Break down the problem identify key considerations and work through your analysis.\n\nThen provide your response in clear coherent paragraphs.",
+    example: "Use reason to analyze complex problems systematically.",
     enabled: true
   },
   {
     trigger: "analyze",
-    category: "Reasoning & Analysis",
-    system_instruction: "When 'analyze' is detected, structure your response as follows:\n\n<analyze>\nBreak down the topic into key components, identify relationships between parts, and explain the underlying logic and connections.\n</analyze>\n\nThen provide your detailed analysis in clear sections.",
-    example: "Use \"analyze\" to examine data or concepts in depth.",
+    category: "Reasoning and Analysis",
+    systemInstruction: "When analyze is detected structure your response as follows:\n\nBreak down the topic into key components identify relationships between parts and explain the underlying logic and connections.\n\nThen provide your detailed analysis in clear sections.",
+    example: "Use analyze to examine data or concepts in depth.",
     enabled: true
   },
   {
     trigger: "critique",
-    category: "Reasoning & Analysis",
-    system_instruction: "When 'critique' is detected, structure your response as follows:\n\n<critique>\nEvaluate the strengths and weaknesses objectively. Consider biases, limitations, and areas for improvement.\n</critique>\n\nThen provide your comprehensive critique.",
-    example: "Use \"critique\" to assess arguments or work critically.",
+    category: "Reasoning and Analysis",
+    systemInstruction: "When critique is detected structure your response as follows:\n\nEvaluate the strengths and weaknesses objectively. Consider biases limitations and areas for improvement.\n\nThen provide your comprehensive critique.",
+    example: "Use critique to assess arguments or work critically.",
     enabled: true
   },
   {
     trigger: "debate",
-    category: "Reasoning & Analysis",
-    system_instruction: "When 'debate' is detected, structure your response as follows:\n\n<debate>\nPresent arguments supporting both sides of the issue fairly and thoroughly before drawing conclusions.\n</debate>\n\nThen provide your balanced summary.",
-    example: "Use \"debate\" to explore multiple perspectives.",
+    category: "Reasoning and Analysis",
+    systemInstruction: "When debate is detected structure your response as follows:\n\nPresent arguments supporting both sides of the issue fairly and thoroughly before drawing conclusions.\n\nThen provide your balanced summary.",
+    example: "Use debate to explore multiple perspectives.",
     enabled: true
   },
   {
     trigger: "compare",
-    category: "Reasoning & Analysis",
-    system_instruction: "When 'compare' is detected, structure your response as follows:\n\n<compare>\nIdentify and explain similarities and shared characteristics between the items or concepts being compared.\n</compare>\n\nThen provide a structured comparison.",
-    example: "Use \"compare\" to evaluate similar concepts.",
+    category: "Reasoning and Analysis",
+    systemInstruction: "When compare is detected structure your response as follows:\n\nIdentify and explain similarities and shared characteristics between the items or concepts being compared.\n\nThen provide a structured comparison.",
+    example: "Use compare to evaluate similar concepts.",
     enabled: true
   },
   {
     trigger: "contrast",
-    category: "Reasoning & Analysis",
-    system_instruction: "When 'contrast' is detected, structure your response as follows:\n\n<contrast>\nHighlight and explain the key differences and distinguishing features between the topics.\n</contrast>\n\nThen provide detailed contrasts.",
-    example: "Use \"contrast\" to emphasize differences.",
+    category: "Reasoning and Analysis",
+    systemInstruction: "When contrast is detected structure your response as follows:\n\nHighlight and explain the key differences and distinguishing features between the topics.\n\nThen provide detailed contrasts.",
+    example: "Use contrast to emphasize differences.",
     enabled: true
   },
   {
     trigger: "deduce",
-    category: "Reasoning & Analysis",
-    system_instruction: "When 'deduce' is detected, structure your response as follows:\n\n<deduce>\nApply logical inference from given premises to derive valid conclusions.\n</deduce>\n\nThen provide your deductive conclusions.",
-    example: "Use \"deduce\" for logical problem-solving.",
+    category: "Reasoning and Analysis",
+    systemInstruction: "When deduce is detected structure your response as follows:\n\nApply logical inference from given premises to derive valid conclusions.\n\nThen provide your deductive conclusions.",
+    example: "Use deduce for logical problem solving.",
     enabled: true
   },
   {
     trigger: "evaluate",
-    category: "Reasoning & Analysis",
-    system_instruction: "When 'evaluate' is detected, structure your response as follows:\n\n<evaluate>\nAssess the quality, relevance, and strength of evidence. Judge merit and value objectively.\n</evaluate>\n\nThen provide your evaluation.",
-    example: "Use \"evaluate\" to assess merit or value.",
+    category: "Reasoning and Analysis",
+    systemInstruction: "When evaluate is detected structure your response as follows:\n\nAssess the quality relevance and strength of evidence. Judge merit and value objectively.\n\nThen provide your evaluation.",
+    example: "Use evaluate to assess merit or value.",
     enabled: true
   },
   {
     trigger: "justify",
-    category: "Reasoning & Analysis",
-    system_instruction: "When 'justify' is detected, structure your response as follows:\n\n<justify>\nDefend the claim with rational arguments, logical reasoning, and factual support.\n</justify>\n\nThen provide your justification.",
-    example: "Use \"justify\" to provide supporting reasoning.",
+    category: "Reasoning and Analysis",
+    systemInstruction: "When justify is detected structure your response as follows:\n\nDefend the claim with rational arguments logical reasoning and factual support.\n\nThen provide your justification.",
+    example: "Use justify to provide supporting reasoning.",
     enabled: true
   },
   {
     trigger: "hypothesize",
-    category: "Reasoning & Analysis",
-    system_instruction: "When 'hypothesize' is detected, structure your response as follows:\n\n<hypothesize>\nFormulate plausible explanations or predictions grounded in available evidence.\n</hypothesize>\n\nThen provide your hypothesis and supporting reasoning.",
-    example: "Use \"hypothesize\" for theory building.",
+    category: "Reasoning and Analysis",
+    systemInstruction: "When hypothesize is detected structure your response as follows:\n\nFormulate plausible explanations or predictions grounded in available evidence.\n\nThen provide your hypothesis and supporting reasoning.",
+    example: "Use hypothesize for theory building.",
     enabled: true
   },
   {
     trigger: "examine",
-    category: "Reasoning & Analysis",
-    system_instruction: "When 'examine' is detected, structure your response as follows:\n\n<examine>\nInspect details thoroughly, analyze implications, and comment on significance.\n</examine>\n\nThen provide your detailed examination.",
-    example: "Use \"examine\" for detailed inspection.",
+    category: "Reasoning and Analysis",
+    systemInstruction: "When examine is detected structure your response as follows:\n\nInspect details thoroughly analyze implications and comment on significance.\n\nThen provide your detailed examination.",
+    example: "Use examine for detailed inspection.",
     enabled: true
   },
   {
     trigger: "interpret",
-    category: "Reasoning & Analysis",
-    system_instruction: "When 'interpret' is detected, structure your response as follows:\n\n<interpret>\nExplain meaning and significance in clear, contextualized terms with proper context.\n</interpret>\n\nThen provide your interpretation.",
-    example: "Use \"interpret\" to decode complex information.",
+    category: "Reasoning and Analysis",
+    systemInstruction: "When interpret is detected structure your response as follows:\n\nExplain meaning and significance in clear contextualized terms with proper context.\n\nThen provide your interpretation.",
+    example: "Use interpret to decode complex information.",
     enabled: true
   },
   {
     trigger: "verify",
-    category: "Reasoning & Analysis",
-    system_instruction: "When 'verify' is detected, structure your response as follows:\n\n<verify>\nCheck accuracy and consistency of statements against known facts and reliable sources.\n</verify>\n\nThen provide your verification results.",
-    example: "Use \"verify\" to confirm facts.",
+    category: "Reasoning and Analysis",
+    systemInstruction: "When verify is detected structure your response as follows:\n\nCheck accuracy and consistency of statements against known facts and reliable sources.\n\nThen provide your verification results.",
+    example: "Use verify to confirm facts.",
     enabled: true
   },
   {
     trigger: "reflect",
-    category: "Reasoning & Analysis",
-    system_instruction: "When 'reflect' is detected, structure your response as follows:\n\n<reflect>\nOffer thoughtful insights, meta-analysis, and broader implications drawn from the topic.\n</reflect>\n\nThen provide your reflections.",
-    example: "Use \"reflect\" for deeper understanding.",
+    category: "Reasoning and Analysis",
+    systemInstruction: "When reflect is detected structure your response as follows:\n\nOffer thoughtful insights meta analysis and broader implications drawn from the topic.\n\nThen provide your reflections.",
+    example: "Use reflect for deeper understanding.",
     enabled: true
   },
   {
     trigger: "infer",
-    category: "Reasoning & Analysis",
-    system_instruction: "When 'infer' is detected, structure your response as follows:\n\n<infer>\nDraw reasonable conclusions based on provided information and logical deduction.\n</infer>\n\nThen provide your inferences.",
-    example: "Use \"infer\" to read between the lines.",
+    category: "Reasoning and Analysis",
+    systemInstruction: "When infer is detected structure your response as follows:\n\nDraw reasonable conclusions based on provided information and logical deduction.\n\nThen provide your inferences.",
+    example: "Use infer to read between the lines.",
     enabled: true
   },
   {
     trigger: "explore",
-    category: "Reasoning & Analysis",
-    system_instruction: "When 'explore' is detected, structure your response as follows:\n\n<explore>\nInvestigate multiple angles, perspectives, and possibilities on the topic comprehensively.\n</explore>\n\nThen provide your exploration.",
-    example: "Use \"explore\" for comprehensive investigation.",
+    category: "Reasoning and Analysis",
+    systemInstruction: "When explore is detected structure your response as follows:\n\nInvestigate multiple angles perspectives and possibilities on the topic comprehensively.\n\nThen provide your exploration.",
+    example: "Use explore for comprehensive investigation.",
     enabled: true
   },
   {
     trigger: "discuss",
-    category: "Reasoning & Analysis",
-    system_instruction: "When 'discuss' is detected, structure your response as follows:\n\n<discuss>\nProvide balanced discussion covering multiple viewpoints and perspectives fairly.\n</discuss>\n\nThen provide your discussion summary.",
-    example: "Use \"discuss\" for balanced examination.",
+    category: "Reasoning and Analysis",
+    systemInstruction: "When discuss is detected structure your response as follows:\n\nProvide balanced discussion covering multiple viewpoints and perspectives fairly.\n\nThen provide your discussion summary.",
+    example: "Use discuss for balanced examination.",
     enabled: true
   },
   {
     trigger: "validate",
-    category: "Reasoning & Analysis",
-    system_instruction: "When 'validate' is detected, structure your response as follows:\n\n<validate>\nConfirm truth and reliability of claims using known facts, evidence, and verified sources.\n</validate>\n\nThen provide your validation assessment.",
-    example: "Use \"validate\" to check credibility.",
+    category: "Reasoning and Analysis",
+    systemInstruction: "When validate is detected structure your response as follows:\n\nConfirm truth and reliability of claims using known facts evidence and verified sources.\n\nThen provide your validation assessment.",
+    example: "Use validate to check credibility.",
     enabled: true
   },
   {
     trigger: "assess",
-    category: "Reasoning & Analysis",
-    system_instruction: "When 'assess' is detected, structure your response as follows:\n\n<assess>\nDetermine overall soundness, quality, and performance relative to established standards and benchmarks.\n</assess>\n\nThen provide your assessment.",
-    example: "Use \"assess\" for comprehensive evaluation.",
+    category: "Reasoning and Analysis",
+    systemInstruction: "When assess is detected structure your response as follows:\n\nDetermine overall soundness quality and performance relative to established standards and benchmarks.\n\nThen provide your assessment.",
+    example: "Use assess for comprehensive evaluation.",
     enabled: true
   },
   {
     trigger: "troubleshoot",
-    category: "Reasoning & Analysis",
-    system_instruction: "When 'troubleshoot' is detected, structure your response as follows:\n\n<troubleshoot>\nIdentify problems, diagnose root causes, and propose specific corrective steps.\n</troubleshoot>\n\nThen provide your troubleshooting recommendations.",
-    example: "Use \"troubleshoot\" to solve issues.",
+    category: "Reasoning and Analysis",
+    systemInstruction: "When troubleshoot is detected structure your response as follows:\n\nIdentify problems diagnose root causes and propose specific corrective steps.\n\nThen provide your troubleshooting recommendations.",
+    example: "Use troubleshoot to solve issues.",
     enabled: true
   },
-
-  /* ==================== Research & Information (25 triggers) ==================== */
   {
     trigger: "search",
-    category: "Research & Information",
-    system_instruction: "<search>\nPerform a brief lookup and present concise factual information.\n</search>\n\nThen give the final response.",
-    example: "Use \"search\" for quick factual lookups.",
+    category: "Research and Information",
+    systemInstruction: "Perform a brief lookup and present concise factual information.\n\nThen give the final response.",
+    example: "Use search for quick factual lookups.",
     enabled: true
   },
   {
     trigger: "deep research",
-    category: "Research & Information",
-    system_instruction: "<deep_research>\nConduct an in-depth, multi-source investigation and summarize findings.\n</deep_research>\n\nThen give the final response.",
-    example: "Use \"deep research\" for comprehensive investigations.",
+    category: "Research and Information",
+    systemInstruction: "Conduct an in depth multi source investigation and summarize findings.\n\nThen give the final response.",
+    example: "Use deep research for comprehensive investigations.",
     enabled: true
   },
   {
-    trigger: "fact-check",
-    category: "Research & Information",
-    system_instruction: "<fact_check>\nVerify factual accuracy and highlight uncertain or false parts.\n</fact_check>\n\nThen give the final response.",
-    example: "Use \"fact-check\" to verify claims.",
+    trigger: "fact check",
+    category: "Research and Information",
+    systemInstruction: "Verify factual accuracy and highlight uncertain or false parts.\n\nThen give the final response.",
+    example: "Use fact check to verify claims.",
     enabled: true
   },
   {
     trigger: "contextualize",
-    category: "Research & Information",
-    system_instruction: "<contextualize>\nExplain how the topic fits within its historical, cultural, or scientific background.\n</contextualize>\n\nThen give the final response.",
-    example: "Use \"contextualize\" to provide background.",
+    category: "Research and Information",
+    systemInstruction: "Explain how the topic fits within its historical cultural or scientific background.\n\nThen give the final response.",
+    example: "Use contextualize to provide background.",
     enabled: true
   },
   {
     trigger: "summarize",
-    category: "Research & Information",
-    system_instruction: "<summarize>\nCondense material into essential meaning and main points.\n</summarize>\n\nThen give the final response.",
-    example: "Use \"summarize\" to get key points.",
+    category: "Research and Information",
+    systemInstruction: "Condense material into essential meaning and main points.\n\nThen give the final response.",
+    example: "Use summarize to get key points.",
     enabled: true
   },
   {
     trigger: "outline",
-    category: "Research & Information",
-    system_instruction: "<outline>\nProduce a structured outline or bullet framework.\n</outline>\n\nThen give the final response.",
-    example: "Use \"outline\" to create structure.",
+    category: "Research and Information",
+    systemInstruction: "Produce a structured outline or bullet framework.\n\nThen give the final response.",
+    example: "Use outline to create structure.",
     enabled: true
   },
   {
     trigger: "extract",
-    category: "Research & Information",
-    system_instruction: "<extract>\nPull out the most relevant facts, names, or data points.\n</extract>\n\nThen give the final response.",
-    example: "Use \"extract\" to identify key information.",
+    category: "Research and Information",
+    systemInstruction: "Pull out the most relevant facts names or data points.\n\nThen give the final response.",
+    example: "Use extract to identify key information.",
     enabled: true
   },
   {
     trigger: "highlight",
-    category: "Research & Information",
-    system_instruction: "<highlight>\nEmphasize key ideas or noteworthy information.\n</highlight>\n\nThen give the final response.",
-    example: "Use \"highlight\" to focus on important parts.",
+    category: "Research and Information",
+    systemInstruction: "Emphasize key ideas or noteworthy information.\n\nThen give the final response.",
+    example: "Use highlight to focus on important parts.",
     enabled: true
   },
   {
     trigger: "define",
-    category: "Research & Information",
-    system_instruction: "<define>\nProvide precise definitions and short explanations of terms.\n</define>\n\nThen give the final response.",
-    example: "Use \"define\" to explain terms.",
+    category: "Research and Information",
+    systemInstruction: "Provide precise definitions and short explanations of terms.\n\nThen give the final response.",
+    example: "Use define to explain terms.",
     enabled: true
   },
   {
     trigger: "explain",
-    category: "Research & Information",
-    system_instruction: "<explain>\nClarify concepts with simple language and examples.\n</explain>\n\nThen give the final response.",
-    example: "Use \"explain\" for clear understanding.",
+    category: "Research and Information",
+    systemInstruction: "Clarify concepts with simple language and examples.\n\nThen give the final response.",
+    example: "Use explain for clear understanding.",
     enabled: true
   },
   {
     trigger: "describe",
-    category: "Research & Information",
-    system_instruction: "<describe>\nPortray the subject with factual detail.\n</describe>\n\nThen give the final response.",
-    example: "Use \"describe\" for detailed portrayal.",
+    category: "Research and Information",
+    systemInstruction: "Portray the subject with factual detail.\n\nThen give the final response.",
+    example: "Use describe for detailed portrayal.",
     enabled: true
   },
   {
     trigger: "cite",
-    category: "Research & Information",
-    system_instruction: "<cite>\nInclude reference-style mentions of credible sources when applicable.\n</cite>\n\nThen give the final response.",
-    example: "Use \"cite\" to reference sources.",
+    category: "Research and Information",
+    systemInstruction: "Include reference style mentions of credible sources when applicable.\n\nThen give the final response.",
+    example: "Use cite to reference sources.",
     enabled: true
   },
   {
     trigger: "reference",
-    category: "Research & Information",
-    system_instruction: "<reference>\nAcknowledge where facts or ideas originate.\n</reference>\n\nThen give the final response.",
-    example: "Use \"reference\" to credit sources.",
+    category: "Research and Information",
+    systemInstruction: "Acknowledge where facts or ideas originate.\n\nThen give the final response.",
+    example: "Use reference to credit sources.",
     enabled: true
   },
   {
     trigger: "clarify",
-    category: "Research & Information",
-    system_instruction: "<clarify>\nRemove ambiguity and restate ideas for better understanding.\n</clarify>\n\nThen give the final response.",
-    example: "Use \"clarify\" to remove confusion.",
+    category: "Research and Information",
+    systemInstruction: "Remove ambiguity and restate ideas for better understanding.\n\nThen give the final response.",
+    example: "Use clarify to remove confusion.",
     enabled: true
   },
   {
     trigger: "expand",
-    category: "Research & Information",
-    system_instruction: "<expand>\nDevelop the concept further with supporting detail.\n</expand>\n\nThen give the final response.",
-    example: "Use \"expand\" for more depth.",
+    category: "Research and Information",
+    systemInstruction: "Develop the concept further with supporting detail.\n\nThen give the final response.",
+    example: "Use expand for more depth.",
     enabled: true
   },
   {
     trigger: "compress",
-    category: "Research & Information",
-    system_instruction: "<compress>\nShorten content while preserving meaning.\n</compress>\n\nThen give the final response.",
-    example: "Use \"compress\" to make content concise.",
+    category: "Research and Information",
+    systemInstruction: "Shorten content while preserving meaning.\n\nThen give the final response.",
+    example: "Use compress to make content concise.",
     enabled: true
   },
   {
     trigger: "timeline",
-    category: "Research & Information",
-    system_instruction: "<timeline>\nPresent events or information in chronological order.\n</timeline>\n\nThen give the final response.",
-    example: "Use \"timeline\" for historical sequences.",
+    category: "Research and Information",
+    systemInstruction: "Present events or information in chronological order.\n\nThen give the final response.",
+    example: "Use timeline for historical sequences.",
     enabled: true
   },
   {
     trigger: "encyclopedia",
-    category: "Research & Information",
-    system_instruction: "<encyclopedia>\nProvide comprehensive, encyclopedic-style information.\n</encyclopedia>\n\nThen give the final response.",
-    example: "Use \"encyclopedia\" for thorough reference material.",
+    category: "Research and Information",
+    systemInstruction: "Provide comprehensive encyclopedic style information.\n\nThen give the final response.",
+    example: "Use encyclopedia for thorough reference material.",
     enabled: true
   },
   {
     trigger: "etymology",
-    category: "Research & Information",
-    system_instruction: "<etymology>\nExplain the origins and historical development of terms.\n</etymology>\n\nThen give the final response.",
-    example: "Use \"etymology\" to understand word origins.",
+    category: "Research and Information",
+    systemInstruction: "Explain the origins and historical development of terms.\n\nThen give the final response.",
+    example: "Use etymology to understand word origins.",
     enabled: true
   },
   {
     trigger: "glossary",
-    category: "Research & Information",
-    system_instruction: "<glossary>\nCreate a glossary of key terms and definitions.\n</glossary>\n\nThen give the final response.",
-    example: "Use \"glossary\" to define terminology.",
+    category: "Research and Information",
+    systemInstruction: "Create a glossary of key terms and definitions.\n\nThen give the final response.",
+    example: "Use glossary to define terminology.",
     enabled: true
   },
   {
     trigger: "benchmark",
-    category: "Research & Information",
-    system_instruction: "<benchmark>\nCompare against industry standards or best practices.\n</benchmark>\n\nThen give the final response.",
-    example: "Use \"benchmark\" for comparative analysis.",
+    category: "Research and Information",
+    systemInstruction: "Compare against industry standards or best practices.\n\nThen give the final response.",
+    example: "Use benchmark for comparative analysis.",
     enabled: true
   },
   {
-    trigger: "case_study",
-    category: "Research & Information",
-    system_instruction: "<case_study>\nAnalyze a specific real-world example in detail.\n</case_study>\n\nThen give the final response.",
-    example: "Use \"case_study\" to examine specific instances.",
+    trigger: "case study",
+    category: "Research and Information",
+    systemInstruction: "Analyze a specific real world example in detail.\n\nThen give the final response.",
+    example: "Use case study to examine specific instances.",
     enabled: true
   },
   {
     trigger: "whitepaper",
-    category: "Research & Information",
-    system_instruction: "<whitepaper>\nProvide in-depth technical or policy analysis.\n</whitepaper>\n\nThen give the final response.",
-    example: "Use \"whitepaper\" for detailed documentation.",
+    category: "Research and Information",
+    systemInstruction: "Provide in depth technical or policy analysis.\n\nThen give the final response.",
+    example: "Use whitepaper for detailed documentation.",
     enabled: true
   },
   {
-    trigger: "literature_review",
-    category: "Research & Information",
-    system_instruction: "<literature_review>\nSummarize and synthesize relevant research and sources.\n</literature_review>\n\nThen give the final response.",
-    example: "Use \"literature_review\" to survey existing work.",
+    trigger: "literature review",
+    category: "Research and Information",
+    systemInstruction: "Summarize and synthesize relevant research and sources.\n\nThen give the final response.",
+    example: "Use literature review to survey existing work.",
     enabled: true
   },
-
-  /* ==================== Planning & Organization (20 triggers) ==================== */
   {
     trigger: "plan",
-    category: "Planning & Organization",
-    system_instruction: "<plan>\nGenerate a logical step-by-step process to achieve the goal.\n</plan>\n\nThen give the final response.",
-    example: "Use \"plan\" to create action plans.",
+    category: "Planning and Organization",
+    systemInstruction: "Generate a logical step by step process to achieve the goal.\n\nThen give the final response.",
+    example: "Use plan to create action plans.",
     enabled: true
   },
   {
     trigger: "roadmap",
-    category: "Planning & Organization",
-    system_instruction: "<roadmap>\nLay out key milestones and paths toward completion.\n</roadmap>\n\nThen give the final response.",
-    example: "Use \"roadmap\" for project planning.",
+    category: "Planning and Organization",
+    systemInstruction: "Lay out key milestones and paths toward completion.\n\nThen give the final response.",
+    example: "Use roadmap for project planning.",
     enabled: true
   },
   {
     trigger: "checklist",
-    category: "Planning & Organization",
-    system_instruction: "<checklist>\nPresent a task list to complete the objective.\n</checklist>\n\nThen give the final response.",
-    example: "Use \"checklist\" for task lists.",
+    category: "Planning and Organization",
+    systemInstruction: "Present a task list to complete the objective.\n\nThen give the final response.",
+    example: "Use checklist for task lists.",
     enabled: true
   },
   {
     trigger: "organize",
-    category: "Planning & Organization",
-    system_instruction: "<organize>\nArrange ideas or data into clear categories.\n</organize>\n\nThen give the final response.",
-    example: "Use \"organize\" to structure information.",
+    category: "Planning and Organization",
+    systemInstruction: "Arrange ideas or data into clear categories.\n\nThen give the final response.",
+    example: "Use organize to structure information.",
     enabled: true
   },
   {
     trigger: "prioritize",
-    category: "Planning & Organization",
-    system_instruction: "<prioritize>\nOrder tasks or ideas by importance or urgency.\n</prioritize>\n\nThen give the final response.",
-    example: "Use \"prioritize\" to rank importance.",
+    category: "Planning and Organization",
+    systemInstruction: "Order tasks or ideas by importance or urgency.\n\nThen give the final response.",
+    example: "Use prioritize to rank importance.",
     enabled: true
   },
   {
     trigger: "schedule",
-    category: "Planning & Organization",
-    system_instruction: "<schedule>\nSuggest a timeline or time-based arrangement.\n</schedule>\n\nThen give the final response.",
-    example: "Use \"schedule\" for timeline planning.",
+    category: "Planning and Organization",
+    systemInstruction: "Suggest a timeline or time based arrangement.\n\nThen give the final response.",
+    example: "Use schedule for timeline planning.",
     enabled: true
   },
   {
     trigger: "brainstorm",
-    category: "Planning & Organization",
-    system_instruction: "<brainstorm>\nGenerate creative ideas without evaluation.\n</brainstorm>\n\nThen give the final response.",
-    example: "Use \"brainstorm\" for idea generation.",
+    category: "Planning and Organization",
+    systemInstruction: "Generate creative ideas without evaluation.\n\nThen give the final response.",
+    example: "Use brainstorm for idea generation.",
     enabled: true
   },
   {
     trigger: "propose",
-    category: "Planning & Organization",
-    system_instruction: "<propose>\nOffer a structured and reasoned proposal.\n</propose>\n\nThen give the final response.",
-    example: "Use \"propose\" to suggest solutions.",
+    category: "Planning and Organization",
+    systemInstruction: "Offer a structured and reasoned proposal.\n\nThen give the final response.",
+    example: "Use propose to suggest solutions.",
     enabled: true
   },
   {
     trigger: "structure",
-    category: "Planning & Organization",
-    system_instruction: "<structure>\nPresent information using logical sections.\n</structure>\n\nThen give the final response.",
-    example: "Use \"structure\" to organize content.",
+    category: "Planning and Organization",
+    systemInstruction: "Present information using logical sections.\n\nThen give the final response.",
+    example: "Use structure to organize content.",
     enabled: true
   },
   {
     trigger: "map",
-    category: "Planning & Organization",
-    system_instruction: "<map>\nShow conceptual or relational connections.\n</map>\n\nThen give the final response.",
-    example: "Use \"map\" to show relationships.",
+    category: "Planning and Organization",
+    systemInstruction: "Show conceptual or relational connections.\n\nThen give the final response.",
+    example: "Use map to show relationships.",
     enabled: true
   },
   {
     trigger: "draft",
-    category: "Planning & Organization",
-    system_instruction: "<draft>\nCreate an initial version with key sections.\n</draft>\n\nThen give the final response.",
-    example: "Use \"draft\" to build first versions.",
+    category: "Planning and Organization",
+    systemInstruction: "Create an initial version with key sections.\n\nThen give the final response.",
+    example: "Use draft to build first versions.",
     enabled: true
   },
   {
     trigger: "improve",
-    category: "Planning & Organization",
-    system_instruction: "<improve>\nSuggest refinements to strengthen quality.\n</improve>\n\nThen give the final response.",
-    example: "Use \"improve\" to enhance writing.",
+    category: "Planning and Organization",
+    systemInstruction: "Suggest refinements to strengthen quality.\n\nThen give the final response.",
+    example: "Use improve to enhance writing.",
     enabled: true
   },
   {
     trigger: "review",
-    category: "Planning & Organization",
-    system_instruction: "<review>\nEvaluate content and summarize potential revisions.\n</review>\n\nThen give the final response.",
-    example: "Use \"review\" for evaluation.",
+    category: "Planning and Organization",
+    systemInstruction: "Evaluate content and summarize potential revisions.\n\nThen give the final response.",
+    example: "Use review for evaluation.",
     enabled: true
   },
   {
     trigger: "milestone",
-    category: "Planning & Organization",
-    system_instruction: "<milestone>\nIdentify key checkpoints and progress markers.\n</milestone>\n\nThen give the final response.",
-    example: "Use \"milestone\" to track progress.",
+    category: "Planning and Organization",
+    systemInstruction: "Identify key checkpoints and progress markers.\n\nThen give the final response.",
+    example: "Use milestone to track progress.",
     enabled: true
   },
   {
     trigger: "iteration",
-    category: "Planning & Organization",
-    system_instruction: "<iteration>\nOutline cycles of refinement and improvement.\n</iteration>\n\nThen give the final response.",
-    example: "Use \"iteration\" for cyclical development.",
+    category: "Planning and Organization",
+    systemInstruction: "Outline cycles of refinement and improvement.\n\nThen give the final response.",
+    example: "Use iteration for cyclical development.",
     enabled: true
   },
   {
     trigger: "workflow",
-    category: "Planning & Organization",
-    system_instruction: "<workflow>\nMap out process flows and dependencies.\n</workflow>\n\nThen give the final response.",
-    example: "Use \"workflow\" for process mapping.",
-    enabled: true
-  },
-  {
-    trigger: "agile",
-    category: "Planning & Organization",
-    system_instruction: "<agile>\nApply agile methodology principles.\n</agile>\n\nThen give the final response.",
-    example: "Use \"agile\" for flexible planning.",
-    enabled: true
-  },
-  {
-    trigger: "gantt",
-    category: "Planning & Organization",
-    system_instruction: "<gantt>\nPresent timeline in Gantt chart format or style.\n</gantt>\n\nThen give the final response.",
-    example: "Use \"gantt\" for timeline visualization.",
-    enabled: true
-  },
-  {
-    trigger: "kanban",
-    category: "Planning & Organization",
-    system_instruction: "<kanban>\nOrganize using kanban board principles.\n</kanban>\n\nThen give the final response.",
-    example: "Use \"kanban\" for workflow visualization.",
-    enabled: true
-  },
-  {
-    trigger: "critical_path",
-    category: "Planning & Organization",
-    system_instruction: "<critical_path>\nIdentify the critical path and dependencies.\n</critical_path>\n\nThen give the final response.",
-    example: "Use \"critical_path\" for dependency analysis.",
-    enabled: true
-  },
-
-  /* ==================== Communication & Style (20 triggers) ==================== */
-  {
-    trigger: "simplify",
-    category: "Communication & Style",
-    system_instruction: "<simplify>\nRephrase complex ideas into plain language.\n</simplify>\n\nThen give the final response.",
-    example: "Use \"simplify\" to make content easier.",
-    enabled: true
-  },
-  {
-    trigger: "formalize",
-    category: "Communication & Style",
-    system_instruction: "<formalize>\nConvert tone into a professional register.\n</formalize>\n\nThen give the final response.",
-    example: "Use \"formalize\" for academic tone.",
+    category: "Planning and Organization",
+    systemInstruction: "Map out process flows and dependencies.\n\nThen give the final response.",
+    example: "Use workflow for process mapping.",
     enabled: true
   },
   {
     trigger: "rephrase",
-    category: "Communication & Style",
-    system_instruction: "<rephrase>\nRewrite content using different wording with identical meaning.\n</rephrase>\n\nThen give the final response.",
-    example: "Use \"rephrase\" to change wording.",
+    category: "Planning and Organization",
+    systemInstruction: "Say the same thing differently.\n\nThen give the final response.",
+    example: "Use rephrase to alter wording.",
     enabled: true
   },
   {
     trigger: "rewrite",
-    category: "Communication & Style",
-    system_instruction: "<rewrite>\nProduce a clearer version while keeping intent.\n</rewrite>\n\nThen give the final response.",
-    example: "Use \"rewrite\" for clarity.",
+    category: "Planning and Organization",
+    systemInstruction: "Recreate content with new structure.\n\nThen give the final response.",
+    example: "Use rewrite to reconstruct.",
     enabled: true
   },
   {
-    trigger: "summarize-for-kids",
-    category: "Communication & Style",
-    system_instruction: "<summarize_for_kids>\nExplain the idea in age-appropriate, simple terms.\n</summarize_for_kids>\n\nThen give the final response.",
-    example: "Use \"summarize-for-kids\" for child-friendly explanations.",
+    trigger: "simplify",
+    category: "Planning and Organization",
+    systemInstruction: "Make content easier to understand.\n\nThen give the final response.",
+    example: "Use simplify to reduce complexity.",
     enabled: true
   },
   {
-    trigger: "persuasive",
-    category: "Communication & Style",
-    system_instruction: "<persuasive>\nUse logical appeals and evidence to persuade.\n</persuasive>\n\nThen give the final response.",
-    example: "Use \"persuasive\" for convincing arguments.",
+    trigger: "formalize",
+    category: "Planning and Organization",
+    systemInstruction: "Make content more official or structured.\n\nThen give the final response.",
+    example: "Use formalize for formal tone.",
     enabled: true
   },
-  {
-    trigger: "informative",
-    category: "Communication & Style",
-    system_instruction: "<informative>\nDeliver factual, balanced, educational information.\n</informative>\n\nThen give the final response.",
-    example: "Use \"informative\" for educational content.",
-    enabled: true
-  },
-  {
-    trigger: "neutral",
-    category: "Communication & Style",
-    system_instruction: "<neutral>\nMaintain objectivity and avoid bias.\n</neutral>\n\nThen give the final response.",
-    example: "Use \"neutral\" for unbiased responses.",
-    enabled: true
-  },
-  {
-    trigger: "balanced",
-    category: "Communication & Style",
-    system_instruction: "<balanced>\nRepresent multiple perspectives fairly.\n</balanced>\n\nThen give the final response.",
-    example: "Use \"balanced\" for fair representation.",
-    enabled: true
-  },
-  {
-    trigger: "empathetic",
-    category: "Communication & Style",
-    system_instruction: "<empathetic>\nUse sensitive, supportive phrasing.\n</empathetic>\n\nThen give the final response.",
-    example: "Use \"empathetic\" for supportive communication.",
-    enabled: true
-  },
-  {
-    trigger: "casual",
-    category: "Communication & Style",
-    system_instruction: "<casual>\nAdopt a relaxed, conversational tone.\n</casual>\n\nThen give the final response.",
-    example: "Use \"casual\" for informal communication.",
-    enabled: true
-  },
-  {
-    trigger: "humorous",
-    category: "Communication & Style",
-    system_instruction: "<humorous>\nIncorporate wit and humor appropriately.\n</humorous>\n\nThen give the final response.",
-    example: "Use \"humorous\" for lighthearted responses.",
-    enabled: true
-  },
-  {
-    trigger: "technical",
-    category: "Communication & Style",
-    system_instruction: "<technical>\nUse precise technical terminology and jargon.\n</technical>\n\nThen give the final response.",
-    example: "Use \"technical\" for expert audiences.",
-    enabled: true
-  },
-  {
-    trigger: "poetic",
-    category: "Communication & Style",
-    system_instruction: "<poetic>\nUse lyrical, beautiful language.\n</poetic>\n\nThen give the final response.",
-    example: "Use \"poetic\" for creative expression.",
-    enabled: true
-  },
-  {
-    trigger: "sarcastic",
-    category: "Communication & Style",
-    system_instruction: "<sarcastic>\nUse irony and sarcasm appropriately.\n</sarcastic>\n\nThen give the final response.",
-    example: "Use \"sarcastic\" for witty remarks.",
-    enabled: true
-  },
-  {
-    trigger: "concise",
-    category: "Communication & Style",
-    system_instruction: "<concise>\nDeliver information with maximum brevity.\n</concise>\n\nThen give the final response.",
-    example: "Use \"concise\" for brief responses.",
-    enabled: true
-  },
-  {
-    trigger: "verbose",
-    category: "Communication & Style",
-    system_instruction: "<verbose>\nProvide extensive, detailed explanations.\n</verbose>\n\nThen give the final response.",
-    example: "Use \"verbose\" for comprehensive coverage.",
-    enabled: true
-  },
-  {
-    trigger: "storytelling",
-    category: "Communication & Style",
-    system_instruction: "<storytelling>\nPresent information using narrative and story elements.\n</storytelling>\n\nThen give the final response.",
-    example: "Use \"storytelling\" for narrative style.",
-    enabled: true
-  },
-  {
-    trigger: "bullet_points",
-    category: "Communication & Style",
-    system_instruction: "<bullet_points>\nOrganize response using bullet points.\n</bullet_points>\n\nThen give the final response.",
-    example: "Use \"bullet_points\" for list format.",
-    enabled: true
-  },
-  {
-    trigger: "numbered_list",
-    category: "Communication & Style",
-    system_instruction: "<numbered_list>\nOrganize response using numbered lists.\n</numbered_list>\n\nThen give the final response.",
-    example: "Use \"numbered_list\" for sequential format.",
-    enabled: true
-  },
-
-  /* ==================== Coding & Development (30 triggers) ==================== */
   {
     trigger: "code",
-    category: "Coding & Development",
-    system_instruction: "<code>\nProvide clean, production-ready code with best practices.\n</code>\n\nThen give the final response.",
-    example: "Use \"code\" for implementation.",
+    category: "Coding and Development",
+    systemInstruction: "Write clean executable code.\n\nThen give the final response.",
+    example: "Use code to generate code.",
     enabled: true
   },
   {
     trigger: "debug",
-    category: "Coding & Development",
-    system_instruction: "<debug>\nIdentify and explain bugs with solutions.\n</debug>\n\nThen give the final response.",
-    example: "Use \"debug\" to fix errors.",
+    category: "Coding and Development",
+    systemInstruction: "Find and fix code errors.\n\nThen give the final response.",
+    example: "Use debug to fix issues.",
     enabled: true
   },
   {
     trigger: "refactor",
-    category: "Coding & Development",
-    system_instruction: "<refactor>\nImprove code structure and maintainability.\n</refactor>\n\nThen give the final response.",
-    example: "Use \"refactor\" to improve code quality.",
+    category: "Coding and Development",
+    systemInstruction: "Improve code structure without changing behavior.\n\nThen give the final response.",
+    example: "Use refactor to improve quality.",
     enabled: true
   },
   {
     trigger: "optimize",
-    category: "Coding & Development",
-    system_instruction: "<optimize>\nEnhance performance and efficiency.\n</optimize>\n\nThen give the final response.",
-    example: "Use \"optimize\" for performance tuning.",
+    category: "Coding and Development",
+    systemInstruction: "Enhance performance and efficiency.\n\nThen give the final response.",
+    example: "Use optimize for speed improvements.",
     enabled: true
   },
   {
     trigger: "document",
-    category: "Coding & Development",
-    system_instruction: "<document>\nCreate clear documentation and comments.\n</document>\n\nThen give the final response.",
-    example: "Use \"document\" for code documentation.",
+    category: "Coding and Development",
+    systemInstruction: "Create clear technical documentation.\n\nThen give the final response.",
+    example: "Use document to write docs.",
     enabled: true
   },
   {
     trigger: "test",
-    category: "Coding & Development",
-    system_instruction: "<test>\nCreate comprehensive test cases.\n</test>\n\nThen give the final response.",
-    example: "Use \"test\" for test creation.",
+    category: "Coding and Development",
+    systemInstruction: "Create test cases and validation.\n\nThen give the final response.",
+    example: "Use test for test creation.",
     enabled: true
   },
   {
-    trigger: "review_code",
-    category: "Coding & Development",
-    system_instruction: "<review_code>\nConduct thorough code review analysis.\n</review_code>\n\nThen give the final response.",
-    example: "Use \"review_code\" for code review.",
+    trigger: "review code",
+    category: "Coding and Development",
+    systemInstruction: "Evaluate code quality and practices.\n\nThen give the final response.",
+    example: "Use review code for critique.",
     enabled: true
   },
   {
     trigger: "architecture",
-    category: "Coding & Development",
-    system_instruction: "<architecture>\nDesign system architecture and structure.\n</architecture>\n\nThen give the final response.",
-    example: "Use \"architecture\" for design planning.",
+    category: "Coding and Development",
+    systemInstruction: "Design system structure.\n\nThen give the final response.",
+    example: "Use architecture for system design.",
     enabled: true
   },
   {
-    trigger: "security_review",
-    category: "Coding & Development",
-    system_instruction: "<security_review>\nAnalyze security vulnerabilities and risks.\n</security_review>\n\nThen give the final response.",
-    example: "Use \"security_review\" for security audits.",
+    trigger: "security review",
+    category: "Coding and Development",
+    systemInstruction: "Check for security vulnerabilities.\n\nThen give the final response.",
+    example: "Use security review to audit security.",
     enabled: true
   },
   {
     trigger: "performance",
-    category: "Coding & Development",
-    system_instruction: "<performance>\nAnalyze and improve performance metrics.\n</performance>\n\nThen give the final response.",
-    example: "Use \"performance\" for optimization.",
+    category: "Coding and Development",
+    systemInstruction: "Analyze and improve speed.\n\nThen give the final response.",
+    example: "Use performance to assess speed.",
     enabled: true
   },
   {
-    trigger: "error_handling",
-    category: "Coding & Development",
-    system_instruction: "<error_handling>\nDesign robust error handling.\n</error_handling>\n\nThen give the final response.",
-    example: "Use \"error_handling\" for exception design.",
+    trigger: "error handling",
+    category: "Coding and Development",
+    systemInstruction: "Create robust error management.\n\nThen give the final response.",
+    example: "Use error handling for exception handling.",
     enabled: true
   },
   {
     trigger: "logging",
-    category: "Coding & Development",
-    system_instruction: "<logging>\nImplement effective logging strategies.\n</logging>\n\nThen give the final response.",
-    example: "Use \"logging\" for log design.",
+    category: "Coding and Development",
+    systemInstruction: "Implement logging systems.\n\nThen give the final response.",
+    example: "Use logging for debug tracking.",
     enabled: true
   },
   {
-    trigger: "api_design",
-    category: "Coding & Development",
-    system_instruction: "<api_design>\nDesign clean and intuitive APIs.\n</api_design>\n\nThen give the final response.",
-    example: "Use \"api_design\" for API development.",
+    trigger: "api design",
+    category: "Coding and Development",
+    systemInstruction: "Design clean APIs.\n\nThen give the final response.",
+    example: "Use api design for API planning.",
     enabled: true
   },
   {
-    trigger: "database_design",
-    category: "Coding & Development",
-    system_instruction: "<database_design>\nDesign efficient database schemas.\n</database_design>\n\nThen give the final response.",
-    example: "Use \"database_design\" for database architecture.",
+    trigger: "database design",
+    category: "Coding and Development",
+    systemInstruction: "Create efficient database schemas.\n\nThen give the final response.",
+    example: "Use database design for schema design.",
     enabled: true
   },
   {
     trigger: "algorithm",
-    category: "Coding & Development",
-    system_instruction: "<algorithm>\nExplain or design efficient algorithms.\n</algorithm>\n\nThen give the final response.",
-    example: "Use \"algorithm\" for algorithmic solutions.",
+    category: "Coding and Development",
+    systemInstruction: "Develop algorithms.\n\nThen give the final response.",
+    example: "Use algorithm for algorithm design.",
     enabled: true
   },
   {
     trigger: "pattern",
-    category: "Coding & Development",
-    system_instruction: "<pattern>\nApply design patterns appropriately.\n</pattern>\n\nThen give the final response.",
-    example: "Use \"pattern\" for design patterns.",
+    category: "Coding and Development",
+    systemInstruction: "Apply design patterns.\n\nThen give the final response.",
+    example: "Use pattern for design patterns.",
     enabled: true
   },
   {
     trigger: "lint",
-    category: "Coding & Development",
-    system_instruction: "<lint>\nAnalyze code style and standards compliance.\n</lint>\n\nThen give the final response.",
-    example: "Use \"lint\" for code style review.",
+    category: "Coding and Development",
+    systemInstruction: "Check code style and standards.\n\nThen give the final response.",
+    example: "Use lint for style checking.",
     enabled: true
   },
   {
-    trigger: "unit_test",
-    category: "Coding & Development",
-    system_instruction: "<unit_test>\nCreate unit tests for functions.\n</unit_test>\n\nThen give the final response.",
-    example: "Use \"unit_test\" for unit testing.",
+    trigger: "unit test",
+    category: "Coding and Development",
+    systemInstruction: "Create unit tests.\n\nThen give the final response.",
+    example: "Use unit test for unit testing.",
     enabled: true
   },
   {
-    trigger: "integration_test",
-    category: "Coding & Development",
-    system_instruction: "<integration_test>\nCreate integration tests.\n</integration_test>\n\nThen give the final response.",
-    example: "Use \"integration_test\" for integration testing.",
+    trigger: "integration test",
+    category: "Coding and Development",
+    systemInstruction: "Create integration tests.\n\nThen give the final response.",
+    example: "Use integration test for integration testing.",
     enabled: true
   },
   {
-    trigger: "edge_case",
-    category: "Coding & Development",
-    system_instruction: "<edge_case>\nIdentify and handle edge cases.\n</edge_case>\n\nThen give the final response.",
-    example: "Use \"edge_case\" for edge case handling.",
+    trigger: "edge case",
+    category: "Coding and Development",
+    systemInstruction: "Identify edge cases.\n\nThen give the final response.",
+    example: "Use edge case for edge case analysis.",
     enabled: true
   },
   {
-    trigger: "dependency_check",
-    category: "Coding & Development",
-    system_instruction: "<dependency_check>\nAnalyze dependencies and conflicts.\n</dependency_check>\n\nThen give the final response.",
-    example: "Use \"dependency_check\" for dependency analysis.",
+    trigger: "dependency check",
+    category: "Coding and Development",
+    systemInstruction: "Analyze dependencies.\n\nThen give the final response.",
+    example: "Use dependency check for dependency analysis.",
     enabled: true
   },
   {
     trigger: "compatibility",
-    category: "Coding & Development",
-    system_instruction: "<compatibility>\nEnsure cross-version and cross-platform compatibility.\n</compatibility>\n\nThen give the final response.",
-    example: "Use \"compatibility\" for compatibility checking.",
+    category: "Coding and Development",
+    systemInstruction: "Check cross platform compatibility.\n\nThen give the final response.",
+    example: "Use compatibility for compatibility testing.",
     enabled: true
   },
   {
     trigger: "scalability",
-    category: "Coding & Development",
-    system_instruction: "<scalability>\nDesign for scalability and growth.\n</scalability>\n\nThen give the final response.",
-    example: "Use \"scalability\" for scalable design.",
+    category: "Coding and Development",
+    systemInstruction: "Design for scale.\n\nThen give the final response.",
+    example: "Use scalability for scaling design.",
     enabled: true
   },
   {
     trigger: "accessibility",
-    category: "Coding & Development",
-    system_instruction: "<accessibility>\nEnsure accessibility compliance (WCAG, etc.).\n</accessibility>\n\nThen give the final response.",
-    example: "Use \"accessibility\" for a11y improvements.",
+    category: "Coding and Development",
+    systemInstruction: "Ensure accessibility standards.\n\nThen give the final response.",
+    example: "Use accessibility for accessibility audit.",
     enabled: true
   },
   {
     trigger: "usability",
-    category: "Coding & Development",
-    system_instruction: "<usability>\nAnalyze and improve user experience.\n</usability>\n\nThen give the final response.",
-    example: "Use \"usability\" for UX improvements.",
+    category: "Coding and Development",
+    systemInstruction: "Optimize user experience.\n\nThen give the final response.",
+    example: "Use usability for UX analysis.",
     enabled: true
   },
   {
-    trigger: "ui_ux",
-    category: "Coding & Development",
-    system_instruction: "<ui_ux>\nDesign user interface and experience.\n</ui_ux>\n\nThen give the final response.",
-    example: "Use \"ui_ux\" for UI/UX design.",
+    trigger: "ui ux",
+    category: "Coding and Development",
+    systemInstruction: "Design interfaces and experience.\n\nThen give the final response.",
+    example: "Use ui ux for interface design.",
     enabled: true
   },
   {
-    trigger: "responsive_design",
-    category: "Coding & Development",
-    system_instruction: "<responsive_design>\nEnsure responsive design across devices.\n</responsive_design>\n\nThen give the final response.",
-    example: "Use \"responsive_design\" for mobile responsiveness.",
+    trigger: "responsive design",
+    category: "Coding and Development",
+    systemInstruction: "Create responsive layouts.\n\nThen give the final response.",
+    example: "Use responsive design for responsive layouts.",
     enabled: true
   },
   {
-    trigger: "mobile_first",
-    category: "Coding & Development",
-    system_instruction: "<mobile_first>\nApply mobile-first development approach.\n</mobile_first>\n\nThen give the final response.",
-    example: "Use \"mobile_first\" for mobile optimization.",
+    trigger: "mobile first",
+    category: "Coding and Development",
+    systemInstruction: "Design for mobile first.\n\nThen give the final response.",
+    example: "Use mobile first for mobile design.",
     enabled: true
   },
   {
-    trigger: "cross_browser",
-    category: "Coding & Development",
-    system_instruction: "<cross_browser>\nEnsure cross-browser compatibility.\n</cross_browser>\n\nThen give the final response.",
-    example: "Use \"cross_browser\" for browser compatibility.",
+    trigger: "cross browser",
+    category: "Coding and Development",
+    systemInstruction: "Test across browsers.\n\nThen give the final response.",
+    example: "Use cross browser for browser testing.",
     enabled: true
   },
-
-  /* ==================== Creative & Writing (30 triggers) ==================== */
   {
     trigger: "storytelling",
-    category: "Creative & Writing",
-    system_instruction: "<storytelling>\nCraft engaging narrative with story arc.\n</storytelling>\n\nThen give the final response.",
-    example: "Use \"storytelling\" for narrative composition.",
+    category: "Creative and Writing",
+    systemInstruction: "Craft engaging stories.\n\nThen give the final response.",
+    example: "Use storytelling for narrative.",
     enabled: true
   },
   {
     trigger: "narrative",
-    category: "Creative & Writing",
-    system_instruction: "<narrative>\nDevelop cohesive narrative structure.\n</narrative>\n\nThen give the final response.",
-    example: "Use \"narrative\" for story development.",
+    category: "Creative and Writing",
+    systemInstruction: "Create narrative flow.\n\nThen give the final response.",
+    example: "Use narrative for plot construction.",
     enabled: true
   },
   {
     trigger: "poem",
-    category: "Creative & Writing",
-    system_instruction: "<poem>\nCompose poetry with rhythm and rhyme.\n</poem>\n\nThen give the final response.",
-    example: "Use \"poem\" for poetic composition.",
+    category: "Creative and Writing",
+    systemInstruction: "Write poetry.\n\nThen give the final response.",
+    example: "Use poem for poetry writing.",
     enabled: true
   },
   {
     trigger: "dialogue",
-    category: "Creative & Writing",
-    system_instruction: "<dialogue>\nWrite natural and realistic dialogue.\n</dialogue>\n\nThen give the final response.",
-    example: "Use \"dialogue\" for conversation writing.",
+    category: "Creative and Writing",
+    systemInstruction: "Write conversations.\n\nThen give the final response.",
+    example: "Use dialogue for conversation writing.",
     enabled: true
   },
   {
-    trigger: "character_development",
-    category: "Creative & Writing",
-    system_instruction: "<character_development>\nCreate compelling character arcs.\n</character_development>\n\nThen give the final response.",
-    example: "Use \"character_development\" for character creation.",
+    trigger: "character development",
+    category: "Creative and Writing",
+    systemInstruction: "Develop characters.\n\nThen give the final response.",
+    example: "Use character development for character creation.",
     enabled: true
   },
   {
     trigger: "worldbuilding",
-    category: "Creative & Writing",
-    system_instruction: "<worldbuilding>\nBuild immersive fictional worlds.\n</worldbuilding>\n\nThen give the final response.",
-    example: "Use \"worldbuilding\" for world creation.",
+    category: "Creative and Writing",
+    systemInstruction: "Create fictional worlds.\n\nThen give the final response.",
+    example: "Use worldbuilding for world creation.",
     enabled: true
   },
   {
-    trigger: "plot_twist",
-    category: "Creative & Writing",
-    system_instruction: "<plot_twist>\nDevelop unexpected plot turns.\n</plot_twist>\n\nThen give the final response.",
-    example: "Use \"plot_twist\" for story surprises.",
+    trigger: "plot twist",
+    category: "Creative and Writing",
+    systemInstruction: "Develop plot twists.\n\nThen give the final response.",
+    example: "Use plot twist for surprise elements.",
     enabled: true
   },
   {
     trigger: "metaphor",
-    category: "Creative & Writing",
-    system_instruction: "<metaphor>\nUse vivid metaphors and analogies.\n</metaphor>\n\nThen give the final response.",
-    example: "Use \"metaphor\" for figurative language.",
+    category: "Creative and Writing",
+    systemInstruction: "Use metaphors.\n\nThen give the final response.",
+    example: "Use metaphor for figurative language.",
     enabled: true
   },
   {
     trigger: "symbolism",
-    category: "Creative & Writing",
-    system_instruction: "<symbolism>\nIncorporate meaningful symbols.\n</symbolism>\n\nThen give the final response.",
-    example: "Use \"symbolism\" for symbolic meaning.",
+    category: "Creative and Writing",
+    systemInstruction: "Apply symbolism.\n\nThen give the final response.",
+    example: "Use symbolism for symbolic meaning.",
     enabled: true
   },
   {
     trigger: "tone",
-    category: "Creative & Writing",
-    system_instruction: "<tone>\nEstablish consistent tone throughout.\n</tone>\n\nThen give the final response.",
-    example: "Use \"tone\" for tonal consistency.",
+    category: "Creative and Writing",
+    systemInstruction: "Set writing tone.\n\nThen give the final response.",
+    example: "Use tone for voice control.",
     enabled: true
   },
   {
     trigger: "mood",
-    category: "Creative & Writing",
-    system_instruction: "<mood>\nCreate specific emotional atmosphere.\n</mood>\n\nThen give the final response.",
-    example: "Use \"mood\" for emotional atmosphere.",
+    category: "Creative and Writing",
+    systemInstruction: "Create emotional mood.\n\nThen give the final response.",
+    example: "Use mood for emotional atmosphere.",
     enabled: true
   },
   {
     trigger: "pacing",
-    category: "Creative & Writing",
-    system_instruction: "<pacing>\nControl narrative speed and rhythm.\n</pacing>\n\nThen give the final response.",
-    example: "Use \"pacing\" for narrative rhythm.",
+    category: "Creative and Writing",
+    systemInstruction: "Control pacing.\n\nThen give the final response.",
+    example: "Use pacing for rhythm control.",
     enabled: true
   },
   {
     trigger: "tension",
-    category: "Creative & Writing",
-    system_instruction: "<tension>\nBuild suspense and dramatic tension.\n</tension>\n\nThen give the final response.",
-    example: "Use \"tension\" for suspense building.",
+    category: "Creative and Writing",
+    systemInstruction: "Build tension.\n\nThen give the final response.",
+    example: "Use tension for suspense.",
     enabled: true
   },
   {
     trigger: "foreshadowing",
-    category: "Creative & Writing",
-    system_instruction: "<foreshadowing>\nPlant hints and foreshadow events.\n</foreshadowing>\n\nThen give the final response.",
-    example: "Use \"foreshadowing\" for plot hints.",
+    category: "Creative and Writing",
+    systemInstruction: "Use foreshadowing.\n\nThen give the final response.",
+    example: "Use foreshadowing for hints.",
     enabled: true
   },
   {
-    trigger: "dramatic_irony",
-    category: "Creative & Writing",
-    system_instruction: "<dramatic_irony>\nUse dramatic irony for effect.\n</dramatic_irony>\n\nThen give the final response.",
-    example: "Use \"dramatic_irony\" for ironic situations.",
+    trigger: "dramatic irony",
+    category: "Creative and Writing",
+    systemInstruction: "Create dramatic irony.\n\nThen give the final response.",
+    example: "Use dramatic irony for ironic effect.",
     enabled: true
   },
   {
     trigger: "alliteration",
-    category: "Creative & Writing",
-    system_instruction: "<alliteration>\nUse alliteration for effect.\n</alliteration>\n\nThen give the final response.",
-    example: "Use \"alliteration\" for linguistic devices.",
+    category: "Creative and Writing",
+    systemInstruction: "Use alliteration.\n\nThen give the final response.",
+    example: "Use alliteration for sound effects.",
     enabled: true
   },
   {
     trigger: "descriptive",
-    category: "Creative & Writing",
-    system_instruction: "<descriptive>\nWrite vivid, detailed descriptions.\n</descriptive>\n\nThen give the final response.",
-    example: "Use \"descriptive\" for detailed descriptions.",
+    category: "Creative and Writing",
+    systemInstruction: "Write descriptively.\n\nThen give the final response.",
+    example: "Use descriptive for vivid description.",
     enabled: true
   },
   {
     trigger: "sensory",
-    category: "Creative & Writing",
-    system_instruction: "<sensory>\nEngage all five senses in writing.\n</sensory>\n\nThen give the final response.",
-    example: "Use \"sensory\" for sensory details.",
+    category: "Creative and Writing",
+    systemInstruction: "Appeal to senses.\n\nThen give the final response.",
+    example: "Use sensory for sensory details.",
     enabled: true
   },
   {
-    trigger: "emotional_appeal",
-    category: "Creative & Writing",
-    system_instruction: "<emotional_appeal>\nAppeal to reader emotions.\n</emotional_appeal>\n\nThen give the final response.",
-    example: "Use \"emotional_appeal\" for emotional impact.",
+    trigger: "emotional appeal",
+    category: "Creative and Writing",
+    systemInstruction: "Create emotional impact.\n\nThen give the final response.",
+    example: "Use emotional appeal for pathos.",
     enabled: true
   },
   {
     trigger: "voice",
-    category: "Creative & Writing",
-    system_instruction: "<voice>\nDevelop distinct authorial voice.\n</voice>\n\nThen give the final response.",
-    example: "Use \"voice\" for authorial voice.",
+    category: "Creative and Writing",
+    systemInstruction: "Develop voice.\n\nThen give the final response.",
+    example: "Use voice for authorial voice.",
     enabled: true
   },
   {
     trigger: "style",
-    category: "Creative & Writing",
-    system_instruction: "<style>\nApply specific writing style.\n</style>\n\nThen give the final response.",
-    example: "Use \"style\" for stylistic choices.",
+    category: "Creative and Writing",
+    systemInstruction: "Establish style.\n\nThen give the final response.",
+    example: "Use style for stylistic choices.",
     enabled: true
   },
   {
-    trigger: "grammar_check",
-    category: "Creative & Writing",
-    system_instruction: "<grammar_check>\nReview grammar and syntax.\n</grammar_check>\n\nThen give the final response.",
-    example: "Use \"grammar_check\" for grammar review.",
+    trigger: "grammar check",
+    category: "Creative and Writing",
+    systemInstruction: "Check grammar.\n\nThen give the final response.",
+    example: "Use grammar check for editing.",
     enabled: true
   },
   {
-    trigger: "punctuation_check",
-    category: "Creative & Writing",
-    system_instruction: "<punctuation_check>\nReview and improve punctuation.\n</punctuation_check>\n\nThen give the final response.",
-    example: "Use \"punctuation_check\" for punctuation review.",
+    trigger: "punctuation check",
+    category: "Creative and Writing",
+    systemInstruction: "Check punctuation.\n\nThen give the final response.",
+    example: "Use punctuation check for punctuation editing.",
     enabled: true
   },
   {
-    trigger: "plagiarism_check",
-    category: "Creative & Writing",
-    system_instruction: "<plagiarism_check>\nCheck for original content.\n</plagiarism_check>\n\nThen give the final response.",
-    example: "Use \"plagiarism_check\" for originality checks.",
+    trigger: "plagiarism check",
+    category: "Creative and Writing",
+    systemInstruction: "Check for plagiarism.\n\nThen give the final response.",
+    example: "Use plagiarism check for originality.",
     enabled: true
   },
   {
     trigger: "editing",
-    category: "Creative & Writing",
-    system_instruction: "<editing>\nProvide comprehensive editing suggestions.\n</editing>\n\nThen give the final response.",
-    example: "Use \"editing\" for editorial review.",
+    category: "Creative and Writing",
+    systemInstruction: "Edit content.\n\nThen give the final response.",
+    example: "Use editing for revision.",
     enabled: true
   },
   {
     trigger: "proofreading",
-    category: "Creative & Writing",
-    system_instruction: "<proofreading>\nProofread for errors and typos.\n</proofreading>\n\nThen give the final response.",
-    example: "Use \"proofreading\" for final proofreading.",
+    category: "Creative and Writing",
+    systemInstruction: "Proofread content.\n\nThen give the final response.",
+    example: "Use proofreading for final review.",
     enabled: true
   },
   {
     trigger: "flow",
-    category: "Creative & Writing",
-    system_instruction: "<flow>\nImprove text flow and readability.\n</flow>\n\nThen give the final response.",
-    example: "Use \"flow\" for readability improvement.",
+    category: "Creative and Writing",
+    systemInstruction: "Improve flow.\n\nThen give the final response.",
+    example: "Use flow for readability.",
     enabled: true
   },
   {
     trigger: "coherence",
-    category: "Creative & Writing",
-    system_instruction: "<coherence>\nEnsure logical coherence.\n</coherence>\n\nThen give the final response.",
-    example: "Use \"coherence\" for logical flow.",
+    category: "Creative and Writing",
+    systemInstruction: "Ensure coherence.\n\nThen give the final response.",
+    example: "Use coherence for logical flow.",
     enabled: true
   },
   {
     trigger: "readability",
-    category: "Creative & Writing",
-    system_instruction: "<readability>\nOptimize for readability.\n</readability>\n\nThen give the final response.",
-    example: "Use \"readability\" for readability optimization.",
+    category: "Creative and Writing",
+    systemInstruction: "Optimize readability.\n\nThen give the final response.",
+    example: "Use readability for reader ease.",
     enabled: true
   },
-
-  /* ==================== Data & Analytics (20 triggers) ==================== */
   {
-    trigger: "analyze_data",
-    category: "Data & Analytics",
-    system_instruction: "<analyze_data>\nPerform comprehensive data analysis.\n</analyze_data>\n\nThen give the final response.",
-    example: "Use \"analyze_data\" for data analysis.",
+    trigger: "analyze data",
+    category: "Data and Analytics",
+    systemInstruction: "Analyze data sets.\n\nThen give the final response.",
+    example: "Use analyze data for data analysis.",
     enabled: true
   },
   {
     trigger: "statistics",
-    category: "Data & Analytics",
-    system_instruction: "<statistics>\nApply statistical methods and analysis.\n</statistics>\n\nThen give the final response.",
-    example: "Use \"statistics\" for statistical analysis.",
+    category: "Data and Analytics",
+    systemInstruction: "Apply statistics.\n\nThen give the final response.",
+    example: "Use statistics for stat analysis.",
     enabled: true
   },
   {
     trigger: "correlation",
-    category: "Data & Analytics",
-    system_instruction: "<correlation>\nAnalyze relationships between variables.\n</correlation>\n\nThen give the final response.",
-    example: "Use \"correlation\" for correlation analysis.",
+    category: "Data and Analytics",
+    systemInstruction: "Find correlations.\n\nThen give the final response.",
+    example: "Use correlation for relationship analysis.",
     enabled: true
   },
   {
     trigger: "trend",
-    category: "Data & Analytics",
-    system_instruction: "<trend>\nIdentify trends and patterns.\n</trend>\n\nThen give the final response.",
-    example: "Use \"trend\" for trend analysis.",
+    category: "Data and Analytics",
+    systemInstruction: "Identify trends.\n\nThen give the final response.",
+    example: "Use trend for trend spotting.",
     enabled: true
   },
   {
     trigger: "anomaly",
-    category: "Data & Analytics",
-    system_instruction: "<anomaly>\nDetect anomalies and outliers.\n</anomaly>\n\nThen give the final response.",
-    example: "Use \"anomaly\" for anomaly detection.",
+    category: "Data and Analytics",
+    systemInstruction: "Detect anomalies.\n\nThen give the final response.",
+    example: "Use anomaly for outlier detection.",
     enabled: true
   },
   {
     trigger: "prediction",
-    category: "Data & Analytics",
-    system_instruction: "<prediction>\nMake data-driven predictions.\n</prediction>\n\nThen give the final response.",
-    example: "Use \"prediction\" for predictive analysis.",
+    category: "Data and Analytics",
+    systemInstruction: "Make predictions.\n\nThen give the final response.",
+    example: "Use prediction for forecasting.",
     enabled: true
   },
   {
     trigger: "classification",
-    category: "Data & Analytics",
-    system_instruction: "<classification>\nClassify data into categories.\n</classification>\n\nThen give the final response.",
-    example: "Use \"classification\" for data classification.",
+    category: "Data and Analytics",
+    systemInstruction: "Classify data.\n\nThen give the final response.",
+    example: "Use classification for categorization.",
     enabled: true
   },
   {
     trigger: "clustering",
-    category: "Data & Analytics",
-    system_instruction: "<clustering>\nGroup similar data points.\n</clustering>\n\nThen give the final response.",
-    example: "Use \"clustering\" for cluster analysis.",
+    category: "Data and Analytics",
+    systemInstruction: "Cluster data.\n\nThen give the final response.",
+    example: "Use clustering for grouping.",
     enabled: true
   },
   {
     trigger: "regression",
-    category: "Data & Analytics",
-    system_instruction: "<regression>\nPerform regression analysis.\n</regression>\n\nThen give the final response.",
-    example: "Use \"regression\" for regression modeling.",
+    category: "Data and Analytics",
+    systemInstruction: "Perform regression.\n\nThen give the final response.",
+    example: "Use regression for relationship modeling.",
     enabled: true
   },
   {
     trigger: "visualization",
-    category: "Data & Analytics",
-    system_instruction: "<visualization>\nCreate data visualizations.\n</visualization>\n\nThen give the final response.",
-    example: "Use \"visualization\" for data visualization.",
+    category: "Data and Analytics",
+    systemInstruction: "Create visualizations.\n\nThen give the final response.",
+    example: "Use visualization for data display.",
     enabled: true
   },
   {
-    trigger: "data_quality",
-    category: "Data & Analytics",
-    system_instruction: "<data_quality>\nAssess data quality issues.\n</data_quality>\n\nThen give the final response.",
-    example: "Use \"data_quality\" for quality assessment.",
+    trigger: "data quality",
+    category: "Data and Analytics",
+    systemInstruction: "Assess data quality.\n\nThen give the final response.",
+    example: "Use data quality for quality assessment.",
     enabled: true
   },
   {
-    trigger: "outlier_detection",
-    category: "Data & Analytics",
-    system_instruction: "<outlier_detection>\nIdentify and handle outliers.\n</outlier_detection>\n\nThen give the final response.",
-    example: "Use \"outlier_detection\" for outlier analysis.",
+    trigger: "outlier detection",
+    category: "Data and Analytics",
+    systemInstruction: "Detect outliers.\n\nThen give the final response.",
+    example: "Use outlier detection for anomaly finding.",
     enabled: true
   },
   {
-    trigger: "hypothesis_testing",
-    category: "Data & Analytics",
-    system_instruction: "<hypothesis_testing>\nConduct statistical hypothesis tests.\n</hypothesis_testing>\n\nThen give the final response.",
-    example: "Use \"hypothesis_testing\" for hypothesis validation.",
+    trigger: "hypothesis testing",
+    category: "Data and Analytics",
+    systemInstruction: "Test hypotheses.\n\nThen give the final response.",
+    example: "Use hypothesis testing for hypothesis validation.",
     enabled: true
   },
   {
-    trigger: "ab_test",
-    category: "Data & Analytics",
-    system_instruction: "<ab_test>\nDesign and analyze A/B tests.\n</ab_test>\n\nThen give the final response.",
-    example: "Use \"ab_test\" for A/B testing.",
+    trigger: "ab test",
+    category: "Data and Analytics",
+    systemInstruction: "Design AB tests.\n\nThen give the final response.",
+    example: "Use ab test for test design.",
     enabled: true
   },
   {
     trigger: "metric",
-    category: "Data & Analytics",
-    system_instruction: "<metric>\nDefine and track key metrics.\n</metric>\n\nThen give the final response.",
-    example: "Use \"metric\" for metric definition.",
+    category: "Data and Analytics",
+    systemInstruction: "Define metrics.\n\nThen give the final response.",
+    example: "Use metric for measurement.",
     enabled: true
   },
   {
     trigger: "kpi",
-    category: "Data & Analytics",
-    system_instruction: "<kpi>\nDefine KPIs and track performance.\n</kpi>\n\nThen give the final response.",
-    example: "Use \"kpi\" for KPI management.",
+    category: "Data and Analytics",
+    systemInstruction: "Establish KPIs.\n\nThen give the final response.",
+    example: "Use kpi for key performance tracking.",
     enabled: true
   },
   {
     trigger: "dashboard",
-    category: "Data & Analytics",
-    system_instruction: "<dashboard>\nDesign analytics dashboards.\n</dashboard>\n\nThen give the final response.",
-    example: "Use \"dashboard\" for dashboard design.",
+    category: "Data and Analytics",
+    systemInstruction: "Create dashboards.\n\nThen give the final response.",
+    example: "Use dashboard for visualization display.",
     enabled: true
   },
   {
     trigger: "reporting",
-    category: "Data & Analytics",
-    system_instruction: "<reporting>\nCreate data reports.\n</reporting>\n\nThen give the final response.",
-    example: "Use \"reporting\" for report generation.",
+    category: "Data and Analytics",
+    systemInstruction: "Create reports.\n\nThen give the final response.",
+    example: "Use reporting for report generation.",
     enabled: true
   },
   {
-    trigger: "data_storytelling",
-    category: "Data & Analytics",
-    system_instruction: "<data_storytelling>\nTell stories with data.\n</data_storytelling>\n\nThen give the final response.",
-    example: "Use \"data_storytelling\" for narrative analytics.",
+    trigger: "data storytelling",
+    category: "Data and Analytics",
+    systemInstruction: "Tell data stories.\n\nThen give the final response.",
+    example: "Use data storytelling for narrative.",
     enabled: true
   },
-
-  /* ==================== Business & Strategy (25 triggers) ==================== */
   {
     trigger: "swot",
-    category: "Business & Strategy",
-    system_instruction: "<swot>\nConduct SWOT analysis.\n</swot>\n\nThen give the final response.",
-    example: "Use \"swot\" for SWOT analysis.",
+    category: "Business and Strategy",
+    systemInstruction: "Perform SWOT analysis.\n\nThen give the final response.",
+    example: "Use swot for strategic analysis.",
     enabled: true
   },
   {
-    trigger: "market_analysis",
-    category: "Business & Strategy",
-    system_instruction: "<market_analysis>\nAnalyze market conditions.\n</market_analysis>\n\nThen give the final response.",
-    example: "Use \"market_analysis\" for market research.",
+    trigger: "market analysis",
+    category: "Business and Strategy",
+    systemInstruction: "Analyze markets.\n\nThen give the final response.",
+    example: "Use market analysis for market research.",
     enabled: true
   },
   {
-    trigger: "competitor_analysis",
-    category: "Business & Strategy",
-    system_instruction: "<competitor_analysis>\nAnalyze competitive landscape.\n</competitor_analysis>\n\nThen give the final response.",
-    example: "Use \"competitor_analysis\" for competitive analysis.",
+    trigger: "competitor analysis",
+    category: "Business and Strategy",
+    systemInstruction: "Analyze competitors.\n\nThen give the final response.",
+    example: "Use competitor analysis for competitive research.",
     enabled: true
   },
   {
-    trigger: "business_model",
-    category: "Business & Strategy",
-    system_instruction: "<business_model>\nDesign or analyze business models.\n</business_model>\n\nThen give the final response.",
-    example: "Use \"business_model\" for business design.",
+    trigger: "business model",
+    category: "Business and Strategy",
+    systemInstruction: "Design business models.\n\nThen give the final response.",
+    example: "Use business model for model design.",
     enabled: true
   },
   {
-    trigger: "revenue_model",
-    category: "Business & Strategy",
-    system_instruction: "<revenue_model>\nDesign revenue models.\n</revenue_model>\n\nThen give the final response.",
-    example: "Use \"revenue_model\" for revenue strategy.",
+    trigger: "revenue model",
+    category: "Business and Strategy",
+    systemInstruction: "Design revenue models.\n\nThen give the final response.",
+    example: "Use revenue model for revenue design.",
     enabled: true
   },
   {
-    trigger: "pricing_strategy",
-    category: "Business & Strategy",
-    system_instruction: "<pricing_strategy>\nDevelop pricing strategies.\n</pricing_strategy>\n\nThen give the final response.",
-    example: "Use \"pricing_strategy\" for pricing decisions.",
+    trigger: "pricing strategy",
+    category: "Business and Strategy",
+    systemInstruction: "Develop pricing strategies.\n\nThen give the final response.",
+    example: "Use pricing strategy for pricing planning.",
     enabled: true
   },
   {
-    trigger: "customer_journey",
-    category: "Business & Strategy",
-    system_instruction: "<customer_journey>\nMap customer journey.\n</customer_journey>\n\nThen give the final response.",
-    example: "Use \"customer_journey\" for journey mapping.",
+    trigger: "customer journey",
+    category: "Business and Strategy",
+    systemInstruction: "Map customer journeys.\n\nThen give the final response.",
+    example: "Use customer journey for journey mapping.",
     enabled: true
   },
   {
-    trigger: "user_persona",
-    category: "Business & Strategy",
-    system_instruction: "<user_persona>\nDevelop user personas.\n</user_persona>\n\nThen give the final response.",
-    example: "Use \"user_persona\" for persona development.",
+    trigger: "user persona",
+    category: "Business and Strategy",
+    systemInstruction: "Create user personas.\n\nThen give the final response.",
+    example: "Use user persona for persona creation.",
     enabled: true
   },
   {
-    trigger: "stakeholder_analysis",
-    category: "Business & Strategy",
-    system_instruction: "<stakeholder_analysis>\nAnalyze stakeholders.\n</stakeholder_analysis>\n\nThen give the final response.",
-    example: "Use \"stakeholder_analysis\" for stakeholder mapping.",
+    trigger: "stakeholder analysis",
+    category: "Business and Strategy",
+    systemInstruction: "Analyze stakeholders.\n\nThen give the final response.",
+    example: "Use stakeholder analysis for stakeholder mapping.",
     enabled: true
   },
   {
-    trigger: "risk_assessment",
-    category: "Business & Strategy",
-    system_instruction: "<risk_assessment>\nAssess business risks.\n</risk_assessment>\n\nThen give the final response.",
-    example: "Use \"risk_assessment\" for risk analysis.",
+    trigger: "risk assessment",
+    category: "Business and Strategy",
+    systemInstruction: "Assess risks.\n\nThen give the final response.",
+    example: "Use risk assessment for risk analysis.",
     enabled: true
   },
   {
     trigger: "mitigation",
-    category: "Business & Strategy",
-    system_instruction: "<mitigation>\nDevelop risk mitigation strategies.\n</mitigation>\n\nThen give the final response.",
-    example: "Use \"mitigation\" for risk mitigation.",
+    category: "Business and Strategy",
+    systemInstruction: "Mitigate risks.\n\nThen give the final response.",
+    example: "Use mitigation for risk mitigation.",
     enabled: true
   },
   {
     trigger: "opportunity",
-    category: "Business & Strategy",
-    system_instruction: "<opportunity>\nIdentify business opportunities.\n</opportunity>\n\nThen give the final response.",
-    example: "Use \"opportunity\" for opportunity assessment.",
+    category: "Business and Strategy",
+    systemInstruction: "Identify opportunities.\n\nThen give the final response.",
+    example: "Use opportunity for opportunity analysis.",
     enabled: true
   },
   {
-    trigger: "competitive_advantage",
-    category: "Business & Strategy",
-    system_instruction: "<competitive_advantage>\nIdentify competitive advantages.\n</competitive_advantage>\n\nThen give the final response.",
-    example: "Use \"competitive_advantage\" for advantage analysis.",
+    trigger: "competitive advantage",
+    category: "Business and Strategy",
+    systemInstruction: "Build competitive advantages.\n\nThen give the final response.",
+    example: "Use competitive advantage for advantage building.",
     enabled: true
   },
   {
-    trigger: "value_proposition",
-    category: "Business & Strategy",
-    system_instruction: "<value_proposition>\nDevelop value propositions.\n</value_proposition>\n\nThen give the final response.",
-    example: "Use \"value_proposition\" for proposition development.",
+    trigger: "value proposition",
+    category: "Business and Strategy",
+    systemInstruction: "Create value propositions.\n\nThen give the final response.",
+    example: "Use value proposition for proposition design.",
     enabled: true
   },
   {
-    trigger: "go_to_market",
-    category: "Business & Strategy",
-    system_instruction: "<go_to_market>\nDevelop go-to-market strategies.\n</go_to_market>\n\nThen give the final response.",
-    example: "Use \"go_to_market\" for market entry strategy.",
+    trigger: "go to market",
+    category: "Business and Strategy",
+    systemInstruction: "Plan go to market strategies.\n\nThen give the final response.",
+    example: "Use go to market for market entry.",
     enabled: true
   },
   {
-    trigger: "product_strategy",
-    category: "Business & Strategy",
-    system_instruction: "<product_strategy>\nDevelop product strategies.\n</product_strategy>\n\nThen give the final response.",
-    example: "Use \"product_strategy\" for product planning.",
+    trigger: "product strategy",
+    category: "Business and Strategy",
+    systemInstruction: "Develop product strategies.\n\nThen give the final response.",
+    example: "Use product strategy for product planning.",
     enabled: true
   },
   {
     trigger: "scaling",
-    category: "Business & Strategy",
-    system_instruction: "<scaling>\nPlan for scaling operations.\n</scaling>\n\nThen give the final response.",
-    example: "Use \"scaling\" for growth planning.",
+    category: "Business and Strategy",
+    systemInstruction: "Plan scaling.\n\nThen give the final response.",
+    example: "Use scaling for growth planning.",
     enabled: true
   },
   {
     trigger: "automation",
-    category: "Business & Strategy",
-    system_instruction: "<automation>\nIdentify automation opportunities.\n</automation>\n\nThen give the final response.",
-    example: "Use \"automation\" for process automation.",
+    category: "Business and Strategy",
+    systemInstruction: "Identify automation opportunities.\n\nThen give the final response.",
+    example: "Use automation for process automation.",
     enabled: true
   },
   {
     trigger: "efficiency",
-    category: "Business & Strategy",
-    system_instruction: "<efficiency>\nOptimize operational efficiency.\n</efficiency>\n\nThen give the final response.",
-    example: "Use \"efficiency\" for efficiency improvements.",
+    category: "Business and Strategy",
+    systemInstruction: "Improve efficiency.\n\nThen give the final response.",
+    example: "Use efficiency for efficiency gains.",
     enabled: true
   },
   {
-    trigger: "cost_optimization",
-    category: "Business & Strategy",
-    system_instruction: "<cost_optimization>\nOptimize costs.\n</cost_optimization>\n\nThen give the final response.",
-    example: "Use \"cost_optimization\" for cost reduction.",
+    trigger: "cost optimization",
+    category: "Business and Strategy",
+    systemInstruction: "Optimize costs.\n\nThen give the final response.",
+    example: "Use cost optimization for cost reduction.",
     enabled: true
   },
   {
-    trigger: "roi_analysis",
-    category: "Business & Strategy",
-    system_instruction: "<roi_analysis>\nAnalyze return on investment.\n</roi_analysis>\n\nThen give the final response.",
-    example: "Use \"roi_analysis\" for ROI calculation.",
+    trigger: "roi analysis",
+    category: "Business and Strategy",
+    systemInstruction: "Analyze ROI.\n\nThen give the final response.",
+    example: "Use roi analysis for ROI calculation.",
     enabled: true
   },
   {
-    trigger: "financial_planning",
-    category: "Business & Strategy",
-    system_instruction: "<financial_planning>\nPlan financial strategy.\n</financial_planning>\n\nThen give the final response.",
-    example: "Use \"financial_planning\" for financial strategy.",
+    trigger: "financial planning",
+    category: "Business and Strategy",
+    systemInstruction: "Plan financial strategy.\n\nThen give the final response.",
+    example: "Use financial planning for financial strategy.",
     enabled: true
   },
   {
     trigger: "budget",
-    category: "Business & Strategy",
-    system_instruction: "<budget>\nCreate and manage budgets.\n</budget>\n\nThen give the final response.",
-    example: "Use \"budget\" for budget planning.",
+    category: "Business and Strategy",
+    systemInstruction: "Create and manage budgets.\n\nThen give the final response.",
+    example: "Use budget for budget planning.",
     enabled: true
   },
   {
     trigger: "forecast",
-    category: "Business & Strategy",
-    system_instruction: "<forecast>\nForecast business metrics.\n</forecast>\n\nThen give the final response.",
-    example: "Use \"forecast\" for business forecasting.",
-    enabled: true
-  },
-
-  /* ==================== Education & Learning (20 triggers) ==================== */
-  {
-    trigger: "learning_path",
-    category: "Education & Learning",
-    system_instruction: "<learning_path>\nDesign learning paths.\n</learning_path>\n\nThen give the final response.",
-    example: "Use \"learning_path\" for curriculum design.",
+    category: "Business and Strategy",
+    systemInstruction: "Forecast business metrics.\n\nThen give the final response.",
+    example: "Use forecast for business forecasting.",
     enabled: true
   },
   {
-    trigger: "concept_explanation",
-    category: "Education & Learning",
-    system_instruction: "<concept_explanation>\nExplain concepts clearly.\n</concept_explanation>\n\nThen give the final response.",
-    example: "Use \"concept_explanation\" for teaching concepts.",
+    trigger: "learning path",
+    category: "Education and Learning",
+    systemInstruction: "Design learning paths.\n\nThen give the final response.",
+    example: "Use learning path for curriculum design.",
     enabled: true
   },
   {
-    trigger: "skill_building",
-    category: "Education & Learning",
-    system_instruction: "<skill_building>\nDevelop skills progressively.\n</skill_building>\n\nThen give the final response.",
-    example: "Use \"skill_building\" for skill development.",
+    trigger: "concept explanation",
+    category: "Education and Learning",
+    systemInstruction: "Explain concepts clearly.\n\nThen give the final response.",
+    example: "Use concept explanation for teaching concepts.",
     enabled: true
   },
   {
-    trigger: "practice_exercise",
-    category: "Education & Learning",
-    system_instruction: "<practice_exercise>\nCreate practice exercises.\n</practice_exercise>\n\nThen give the final response.",
-    example: "Use \"practice_exercise\" for practice design.",
+    trigger: "skill building",
+    category: "Education and Learning",
+    systemInstruction: "Develop skills progressively.\n\nThen give the final response.",
+    example: "Use skill building for skill development.",
+    enabled: true
+  },
+  {
+    trigger: "practice exercise",
+    category: "Education and Learning",
+    systemInstruction: "Create practice exercises.\n\nThen give the final response.",
+    example: "Use practice exercise for practice design.",
     enabled: true
   },
   {
     trigger: "quiz",
-    category: "Education & Learning",
-    system_instruction: "<quiz>\nCreate quiz questions and assessments.\n</quiz>\n\nThen give the final response.",
-    example: "Use \"quiz\" for quiz creation.",
+    category: "Education and Learning",
+    systemInstruction: "Create quiz questions and assessments.\n\nThen give the final response.",
+    example: "Use quiz for quiz creation.",
     enabled: true
   },
   {
     trigger: "assessment",
-    category: "Education & Learning",
-    system_instruction: "<assessment>\nDesign assessments.\n</assessment>\n\nThen give the final response.",
-    example: "Use \"assessment\" for assessment design.",
+    category: "Education and Learning",
+    systemInstruction: "Design assessments.\n\nThen give the final response.",
+    example: "Use assessment for assessment design.",
     enabled: true
   },
   {
     trigger: "rubric",
-    category: "Education & Learning",
-    system_instruction: "<rubric>\nCreate grading rubrics.\n</rubric>\n\nThen give the final response.",
-    example: "Use \"rubric\" for rubric development.",
+    category: "Education and Learning",
+    systemInstruction: "Create grading rubrics.\n\nThen give the final response.",
+    example: "Use rubric for rubric development.",
     enabled: true
   },
   {
     trigger: "feedback",
-    category: "Education & Learning",
-    system_instruction: "<feedback>\nProvide constructive feedback.\n</feedback>\n\nThen give the final response.",
-    example: "Use \"feedback\" for feedback delivery.",
+    category: "Education and Learning",
+    systemInstruction: "Provide constructive feedback.\n\nThen give the final response.",
+    example: "Use feedback for feedback delivery.",
     enabled: true
   },
   {
     trigger: "metacognition",
-    category: "Education & Learning",
-    system_instruction: "<metacognition>\nPromote metacognitive thinking.\n</metacognition>\n\nThen give the final response.",
-    example: "Use \"metacognition\" for reflective learning.",
+    category: "Education and Learning",
+    systemInstruction: "Promote metacognitive thinking.\n\nThen give the final response.",
+    example: "Use metacognition for reflective learning.",
     enabled: true
   },
   {
-    trigger: "learning_objective",
-    category: "Education & Learning",
-    system_instruction: "<learning_objective>\nDefine learning objectives.\n</learning_objective>\n\nThen give the final response.",
-    example: "Use \"learning_objective\" for objective setting.",
+    trigger: "learning objective",
+    category: "Education and Learning",
+    systemInstruction: "Define learning objectives.\n\nThen give the final response.",
+    example: "Use learning objective for objective setting.",
     enabled: true
   },
   {
     trigger: "prerequisite",
-    category: "Education & Learning",
-    system_instruction: "<prerequisite>\nIdentify prerequisites.\n</prerequisite>\n\nThen give the final response.",
-    example: "Use \"prerequisite\" for prerequisite mapping.",
+    category: "Education and Learning",
+    systemInstruction: "Identify prerequisites.\n\nThen give the final response.",
+    example: "Use prerequisite for prerequisite mapping.",
     enabled: true
   },
   {
     trigger: "scaffolding",
-    category: "Education & Learning",
-    system_instruction: "<scaffolding>\nUse scaffolding techniques.\n</scaffolding>\n\nThen give the final response.",
-    example: "Use \"scaffolding\" for graduated learning.",
+    category: "Education and Learning",
+    systemInstruction: "Use scaffolding techniques.\n\nThen give the final response.",
+    example: "Use scaffolding for graduated learning.",
     enabled: true
   },
   {
     trigger: "differentiation",
-    category: "Education & Learning",
-    system_instruction: "<differentiation>\nDifferentiate instruction.\n</differentiation>\n\nThen give the final response.",
-    example: "Use \"differentiation\" for adaptive learning.",
+    category: "Education and Learning",
+    systemInstruction: "Differentiate instruction.\n\nThen give the final response.",
+    example: "Use differentiation for adaptive learning.",
     enabled: true
   },
   {
-    trigger: "multiple_intelligences",
-    category: "Education & Learning",
-    system_instruction: "<multiple_intelligences>\nApply multiple intelligences theory.\n</multiple_intelligences>\n\nThen give the final response.",
-    example: "Use \"multiple_intelligences\" for diverse learning styles.",
+    trigger: "multiple intelligences",
+    category: "Education and Learning",
+    systemInstruction: "Apply multiple intelligences theory.\n\nThen give the final response.",
+    example: "Use multiple intelligences for diverse learning styles.",
     enabled: true
   },
   {
-    trigger: "learning_style",
-    category: "Education & Learning",
-    system_instruction: "<learning_style>\nAdapt to different learning styles.\n</learning_style>\n\nThen give the final response.",
-    example: "Use \"learning_style\" for personalized learning.",
+    trigger: "learning style",
+    category: "Education and Learning",
+    systemInstruction: "Adapt to different learning styles.\n\nThen give the final response.",
+    example: "Use learning style for personalized learning.",
     enabled: true
   },
   {
-    trigger: "active_learning",
-    category: "Education & Learning",
-    system_instruction: "<active_learning>\nPromote active learning.\n</active_learning>\n\nThen give the final response.",
-    example: "Use \"active_learning\" for engagement.",
+    trigger: "active learning",
+    category: "Education and Learning",
+    systemInstruction: "Promote active learning.\n\nThen give the final response.",
+    example: "Use active learning for engagement.",
     enabled: true
   },
   {
-    trigger: "peer_learning",
-    category: "Education & Learning",
-    system_instruction: "<peer_learning>\nFacilitate peer learning.\n</peer_learning>\n\nThen give the final response.",
-    example: "Use \"peer_learning\" for collaborative learning.",
+    trigger: "peer learning",
+    category: "Education and Learning",
+    systemInstruction: "Facilitate peer learning.\n\nThen give the final response.",
+    example: "Use peer learning for collaborative learning.",
     enabled: true
   },
   {
-    trigger: "socratic_method",
-    category: "Education & Learning",
-    system_instruction: "<socratic_method>\nUse Socratic questioning.\n</socratic_method>\n\nThen give the final response.",
-    example: "Use \"socratic_method\" for guided discovery.",
+    trigger: "socratic method",
+    category: "Education and Learning",
+    systemInstruction: "Use Socratic questioning.\n\nThen give the final response.",
+    example: "Use socratic method for guided discovery.",
     enabled: true
   },
   {
-    trigger: "spaced_repetition",
-    category: "Education & Learning",
-    system_instruction: "<spaced_repetition>\nApply spaced repetition.\n</spaced_repetition>\n\nThen give the final response.",
-    example: "Use \"spaced_repetition\" for memory retention.",
+    trigger: "spaced repetition",
+    category: "Education and Learning",
+    systemInstruction: "Apply spaced repetition.\n\nThen give the final response.",
+    example: "Use spaced repetition for memory retention.",
     enabled: true
   },
   {
     trigger: "retention",
-    category: "Education & Learning",
-    system_instruction: "<retention>\nOptimize information retention.\n</retention>\n\nThen give the final response.",
-    example: "Use \"retention\" for memory optimization.",
+    category: "Education and Learning",
+    systemInstruction: "Optimize information retention.\n\nThen give the final response.",
+    example: "Use retention for memory optimization.",
     enabled: true
   }
 ];
 
-// Get all triggers (built-in + custom)
 export const getAllTriggers = (): Trigger[] => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -1599,7 +1436,7 @@ export const exportTriggers = () => {
   const url = URL.createObjectURL(dataBlob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `onyxgpt-triggers-${Date.now()}.json`;
+  link.download = `onyxgptTriggers${Date.now()}.json`;
   link.click();
   URL.revokeObjectURL(url);
 };
@@ -1622,7 +1459,7 @@ export const importTriggers = (file: File): Promise<void> => {
 };
 
 export const generateTagName = (triggerName: string): string => {
-  return triggerName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+  return triggerName.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
 };
 
 export const generateTriggerMetadata = (trigger: Trigger, userPrompt: string): TriggerMetadata => {
@@ -1630,9 +1467,9 @@ export const generateTriggerMetadata = (trigger: Trigger, userPrompt: string): T
   return {
     trigger: trigger.trigger,
     category: trigger.category,
-    purpose: trigger.system_instruction.replace(/Use tags.*?final_response\.\s*/i, '').trim(),
-    context_used: `Applied to user prompt: "${userPrompt.substring(0, 100)}${userPrompt.length > 100 ? '...' : ''}"`,
-    influence_scope: `Affects response structure, tone, and content based on ${trigger.category.toLowerCase()} requirements.`,
+    purpose: trigger.systemInstruction.replace(/Use tags.*?final response\.\s*/i, '').trim(),
+    contextUsed: `Applied to user prompt: "${userPrompt.substring(0, 100)}${userPrompt.length > 100 ? '...' : ''}"`,
+    influenceScope: `Affects response structure tone and content based on ${trigger.category.toLowerCase()} requirements.`,
     custom: trigger.custom ?? false,
   };
 };
@@ -1659,15 +1496,14 @@ export const detectTriggersAndBuildPrompt = (userMessage: string): {
         name: trigger.trigger,
         tag: tagName,
         category: trigger.category,
-        instruction: trigger.system_instruction,
+        instruction: trigger.systemInstruction,
         metadata,
       });
       
-      instructions.push(`${trigger.trigger} means ${trigger.system_instruction}`);
+      instructions.push(`${trigger.trigger} means ${trigger.systemInstruction}`);
       
-      // Build enhanced system prompt with trigger response format
-      if (trigger.system_prompt_template || trigger.trigger_response_format) {
-        const template = trigger.system_prompt_template || buildDefaultSystemPromptTemplate(trigger);
+      if (trigger.systemPromptTemplate || trigger.triggerResponseFormat) {
+        const template = trigger.systemPromptTemplate || buildDefaultSystemPromptTemplate(trigger);
         enhancedInstructions.push(template);
       }
     }
@@ -1688,33 +1524,27 @@ export const detectTriggersAndBuildPrompt = (userMessage: string): {
   return { systemPrompt, detectedTriggers, enhancedSystemPrompt };
 };
 
-/**
- * Build default system prompt template for triggers without custom templates
- */
 export const buildDefaultSystemPromptTemplate = (trigger: Trigger): string => {
   const triggerTag = generateTagName(trigger.trigger);
   
-  return `## Trigger: ${trigger.trigger} (${trigger.category})
+  return `Trigger ${trigger.trigger} ${trigger.category}
 
-**System Instruction**: ${trigger.system_instruction}
+System Instruction ${trigger.systemInstruction}
 
-**Response Format**: 
-- Begin your response by clearly indicating which trigger is active: "Activating [${trigger.trigger}] trigger"
-- Provide comprehensive, in-depth analysis using the <${triggerTag}></> tags to structure your thinking
-- After the tagged section, provide a complete, polished response that incorporates the trigger's guidance
-- Ensure the final response is long-form and thorough for better user experience
+Response Format 
+Begin your response by clearly indicating which trigger is active Activating ${trigger.trigger} trigger
+Provide comprehensive in depth analysis using the tags to structure your thinking
+After the tagged section provide a complete polished response that incorporates the trigger guidance
+Ensure the final response is long form and thorough for better user experience
 
-**Context Metadata**:
-- Category: ${trigger.category}
-- Trigger Type: ${trigger.custom ? 'Custom' : 'Built-in'}
-- Use for: ${trigger.example}
+Context Metadata
+Category ${trigger.category}
+Trigger Type ${trigger.custom ? 'Custom' : 'Built in'}
+Use for ${trigger.example}
 
 ---`;
 };
 
-/**
- * Build enhanced system prompt for AI with memory context
- */
 export const buildEnhancedSystemPromptWithMemory = (
   detectedTriggers: DetectedTrigger[],
   memoryContext?: string,
@@ -1722,33 +1552,33 @@ export const buildEnhancedSystemPromptWithMemory = (
 ): string => {
   const sections: string[] = [];
 
-  sections.push('## Active Triggers & Response Format\n');
+  sections.push('Active Triggers and Response Format\n');
   
   detectedTriggers.forEach((trigger, idx) => {
-    sections.push(`### Trigger ${idx + 1}: ${trigger.name}`);
-    sections.push(`Category: ${trigger.category}`);
-    sections.push(`Instruction: ${trigger.instruction}`);
+    sections.push(`Trigger ${idx + 1} ${trigger.name}`);
+    sections.push(`Category ${trigger.category}`);
+    sections.push(`Instruction ${trigger.instruction}`);
     sections.push('');
   });
 
   if (memoryContext) {
-    sections.push('## AI Memory Context (Internal Only)\n');
-    sections.push(`Trigger Usage: ${memoryContext}\n`);
+    sections.push('AI Memory Context Internal Only\n');
+    sections.push(`Trigger Usage ${memoryContext}\n`);
   }
 
   if (selectedMemoryForContext && selectedMemoryForContext.length > 0) {
-    sections.push('## Selected Memory Context\n');
+    sections.push('Selected Memory Context\n');
     selectedMemoryForContext.forEach(mem => {
-      sections.push(`- **${mem.key}**: ${mem.value}`);
+      sections.push(`${mem.key} ${mem.value}`);
     });
     sections.push('');
   }
 
-  sections.push('## Response Guidelines\n');
-  sections.push('- Provide thorough, comprehensive responses to each trigger');
-  sections.push('- Use structured thinking with appropriate XML tags');
-  sections.push('- Ensure responses are informative and detailed');
-  sections.push('- Maintain context from any related memories when relevant');
+  sections.push('Response Guidelines\n');
+  sections.push('Provide thorough comprehensive responses to each trigger');
+  sections.push('Use structured thinking with appropriate XML tags');
+  sections.push('Ensure responses are informative and detailed');
+  sections.push('Maintain context from any related memories when relevant');
 
   return sections.join('\n');
 };

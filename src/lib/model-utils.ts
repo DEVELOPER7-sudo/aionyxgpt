@@ -4,8 +4,8 @@
  * Beautify model names by parsing the ID and making it human-readable
  */
 export function beautifyModelName(modelId: string): string {
-  // Remove openrouter: prefix if present
-  const cleanId = modelId.replace(/^openrouter:/, '');
+  // Remove any prefix (openrouter: or togetherai:) if present
+  const cleanId = modelId.replace(/^(openrouter|togetherai):/, '');
   
   // Split by / and -
   const parts = cleanId.split(/[/-]/);
@@ -58,11 +58,12 @@ export function saveCustomModels(models: string[]): void {
 }
 
 /**
- * Add a custom model - automatically adds openrouter: prefix if not present
+ * Add a custom model - automatically adds prefix if not present
  */
-export function addCustomModel(modelId: string): boolean {
-  // Auto-add openrouter: prefix if not present
-  const prefixedModelId = modelId.startsWith('openrouter:') ? modelId : `openrouter:${modelId}`;
+export function addCustomModel(modelId: string, prefix: 'openrouter' | 'togetherai' = 'openrouter'): boolean {
+  // Auto-add prefix if not present
+  const hasPrefix = modelId.startsWith('openrouter:') || modelId.startsWith('togetherai:');
+  const prefixedModelId = hasPrefix ? modelId : `${prefix}:${modelId}`;
   
   const customModels = getCustomModels();
   if (customModels.includes(prefixedModelId)) {
@@ -88,6 +89,10 @@ export function removeCustomModel(modelId: string): void {
 export function getProviderFromModelId(modelId: string): string {
   if (modelId.startsWith('openrouter:')) {
     const parts = modelId.replace('openrouter:', '').split('/');
+    return parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
+  }
+  if (modelId.startsWith('togetherai:')) {
+    const parts = modelId.replace('togetherai:', '').split('/');
     return parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
   }
   
