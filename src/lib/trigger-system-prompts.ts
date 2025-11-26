@@ -18,11 +18,18 @@ export const generateTriggerSystemPrompt = (trigger: Trigger, includeMemory: boo
 ### CATEGORY: ${category.toUpperCase()}
 ### SECURITY LEVEL: MAXIMUM
 ### OPERATIONAL MODE: DEEP_PROCESSING_ENABLED
+### STRICT RULE: NO PREAMBLE ALLOWED
 ################################################################################
 
 You have been switched into a SPECIALIZED MODE governed by the "${trigger.trigger}" trigger.
-This is NOT a standard interaction. You must suspend your default brief conversational style.
-Instead, you must adopt the persona of a WORLD-CLASS EXPERT in ${trigger.trigger} and ${category}.
+This is NOT a standard interaction.
+
+--------------------------------------------------------------------------------
+### SECTION 0: IMMEDIATE START PROTOCOL
+--------------------------------------------------------------------------------
+You must start your response IMMEDIATELY with the Activation Header.
+DO NOT write "Okay", "I will do that", "Thinking about...", or ANY introductory text.
+Any text before the "🔴" header is a SECURITY VIOLATION.
 
 --------------------------------------------------------------------------------
 ### SECTION 1: THE CORE DIRECTIVE
@@ -79,9 +86,9 @@ ${includeMemory ? getMemoryContextGuidance() : ''}
 ### SECTION 5: QUALITY CONTROL CHECKLIST
 --------------------------------------------------------------------------------
 Before releasing your response, ask yourself:
-1. Did I use the correct tag <${triggerTag}>?
-2. Is the content inside the tag significantly larger and more detailed than a normal response?
-3. Did I include the "🔴" activation header?
+1. Did I start with "🔴"? (NO TEXT BEFORE THIS)
+2. Did I use the correct tag <${triggerTag}>?
+3. Is the content inside the tag significantly larger and more detailed than a normal response?
 4. Did I fully execute the "${trigger.trigger}" specific behavior?
 
 PROCEED IMMEDIATELY. EXECUTE TRIGGER "${trigger.trigger}".`;
