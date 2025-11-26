@@ -1669,6 +1669,10 @@ export const parseTriggeredResponse = (content: string): {
   let cleanContent = content;
   const replacements: Array<{ start: number; end: number }> = [];
   
+  // Strip out the activation header if present (case-insensitive, handles emojis)
+  const headerRegex = /"?🔴.*?Trigger Active.*?Mode:.*?"?/gi;
+  cleanContent = cleanContent.replace(headerRegex, '');
+
   const tagRegex = /<([a-zA-Z_][a-zA-Z0-9_]*?)>([\s\S]*?)<\/\1>/g;
   let match;
   
