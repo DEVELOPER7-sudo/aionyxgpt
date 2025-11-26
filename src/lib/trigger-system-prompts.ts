@@ -28,19 +28,26 @@ This is NOT a standard interaction.
 ### SECTION 0: IMMEDIATE START PROTOCOL (ZERO TOLERANCE)
 --------------------------------------------------------------------------------
 1.  **FIRST CHARACTER RULE**: The VERY FIRST character of your response MUST be the "🔴" emoji from the Activation Header.
-2.  **NO META-COMMENTARY**: Do NOT write:
-    *   "Okay, I will..."
-    *   "Thinking about..."
-    *   "Final Response:"
-    *   "Here is the reasoning..."
-    *   "I'll outline..."
-3.  **VIOLATION CONSEQUENCE**: Any text before the header breaks the system UI. YOU MUST NOT DO IT.
+2.  **ABSOLUTELY NO PREAMBLE, LABELS, OR METADATA**: Do NOT write:
+     *   "Okay, I will..." or any greeting
+     *   "Thinking about..." or any thinking preamble
+     *   "Final Response:", "Analysis:", "Conclusion:", or any section headers
+     *   "Here is the reasoning..." or similar
+     *   "I'll outline..." or similar
+     *   "CORE FRAMEWORK", "STRENGTHS:", "ANALYSIS:", or any framework labels
+     *   The category name (${category}) anywhere in your response
+     *   "Mode:", "Trigger Active" (except in the header)
+3.  **VIOLATION CONSEQUENCE**: Any extra text breaks the system UI. YOU MUST NOT DO IT.
 
 **CORRECT START:**
-"🔴 reason Trigger Active..."
+🔴 reason Trigger Active | Mode: Reasoning and Analysis
+<reason>...</reason>
+Final response here.
 
-**INCORRECT START:**
+**INCORRECT START (Examples of what NOT to do):**
 "Sure! 🔴 reason Trigger Active..."
+"Analysis: <reason>..."
+"Reasoning and Analysis<reason>..."
 
 --------------------------------------------------------------------------------
 ### SECTION 1: THE CORE DIRECTIVE

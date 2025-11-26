@@ -95,25 +95,36 @@ This is NOT a standard interaction.
 ### SECTION 0: IMMEDIATE START PROTOCOL (ZERO TOLERANCE)
 --------------------------------------------------------------------------------
 1.  **FIRST CHARACTER RULE**: The VERY FIRST character of your response MUST be the "🔴" emoji from the Activation Header.
-2.  **NO META-COMMENTARY**: Do NOT write:
-    *   "Okay, I will..."
-    *   "Thinking about..."
-    *   "Final Response:"
-    *   "Here is the reasoning..."
-    *   "I'll outline..."
-3.  **VIOLATION CONSEQUENCE**: Any text before the header breaks the system UI. YOU MUST NOT DO IT.
+2.  **ABSOLUTELY NO PREAMBLE, LABELS, OR METADATA**: Do NOT write:
+     *   "Okay, I will..." or any greeting
+     *   "Thinking about..." or any thinking preamble
+     *   "Final Response:", "Analysis:", "Conclusion:", or any section headers
+     *   "Here is the reasoning..." or similar
+     *   "I'll outline..." or similar
+     *   "CORE FRAMEWORK", "STRENGTHS:", "ANALYSIS:", or any framework labels
+     *   The category name (${category}) anywhere in your response
+     *   "Mode:", "Trigger Active" (except in the header)
+3.  **VIOLATION CONSEQUENCE**: Any extra text breaks the system UI. YOU MUST NOT DO IT.
 
 **CORRECT START:**
-"🔴 reason Trigger Active..."
+🔴 reason Trigger Active | Mode: Reasoning and Analysis
+<reason>...</reason>
+Final response here.
 
-**INCORRECT START:**
+**INCORRECT START (Examples of what NOT to do):**
 "Sure! 🔴 reason Trigger Active..."
+"Analysis: <reason>..."
+"Reasoning and Analysis<reason>..."
 
 --------------------------------------------------------------------------------
 ### SECTION 1: THE CORE DIRECTIVE
 --------------------------------------------------------------------------------
 Your specific instruction for this interaction is:
 "${trigger.systemInstruction}"
+
+**IMPORTANT**: Do NOT output the trigger category name (${category}) anywhere in your response.
+Do NOT write "Reasoning and Analysis:", "Mode:", or similar labels in your response.
+The system UI automatically extracts and displays these.
 
 This instruction is ABSOLUTE. You must execute it with:
 1.  **Maximum Depth**: Do not skim the surface. Dive deep.
@@ -143,8 +154,10 @@ Only after you have closed the XML tag do you present your final answer to the u
 --------------------------------------------------------------------------------
 You must adhere to this EXACT format string. Do not deviate.
 
-"🔴 ${trigger.trigger} Trigger Active | Mode: ${category}"
+ACTIVATION HEADER (output this exactly as shown):
+🔴 ${trigger.trigger} Trigger Active | Mode: ${category}
 
+Then immediately follow with:
 <${triggerTag}>
 [...INSERT MASSIVE, DETAILED INTERNAL PROCESSING HERE...]
 [...EXPAND ON EVERY POINT...]
@@ -152,6 +165,8 @@ You must adhere to this EXACT format string. Do not deviate.
 </${triggerTag}>
 
 [...INSERT FINAL USER-FACING RESPONSE HERE...]
+
+**CRITICAL**: Only output the header once at the very start. Do NOT repeat it. Do NOT output the category name (${category}) anywhere else in your response.
 
 --------------------------------------------------------------------------------
 ### SECTION 4: QUALITY CONTROL CHECKLIST
@@ -1680,25 +1695,47 @@ export const parseTriggeredResponse = (content: string): {
   let cleanContent = content;
   const replacements: Array<{ start: number; end: number }> = [];
   
-  // Strip out the activation header if present (case-insensitive, handles emojis)
-   // SAFETY NET: Also remove any "preamble" text that might have appeared before the header
-   const headerRegex = /[\s\S]*?("?🔴.*?Trigger Active.*?Mode:.*?"?)/i;
-   let match = cleanContent.match(headerRegex);
-  
-  if (match) {
-    // If header found, remove it AND everything before it
-    cleanContent = cleanContent.replace(headerRegex, '');
-  }
+  // STEP 1: Strip out the activation header COMPLETELY
+  // Pattern: 🔴 [trigger] Trigger Active | Mode: [category]
+  // Remove from start of content until we find the first tag or actual content
+  const headerRegex = /^.*?🔴.*?Trigger Active\s*\|\s*Mode:\s*[^\n]*[\n]*/i;
+  cleanContent = cleanContent.replace(headerRegex, '');
 
-  // 2. Secondary cleanup: Remove common "leaked" labels that might appear before tags if header was missing
-  // Examples: "Reasoning and Analysis<reason>", "Reasoning:", "Analysis:"
-  // Match at start of line or anywhere in content
-  const leakedLabelRegex = /^(Reasoning|Analysis|Thinking|Trigger Process|System|Process|Mode)\s*(and|&)?\s*(Analysis|Reasoning|Thinking)?\s*[:|-]?\s*(?=<)/gim;
-  cleanContent = cleanContent.replace(leakedLabelRegex, '');
+  // STEP 2: Remove category names that appear as preambles before content
+  // These are the full category names from the trigger system
+  const categoryLabels = [
+    'Reasoning and Analysis',
+    'Research and Information', 
+    'Planning and Organization',
+    'Communication and Style',
+    'Coding and Development',
+    'Creative and Writing',
+    'Data and Analytics',
+    'Business and Strategy',
+    'Education and Learning'
+  ];
   
-  // Also remove category labels followed by opening tags anywhere in content
-  const categoryLabelRegex = /(?:^|\n)(Reasoning and Analysis|Research and Information|Planning and Organization|Communication and Style|Coding and Development|Creative and Writing|Data and Analytics|Business and Strategy|Education and Learning)\s*<([a-zA-Z_][a-zA-Z0-9_]*?)>/gi;
-  cleanContent = cleanContent.replace(categoryLabelRegex, '\n<$1>');
+  // Remove category labels with aggressive matching
+  // Match: category name possibly followed by colon, pipe, dash, asterisks, or newline
+  for (const label of categoryLabels) {
+    const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // Match at line start or after newlines, with optional formatting
+    const patterns = [
+      new RegExp(`^\\s*${escaped}\\s*[:|-]?\\s*$`, 'im'),
+      new RegExp(`\n\\s*${escaped}\\s*[:|-]?\\s*(?=\n|<)`, 'g'),
+      new RegExp(`\\n\\s*\\*\\*${escaped}\\*\\*\\s*[:|-]?\\s*`, 'g'),
+    ];
+    patterns.forEach(pattern => {
+      cleanContent = cleanContent.replace(pattern, '\n');
+    });
+  }
+  
+  // STEP 3: Remove any standalone labels that start with asterisks
+  // E.g. "**CORE FRAMEWORK...", "**1. STRENGTHS:"
+  cleanContent = cleanContent.replace(/^\s*\*\*[A-Z][^]*?(?=\n|<|$)/gim, '');
+  
+  // STEP 4: Clean up excessive newlines
+  cleanContent = cleanContent.replace(/^\s+/, '').trim();
 
   const tagRegex = /<([a-zA-Z_][a-zA-Z0-9_]*?)>([\s\S]*?)<\/\1>/g;
   
@@ -1777,8 +1814,9 @@ export const parseTriggeredResponse = (content: string): {
     cleanContent = cleanContent.replace(closingRegex, '');
   }
   
+  // Final cleanup: normalize whitespace
   cleanContent = cleanContent
-    .replace(/\n\n\n+/g, '\n\n')
+    .replace(/\n\n\n+/g, '\n\n') // Collapse multiple blank lines
     .trim();
   
   // FAILSAFE: If cleanContent is empty or very short, extract a meaningful summary from trigger content
