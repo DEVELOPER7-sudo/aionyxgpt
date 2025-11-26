@@ -314,7 +314,7 @@ const ChatApp = () => {
     }
 
     // Detect triggers and build system prompt
-    let { systemPrompt: triggerPrompt, detectedTriggers } = detectTriggersAndBuildPrompt(userText);
+    let { systemPrompt: triggerPrompt, detectedTriggers, enhancedSystemPrompt } = detectTriggersAndBuildPrompt(userText);
     
     // Merge default triggers (from settings) + selected triggers
     let extraInstructions: string[] = [];
@@ -342,8 +342,12 @@ const ChatApp = () => {
       triggerPrompt += '\n\n' + extraInstructions.join('\n\n');
     }
     
-    // Build final system prompt - ONLY add trigger tag enforcement if triggers detected or explicitly selected
-    let baseSystemPrompt = triggerPrompt;
+    // Build final system prompt
+    // CRITICAL FIX: Use the enhanced system prompt (which contains the strict XML structure) if available
+    let baseSystemPrompt = enhancedSystemPrompt && enhancedSystemPrompt.length > 0 
+      ? enhancedSystemPrompt 
+      : triggerPrompt;
+      
     let finalSystemPrompt = baseSystemPrompt;
     
     // ONLY add trigger tag enforcement if triggers were actually detected OR selected

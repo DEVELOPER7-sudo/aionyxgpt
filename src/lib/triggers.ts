@@ -113,14 +113,14 @@ const BUILT_IN_TRIGGERS: Trigger[] = [
   {
     trigger: "reason",
     category: "Reasoning and Analysis",
-    systemInstruction: "When reason is detected structure your response as follows:\n\nProvide your step by step logical thinking and reasoning process here. Break down the problem identify key considerations and work through your analysis.\n\nThen provide your response in clear coherent paragraphs.",
+    systemInstruction: "When reason is detected, you MUST wrap your logical thinking in <reason> tags. Provide step-by-step analysis inside these tags before your final response.",
     example: "Use reason to analyze complex problems systematically.",
     enabled: true
   },
   {
     trigger: "analyze",
     category: "Reasoning and Analysis",
-    systemInstruction: "When analyze is detected structure your response as follows:\n\nBreak down the topic into key components identify relationships between parts and explain the underlying logic and connections.\n\nThen provide your detailed analysis in clear sections.",
+    systemInstruction: "When analyze is detected, you MUST wrap your analysis in <analyze> tags. Break down components and relationships inside these tags before your final response.",
     example: "Use analyze to examine data or concepts in depth.",
     enabled: true
   },
@@ -260,7 +260,7 @@ const BUILT_IN_TRIGGERS: Trigger[] = [
   {
     trigger: "deep research",
     category: "Research and Information",
-    systemInstruction: "Conduct an in depth multi source investigation and summarize findings.\n\nThen give the final response.",
+    systemInstruction: "When deep research is detected, you MUST wrap your investigation in <deepresearch> tags. Cite sources and explore thoroughly inside these tags before your final response.",
     example: "Use deep research for comprehensive investigations.",
     enabled: true
   },
@@ -1539,10 +1539,9 @@ export const detectTriggersAndBuildPrompt = (userMessage: string): {
       
       instructions.push(`${trigger.trigger} means ${trigger.systemInstruction}`);
       
-      if (trigger.systemPromptTemplate || trigger.triggerResponseFormat) {
-        const template = trigger.systemPromptTemplate || buildDefaultSystemPromptTemplate(trigger);
-        enhancedInstructions.push(template);
-      }
+      // ALWAYS generate the strict template for any detected trigger
+      const template = trigger.systemPromptTemplate || buildDefaultSystemPromptTemplate(trigger);
+      enhancedInstructions.push(template);
     }
   });
 
