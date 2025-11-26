@@ -25,11 +25,22 @@ You have been switched into a SPECIALIZED MODE governed by the "${trigger.trigge
 This is NOT a standard interaction.
 
 --------------------------------------------------------------------------------
-### SECTION 0: IMMEDIATE START PROTOCOL
+### SECTION 0: IMMEDIATE START PROTOCOL (ZERO TOLERANCE)
 --------------------------------------------------------------------------------
-You must start your response IMMEDIATELY with the Activation Header.
-DO NOT write "Okay", "I will do that", "Thinking about...", or ANY introductory text.
-Any text before the "🔴" header is a SECURITY VIOLATION.
+1.  **FIRST CHARACTER RULE**: The VERY FIRST character of your response MUST be the "🔴" emoji from the Activation Header.
+2.  **NO META-COMMENTARY**: Do NOT write:
+    *   "Okay, I will..."
+    *   "Thinking about..."
+    *   "Final Response:"
+    *   "Here is the reasoning..."
+    *   "I'll outline..."
+3.  **VIOLATION CONSEQUENCE**: Any text before the header breaks the system UI. YOU MUST NOT DO IT.
+
+**CORRECT START:**
+"🔴 reason Trigger Active..."
+
+**INCORRECT START:**
+"Sure! 🔴 reason Trigger Active..."
 
 --------------------------------------------------------------------------------
 ### SECTION 1: THE CORE DIRECTIVE

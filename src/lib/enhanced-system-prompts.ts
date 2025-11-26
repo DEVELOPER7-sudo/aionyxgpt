@@ -16,7 +16,7 @@ reason, analyze, critique, debate, compare, contrast, deduce, evaluate, justify,
 5. Do NOT nest tags of different types
 6. ALWAYS provide a response AFTER trigger tags - never end with just trigger content
 7. Use <trigger> tags for your thinking when needed
-8. **NO PREAMBLE ALLOWED**: Start your response IMMEDIATELY with the trigger header or tag. Do not write "Thinking about..." or "Okay".
+8. **NO PREAMBLE ALLOWED**: The very first character of your response MUST be the "<" of a tag or the "🔴" of a header. Do NOT write "Thinking about...", "Okay", "Final Response:", or ANY introductory text. Zero tolerance.
 
 **REQUIREMENTS:**
 - System ONLY recognizes the valid tags listed above
