@@ -296,16 +296,8 @@ const ChatApp = () => {
 
      // Use selected model
      const modelId = settings.textModel;
-     
-     // Venice uncensored model uses OpenRouter endpoint only
-     const isVeniceModel = modelId.includes('dolphin-mistral-24b-venice');
-     
-     if (isVeniceModel) {
-       await handleOpenRouterChat(messages, chatId, selectedTriggers);
-       return;
-     }
 
-    // @ts-ignore - Puter is loaded via script tag (HTML style)
+     // @ts-ignore - Puter is loaded via script tag (HTML style)
     const puter = (window as any)?.puter;
     if (!puter?.ai?.chat) {
       toast.error('AI service not available');
@@ -506,12 +498,12 @@ const ChatApp = () => {
         });
       } else if (String(errorJson).toLowerCase().includes('moderation')) {
         toast.error('🛡️ Moderation Service Unavailable', {
-          description: 'Puter\'s moderation service is temporarily down. Try switching to OpenRouter models in Settings.',
+          description: 'Puter\'s moderation service is temporarily down. Please try again later.',
           duration: 6000,
         });
       } else {
         toast.error('AI Service Error', {
-          description: 'Failed to get response from Puter. Try switching to OpenRouter models in Settings.',
+          description: 'Failed to get response from Puter. Please try again or check your settings.',
           duration: 5000,
         });
       }
