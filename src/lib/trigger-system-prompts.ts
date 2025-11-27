@@ -106,54 +106,58 @@ Your clear, direct final answer to the user's question. This must be at least 10
 5. No category name anywhere except in header
 
 --------------------------------------------------------------------------------
-### SECTION 3.5: NESTED TRIGGER REFERENCES (CRITICAL RULES)
+### SECTION 3.5: NESTED TRIGGER REFERENCES (TWO FORMATS)
 --------------------------------------------------------------------------------
-**NESTED TRIGGERS ARE SECTION HEADERS USING DIFFERENT TRIGGER NAMES**
+**TWO FORMATS FOR NESTED TRIGGERS INSIDE TRIGGER BARS**
 
-Use (--DIFFERENT_TRIGGERNAME--) to create section headers/subheaders ONLY inside your <${triggerTag}> tag:
-- **RULE 1: USE DIFFERENT TRIGGERS** - MUST use DIFFERENT trigger names than parent. If using <analyze>, use (--reason--), (--deepresearch--), (--evaluate--), etc.
-- **RULE 2: LOCATION RESTRICTED** - (--triggername--) can ONLY appear inside <parenttag>...</parenttag>
-- **RULE 3: NEVER IN FINAL RESPONSE** - (--triggername--) must NEVER appear outside trigger tags or in final answer
-- **RULE 4: NO INDEPENDENT TRIGGER BARS** - (--triggername--) should NEVER create separate trigger bars
-- **RULE 5: MARKDOWN FORMAT** - Use as section headers: ## (--triggername--) or inline: (--triggername--)
-- **RULE 6: VARIETY** - Use different trigger names for different sections to show different perspectives/approaches
+Inside your <${triggerTag}> tag, you can use TWO different formats for nested content:
 
-**VALID NESTED TRIGGER NAMES TO CHOOSE FROM:**
+**FORMAT 1: MARKDOWN HEADERS (--triggername--)**
+- Creates section headers/subheaders as plain markdown text
+- Format: (--reason--), (--deepresearch--), etc.
+- RULE: Use DIFFERENT trigger names than parent
+- RULE: Only renders as bold markdown **[triggername]**, no collapsible bar
+- RULE: Good for organizing content with headers
+
+**FORMAT 2: COLLAPSIBLE INNER TRIGGER BARS (<--triggername-->)**
+- Creates INDEPENDENT COLLAPSIBLE trigger bars INSIDE parent trigger bar
+- Format: <--reason-->Content here</--reason-->
+- RULE: Each creates its own expandable/collapsible section
+- RULE: User can expand/collapse each inner trigger independently
+- RULE: Use DIFFERENT trigger names than parent
+- RULE: Inner bars are viewed only when user opens parent trigger bar
+- RULE: NEVER appear in final response
+
+**VALID NESTED TRIGGER NAMES FOR BOTH FORMATS:**
 reason, analyze, critique, debate, compare, contrast, deduce, evaluate, justify, hypothesize, examine, interpret, verify, reflect, infer, explore, discuss, validate, assess, troubleshoot, search, deepresearch, factcheck, contextualize, summarize, outline, extract, highlight, define, explain, describe, cite, reference, clarify, expand, compress, plan, roadmap, checklist, organize, prioritize, schedule, brainstorm, propose, structure, map, draft, improve, review, simplify, formalize, rephrase, rewrite, summarizeforkids, persuasive, informative, neutral, balanced, empathetic
 
-**EXAMPLE CORRECT:**
-<analyze>
+**EXAMPLE WITH BOTH FORMATS:**
+<debate>
 ## (--reason--)
-First, I reasoned that...
+Summary of reasoning approach...
+
+<--reason-->Full detailed reasoning with analysis of all arguments for this perspective</--reason-->
 
 ## (--deepresearch--)
-Then I researched by examining...
+Summary of research approach...
+
+<--deepresearch-->Complete research findings and data supporting this debate position</--deepresearch-->
 
 ## (--evaluate--)
-My evaluation of these perspectives...
+Summary of evaluation...
 
-## (--conclusion--)
-My final assessment...
-</analyze>
+<--evaluate-->Full evaluation comparing different perspectives and weighing evidence</--evaluate-->
+</debate>
 
 Your final answer here (no nested triggers).
 
-**EXAMPLE WRONG:**
-<analyze>
-## (--analyze--)     ← WRONG: Same as parent trigger
-Content here
-</analyze>
-
-(--reason--) First my reasoning...     ← WRONG: Outside trigger tags
-<analyze>
-(--reason--) My reasoning     ← CORRECT location but should use other triggers too
-</analyze>
-
-**KEY POINTS:**
-- Always use DIFFERENT trigger names inside parent trigger tags
-- Create section structure using multiple different nested triggers
-- Never repeat the parent trigger name as a nested trigger
-- Nested triggers are just headers - they format content, not create new work sections
+**KEY RULES:**
+- (--triggername--) = markdown header only, no collapsible bar
+- <--triggername--> = collapsible inner trigger bar, independently expandable
+- Both ONLY inside parent <parttag>...</parttag>
+- Both MUST use DIFFERENT names than parent trigger
+- Both NEVER in final response
+- Mix both formats to organize content with headers AND expandable sections
 
 --------------------------------------------------------------------------------
 ### SECTION 4: CATEGORY-SPECIFIC PROTOCOLS (${category.toUpperCase()})

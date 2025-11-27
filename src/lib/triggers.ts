@@ -1755,11 +1755,15 @@ export const parseTriggeredResponse = (content: string): {
   while ((match = tagRegex.exec(content)) !== null) {
     const [fullMatch, tagName, tagContent] = match;
     if (isValidTriggerTag(tagName) && !isInsideCodeBlock(content, match.index)) {
+      // Parse inner trigger bars within this segment
+      const innerTriggers = parseInnerTriggerBars(tagContent);
+      
       taggedSegments.push({
         tag: tagName,
         content: tagContent.trim(),
         startIndex: match.index,
         endIndex: match.index + fullMatch.length,
+        innerTriggers: innerTriggers.length > 0 ? innerTriggers : undefined,
       });
       replacements.push({ start: match.index, end: match.index + fullMatch.length });
     }
@@ -1896,9 +1900,11 @@ export const deduplicateResponseContent = (
 
   let result = cleanContent;
   
-  // CRITICAL: Remove any nested trigger references from final response
-  // (--triggername--) should ONLY appear inside trigger bars, NEVER in final response
-  result = result.replace(/\(\-\-[a-zA-Z_][a-zA-Z0-9_]*\-\-\)/g, '');
+  // CRITICAL: Remove any nested trigger syntax from final response
+  // Both (--triggername--) markdown headers and <--triggername-->...</--triggername--> inner bars
+  // should ONLY appear inside trigger bars, NEVER in final response
+  result = result.replace(/\(\-\-[a-zA-Z_][a-zA-Z0-9_]*\-\-\)/g, ''); // Remove markdown headers
+  result = result.replace(/<\-\-[a-zA-Z_][a-zA-Z0-9_]*\-\->[^]*?<\/\-\-[a-zA-Z_][a-zA-Z0-9_]*\-\->/g, ''); // Remove inner trigger bars
   const contentThreshold = 50; // Minimum similarity threshold
 
   // For each tagged segment, check if its content appears in cleanContent
@@ -2029,6 +2035,31 @@ export const extractNestedTriggerReferences = (content: string): string[] => {
   }
 
   return matches;
+};
+
+/**
+ * Parse inner trigger bars from content
+ * Format: <--triggername-->content</--triggername-->
+ * Returns array of inner trigger objects with tag, content, and indices
+ */
+export const parseInnerTriggerBars = (content: string): Array<{ tag: string; content: string; startIndex: number; endIndex: number }> => {
+  if (!content) return [];
+
+  const innerTriggerPattern = /<\-\-([a-zA-Z_][a-zA-Z0-9_]*)\-\->([^]*?)<\/\-\-\1\-\->/g;
+  const innerTriggers: Array<{ tag: string; content: string; startIndex: number; endIndex: number }> = [];
+  let match;
+
+  while ((match = innerTriggerPattern.exec(content)) !== null) {
+    const [fullMatch, tagName, tagContent] = match;
+    innerTriggers.push({
+      tag: tagName,
+      content: tagContent.trim(),
+      startIndex: match.index,
+      endIndex: match.index + fullMatch.length,
+    });
+  }
+
+  return innerTriggers;
 };
 
 export const resetToBuiltIn = () => {

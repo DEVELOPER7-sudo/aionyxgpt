@@ -10,7 +10,13 @@ export interface Message {
   attachments?: string[];
   triggers?: DetectedTrigger[]; // Triggers detected in user message
   rawContent?: string; // Original content with tags (for assistant messages)
-  taggedSegments?: Array<{ tag: string; content: string; startIndex: number; endIndex: number }>;
+  taggedSegments?: Array<{ 
+    tag: string; 
+    content: string; 
+    startIndex: number; 
+    endIndex: number;
+    innerTriggers?: Array<{ tag: string; content: string; startIndex: number; endIndex: number }>; // Nested <--triggername--> tags
+  }>;
 }
 
 export interface Chat {

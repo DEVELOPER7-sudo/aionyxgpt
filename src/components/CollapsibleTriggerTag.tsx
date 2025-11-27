@@ -17,6 +17,7 @@ interface CollapsibleTriggerTagProps {
   category?: string;
   autoExpand?: boolean;
   onCopy?: (text: string) => void;
+  innerTriggers?: Array<{ tag: string; content: string; startIndex: number; endIndex: number }>;
 }
 
 // Color scheme for different trigger categories
@@ -195,6 +196,20 @@ const CollapsibleTriggerTag = ({
              </ReactMarkdown>
            </div>
 
+           {/* Inner Trigger Bars */}
+           {innerTriggers && innerTriggers.length > 0 && (
+             <div className="space-y-2 mt-4 pt-3 border-t" style={{ borderColor: `currentColor`, opacity: 0.2 }}>
+               {innerTriggers.map((innerTrigger, idx) => (
+                 <InnerTriggerBar
+                   key={`${tagName}-inner-${innerTrigger.tag}-${idx}`}
+                   tagName={innerTrigger.tag}
+                   content={innerTrigger.content}
+                   parentTag={tagName}
+                 />
+               ))}
+             </div>
+           )}
+
           {/* Footer with action buttons */}
           <div className="flex items-center justify-between gap-2 mt-4 pt-3 border-t" style={{ borderColor: `currentColor`, opacity: 0.2 }}>
             <span className="text-xs font-mono text-muted-foreground truncate">
@@ -213,6 +228,54 @@ const CollapsibleTriggerTag = ({
         </div>
       )}
     </Card>
+  );
+};
+
+/**
+ * InnerTriggerBar Component - Renders inner trigger bars inside parent trigger bars
+ * Format: <--triggername-->content</--triggername-->
+ */
+const InnerTriggerBar = ({ tagName, content, parentTag }: { tagName: string; content: string; parentTag: string }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <div className="bg-current/5 border border-current/20 rounded-md overflow-hidden">
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full px-3 py-2 flex items-center justify-between hover:bg-current/10 transition-colors"
+      >
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          <span className="text-xs font-mono font-bold text-current/70">
+            &lt;--{tagName}--&gt;
+          </span>
+        </div>
+        <ChevronDown className="w-3 h-3 transition-transform" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0)' }} />
+      </button>
+
+      {isExpanded && (
+        <div className="px-3 py-2 border-t border-current/20 bg-current/2">
+          <div className="prose prose-xs dark:prose-invert max-w-none">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm, remarkMath]}
+              rehypePlugins={[rehypeKatex]}
+              components={{
+                h1: ({ node, ...props }) => <h3 className="text-sm font-bold mt-2 mb-1" {...props} />,
+                h2: ({ node, ...props }) => <h4 className="text-xs font-semibold mt-1" {...props} />,
+                p: ({ node, ...props }) => <p className="text-xs leading-relaxed" {...props} />,
+                ul: ({ node, ...props }) => <ul className="list-disc list-inside space-y-0.5 text-xs" {...props} />,
+                ol: ({ node, ...props }) => <ol className="list-decimal list-inside space-y-0.5 text-xs" {...props} />,
+                code: ({ node, className, ...props }) =>
+                  className ?
+                    <code className="block bg-black/20 p-1 rounded text-xs font-mono overflow-x-auto" {...props} /> :
+                    <code className="bg-black/10 px-1 rounded text-xs font-mono" {...props} />,
+              }}
+            >
+              {content}
+            </ReactMarkdown>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 
