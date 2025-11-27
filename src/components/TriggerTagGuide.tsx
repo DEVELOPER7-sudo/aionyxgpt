@@ -128,8 +128,8 @@ const TriggerTagGuide = ({ onClose, compact = false }: TriggerTagGuideProps) => 
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/50 p-4 safe-area">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-t-2xl md:rounded-2xl">
+    <div className="fixed inset-0 z-40 flex items-end md:items-center justify-center bg-black/50 p-4 safe-area">
+      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-t-2xl md:rounded-2xl relative z-50">
         {/* Header */}
         <div className="sticky top-0 flex items-center justify-between p-4 border-b bg-card z-10">
           <div className="flex items-center gap-2">
