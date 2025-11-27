@@ -1755,23 +1755,11 @@ export const parseTriggeredResponse = (content: string): {
   while ((match = tagRegex.exec(content)) !== null) {
     const [fullMatch, tagName, tagContent] = match;
     if (isValidTriggerTag(tagName) && !isInsideCodeBlock(content, match.index)) {
-      // Parse inner trigger bars within this segment
-      let innerTriggers: Array<{ tag: string; content: string; startIndex: number; endIndex: number }> = [];
-      try {
-        innerTriggers = parseInnerTriggerBars(tagContent);
-      } catch (parseError) {
-        if (import.meta.env.DEV) {
-          console.warn('[DEBUG] Failed to parse inner triggers:', parseError);
-        }
-        innerTriggers = [];
-      }
-      
       taggedSegments.push({
         tag: tagName,
         content: tagContent.trim(),
         startIndex: match.index,
         endIndex: match.index + fullMatch.length,
-        innerTriggers: innerTriggers.length > 0 ? innerTriggers : undefined,
       });
       replacements.push({ start: match.index, end: match.index + fullMatch.length });
     }
@@ -1894,7 +1882,6 @@ export const parseTriggeredResponse = (content: string): {
 
 /**
  * Deduplicates content between trigger bars and final response
- * Also removes any nested trigger references (--triggername--) that leak into final response
  * If content appears in both taggedSegments and cleanContent, removes it from cleanContent
  * Returns cleaned response without duplicate content
  */
@@ -1907,25 +1894,6 @@ export const deduplicateResponseContent = (
   }
 
   let result = cleanContent;
-  
-  // CRITICAL: Remove ALL trigger syntax from final response
-  // Nothing with angle brackets or trigger-like syntax should be in final answer
-  
-  // Remove markdown headers (--triggername--)
-  result = result.replace(/\(\-\-[a-zA-Z_][a-zA-Z0-9_]*\-\-\)/g, '');
-  
-  // Remove collapsible inner bars <--triggername-->content</--triggername-->
-  result = result.replace(/<\-\-[a-zA-Z_][a-zA-Z0-9_]*\-\->[^]*?<\/\-\-[a-zA-Z_][a-zA-Z0-9_]*\-\->/gs, '');
-  
-  // Remove any remaining closing tags that weren't caught (malformed)
-  result = result.replace(/<\/\-\-[a-zA-Z_][a-zA-Z0-9_]*\-\->/g, '');
-  
-  // Remove any remaining opening tags that weren't caught (malformed)
-  result = result.replace(/<\-\-[a-zA-Z_][a-zA-Z0-9_]*\-\->/g, '');
-  
-  // Remove any stray markdown parentheses versions
-  result = result.replace(/\(\-\-[a-zA-Z_][a-zA-Z0-9_]*\-\-\)/g, '');
-  
   const contentThreshold = 50; // Minimum similarity threshold
 
   // For each tagged segment, check if its content appears in cleanContent
@@ -1977,24 +1945,10 @@ export const deduplicateResponseContent = (
     result = resultLines.join('\n').trim();
   }
 
-  // Final cleanup: normalize whitespace and remove any lingering trigger syntax
+  // Final cleanup: normalize whitespace
   result = result
     .replace(/\n\n\n+/g, '\n\n')
     .replace(/\s+$/gm, '')
-    .trim();
-  
-  // FAILSAFE: Final pass to catch any remaining trigger syntax that slipped through
-  // This is a last resort cleanup for malformed or edge-case tags
-  result = result.replace(/<\-\-[a-zA-Z_][a-zA-Z0-9_]*\-\->[\s\S]*?<\/\-\-[a-zA-Z_][a-zA-Z0-9_]*\-\->/g, ''); // Inner bars
-  result = result.replace(/<\/\-\-[a-zA-Z_][a-zA-Z0-9_]*\-\->/g, ''); // Closing tags
-  result = result.replace(/<\-\-[a-zA-Z_][a-zA-Z0-9_]*\-\->/g, ''); // Opening tags  
-  result = result.replace(/\(\-\-[a-zA-Z_][a-zA-Z0-9_]*\-\-\)/g, ''); // Markdown headers
-  
-  // Clean up extra whitespace left by removals
-  result = result
-    .replace(/\n\s*\n\s*\n/g, '\n\n')
-    .replace(/\s+/g, ' ')
-    .replace(/\n /g, '\n')
     .trim();
 
   return result;
@@ -2029,82 +1983,7 @@ function calculateStringSimilarity(str1: string, str2: string): number {
   return matches / longer.length;
 }
 
-/**
- * Convert nested trigger markdown syntax (--triggername--) to styled text
- * This renders nested triggers as formatted headers/subheaders ONLY within trigger bars
- * IMPORTANT: This should ONLY be applied to trigger bar content, never to final response
- */
-export const formatNestedTriggerReferences = (content: string): string => {
-  if (!content) return content;
 
-  // Pattern: (--triggername--) - these should only be inside trigger bars
-  // Convert to markdown-style headers or badges
-  const nestedTriggerPattern = /^(\s*)?\(\-\-([a-zA-Z_][a-zA-Z0-9_]*)\-\-\)(.*)$/gm;
-  
-  return content.replace(nestedTriggerPattern, (match, indent, triggerName, rest) => {
-    // If it's at the start of a line, format as a subheader
-    if (match.trim().startsWith('(--')) {
-      return `${indent || ''}**[${triggerName}]**${rest}`;
-    }
-    // If inline, format as bold badge
-    return match.replace(`(--${triggerName}--)`, `**[${triggerName}]**`);
-  });
-};
-
-/**
- * Extract nested trigger references from content
- * Returns array of trigger names found in (--triggername--) format
- */
-export const extractNestedTriggerReferences = (content: string): string[] => {
-  if (!content) return [];
-
-  const nestedTriggerPattern = /\(\-\-([a-zA-Z_][a-zA-Z0-9_]*)\-\-\)/g;
-  const matches: string[] = [];
-  let match;
-
-  while ((match = nestedTriggerPattern.exec(content)) !== null) {
-    const triggerName = match[1];
-    if (!matches.includes(triggerName)) {
-      matches.push(triggerName);
-    }
-  }
-
-  return matches;
-};
-
-/**
- * Parse inner trigger bars from content
- * Format: <--triggername-->content</--triggername-->
- * Returns array of inner trigger objects with tag, content, and indices
- */
-export const parseInnerTriggerBars = (content: string): Array<{ tag: string; content: string; startIndex: number; endIndex: number }> => {
-  if (!content || typeof content !== 'string') return [];
-
-  try {
-    const innerTriggerPattern = /<\-\-([a-zA-Z_][a-zA-Z0-9_]*)\-\->([\s\S]*?)<\/\-\-\1\-\->/g;
-    const innerTriggers: Array<{ tag: string; content: string; startIndex: number; endIndex: number }> = [];
-    let match;
-
-    while ((match = innerTriggerPattern.exec(content)) !== null) {
-      const [fullMatch, tagName, tagContent] = match;
-      if (tagName && tagContent !== undefined) {
-        innerTriggers.push({
-          tag: tagName,
-          content: tagContent.trim(),
-          startIndex: match.index,
-          endIndex: match.index + fullMatch.length,
-        });
-      }
-    }
-
-    return innerTriggers;
-  } catch (error) {
-    if (import.meta.env.DEV) {
-      console.warn('[DEBUG] Error parsing inner trigger bars:', error);
-    }
-    return [];
-  }
-};
 
 export const resetToBuiltIn = () => {
   saveTriggers(BUILT_IN_TRIGGERS);

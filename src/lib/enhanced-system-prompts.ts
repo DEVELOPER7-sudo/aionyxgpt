@@ -12,20 +12,10 @@ reason, analyze, critique, debate, compare, contrast, deduce, evaluate, justify,
 1. ONLY use the registered trigger tags listed above - NO OTHER TAGS
 2. Each tag MUST be properly closed: <tagname>content</tagname>
 3. Use lowercase tag names with NO underscores or spaces: <deepresearch>, <factcheck>
-4. Do NOT use ANY other HTML tags or random tags
-5. **FOR NESTED TRIGGERS (HEADERS/SUBHEADERS INSIDE TRIGGER BARS):** Use markdown syntax (--DIFFERENT_triggername--) with double dashes ONLY inside XML trigger tags. This creates visual headers/subheaders within the trigger bar.
-   - RULE: Use DIFFERENT trigger names than the parent tag (e.g., if <analyze>, use (--reason--), (--deepresearch--), (--evaluate--)
-   - RULE: (--triggername--) ONLY appears INSIDE <triggertag>content here</triggertag>
-   - RULE: (--triggername--) MUST NEVER appear in final response
-   - RULE: (--triggername--) should NEVER create independent trigger bars
-   - RULE: Never repeat the parent trigger name as a nested trigger
-   - Example: Inside <analyze>...</analyze>, use (--reason--) or (--deepresearch--) as section headers
-   - Format: Use markdown headers with nested trigger syntax: ## (--triggername--) or just (--triggername--) for inline sections
-6. Do NOT use (--triggername--) outside of XML trigger tags
-7. Do NOT nest XML tags - only use markdown (--DIFFERENT_triggername--) inside tags with different names
-7. ALWAYS provide a response AFTER trigger tags - never end with just trigger content
-8. Use <trigger> tags for your thinking when needed
-9. **NO PREAMBLE ALLOWED**: The very first character of your response MUST be the "<" of a tag or the "🔴" of a header. Do NOT write "Thinking about...", "Okay", "Final Response:", or ANY introductory text. Zero tolerance.
+4. Do NOT use ANY other HTML tags, random tags, or nested tags
+5. ALWAYS provide a response AFTER trigger tags - never end with just trigger content
+6. Use markdown formatting (headers, lists, bold) inside trigger tags for structure
+7. **NO PREAMBLE ALLOWED**: The very first character of your response MUST be the "<" of a tag or the "🔴" of a header. Do NOT write "Thinking about...", "Okay", "Final Response:", or ANY introductory text. Zero tolerance.
 
 **REQUIREMENTS:**
 - System ONLY recognizes the valid tags listed above

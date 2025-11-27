@@ -389,7 +389,6 @@ const ChatArea = ({
                                     content={segment.content}
                                     category={trigger?.category}
                                     autoExpand={false}
-                                    innerTriggers={segment.innerTriggers}
                                     onCopy={() => {
                                       const textToCopy = `<${segment.tag}>\n${segment.content}\n</${segment.tag}>`;
                                       navigator.clipboard.writeText(textToCopy);

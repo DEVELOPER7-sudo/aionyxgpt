@@ -106,58 +106,24 @@ Your clear, direct final answer to the user's question. This must be at least 10
 5. No category name anywhere except in header
 
 --------------------------------------------------------------------------------
-### SECTION 3.5: NESTED TRIGGER REFERENCES (TWO FORMATS)
+### SECTION 3.5: CONTENT ORGANIZATION INSIDE TRIGGER BARS
 --------------------------------------------------------------------------------
-**TWO FORMATS FOR NESTED TRIGGERS INSIDE TRIGGER BARS**
+Inside your <${triggerTag}> tag, organize your content clearly with:
 
-Inside your <${triggerTag}> tag, you can use TWO different formats for nested content:
+**MARKDOWN HEADERS FOR ORGANIZATION:**
+- Use standard markdown headers: ##, ###, ####
+- Example: ## Reasoning, ## Evidence, ## Conclusion
+- This helps structure long-form content without additional tags
 
-**FORMAT 1: MARKDOWN HEADERS (--triggername--)**
-- Creates section headers/subheaders as plain markdown text
-- Format: (--reason--), (--deepresearch--), etc.
-- RULE: Use DIFFERENT trigger names than parent
-- RULE: Only renders as bold markdown **[triggername]**, no collapsible bar
-- RULE: Good for organizing content with headers
-
-**FORMAT 2: COLLAPSIBLE INNER TRIGGER BARS (<--triggername-->)**
-- Creates INDEPENDENT COLLAPSIBLE trigger bars INSIDE parent trigger bar
-- Format: <--reason-->Content here</--reason-->
-- RULE: Each creates its own expandable/collapsible section
-- RULE: User can expand/collapse each inner trigger independently
-- RULE: Use DIFFERENT trigger names than parent
-- RULE: Inner bars are viewed only when user opens parent trigger bar
-- RULE: NEVER appear in final response
-
-**VALID NESTED TRIGGER NAMES FOR BOTH FORMATS:**
-reason, analyze, critique, debate, compare, contrast, deduce, evaluate, justify, hypothesize, examine, interpret, verify, reflect, infer, explore, discuss, validate, assess, troubleshoot, search, deepresearch, factcheck, contextualize, summarize, outline, extract, highlight, define, explain, describe, cite, reference, clarify, expand, compress, plan, roadmap, checklist, organize, prioritize, schedule, brainstorm, propose, structure, map, draft, improve, review, simplify, formalize, rephrase, rewrite, summarizeforkids, persuasive, informative, neutral, balanced, empathetic
-
-**EXAMPLE WITH BOTH FORMATS:**
-<debate>
-## (--reason--)
-Summary of reasoning approach...
-
-<--reason-->Full detailed reasoning with analysis of all arguments for this perspective</--reason-->
-
-## (--deepresearch--)
-Summary of research approach...
-
-<--deepresearch-->Complete research findings and data supporting this debate position</--deepresearch-->
-
-## (--evaluate--)
-Summary of evaluation...
-
-<--evaluate-->Full evaluation comparing different perspectives and weighing evidence</--evaluate-->
-</debate>
-
-Your final answer here (no nested triggers).
+**BULLET POINTS AND LISTS:**
+- Use bullet points (-) and numbered lists (1., 2., 3.)
+- This provides clear, scannable content organization
 
 **KEY RULES:**
-- (--triggername--) = markdown header only, no collapsible bar
-- <--triggername--> = collapsible inner trigger bar, independently expandable
-- Both ONLY inside parent <parttag>...</parttag>
-- Both MUST use DIFFERENT names than parent trigger
-- Both NEVER in final response
-- Mix both formats to organize content with headers AND expandable sections
+- Use ONLY standard markdown for content organization
+- No nested trigger tags or special syntax
+- Focus on clear structure and readability
+- Keep content focused within the trigger bar boundaries
 
 --------------------------------------------------------------------------------
 ### SECTION 4: CATEGORY-SPECIFIC PROTOCOLS (${category.toUpperCase()})

@@ -15,7 +15,6 @@ export interface Message {
     content: string; 
     startIndex: number; 
     endIndex: number;
-    innerTriggers?: Array<{ tag: string; content: string; startIndex: number; endIndex: number }>; // Nested <--triggername--> tags
   }>;
 }
 
