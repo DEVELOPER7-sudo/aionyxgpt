@@ -82,6 +82,34 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
+  /* 120fps Performance Optimizations */
+  * {
+    -webkit-font-smoothing: antialiased;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+
+  /* GPU Acceleration for animations */
+  .animate-blur-in,
+  .animate-blur-out,
+  .animate-spin-blur,
+  .animate-collapse-blur,
+  .animate-expand-blur,
+  .animate-pulse-blur,
+  .animate-glow-pulse,
+  .animate-bounce-in,
+  .animate-scale-in,
+  .animate-float,
+  .animate-fade-in,
+  .animate-slide-up,
+  .animate-slide-in-left,
+  .animate-slide-in-right,
+  .animate-pulse {
+    will-change: transform, opacity, filter;
+    -webkit-transform: translateZ(0);
+    -webkit-perspective: 1000;
+  }
+
   .glow-blue {
     box-shadow: var(--glow-blue);
   }
@@ -136,6 +164,34 @@ All colors MUST be HSL.
     animation: slideDown 0.3s ease-out;
   }
 
+  .animate-blur-in {
+    animation: blurIn 0.4s ease-out;
+  }
+
+  .animate-blur-out {
+    animation: blurOut 0.3s ease-in;
+  }
+
+  .animate-spin-blur {
+    animation: spinBlur 0.5s ease-out;
+  }
+
+  .animate-collapse-blur {
+    animation: collapseBlur 0.35s ease-in-out;
+  }
+
+  .animate-expand-blur {
+    animation: expandBlur 0.35s ease-in-out;
+  }
+
+  .animate-pulse-blur {
+    animation: pulseBlur 2s ease-in-out infinite;
+  }
+
+  .animate-glow-pulse {
+    animation: glowPulse 1.5s ease-in-out infinite;
+  }
+
   @keyframes slideDown {
     from {
       transform: translateY(-10px);
@@ -144,6 +200,92 @@ All colors MUST be HSL.
     to {
       transform: translateY(0);
       opacity: 1;
+    }
+  }
+
+  @keyframes blurIn {
+    from {
+      filter: blur(8px);
+      opacity: 0;
+    }
+    to {
+      filter: blur(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes blurOut {
+    from {
+      filter: blur(0);
+      opacity: 1;
+    }
+    to {
+      filter: blur(6px);
+      opacity: 0;
+    }
+  }
+
+  @keyframes spinBlur {
+    from {
+      transform: rotate(0) scale(0.95);
+      filter: blur(4px);
+      opacity: 0;
+    }
+    50% {
+      filter: blur(2px);
+    }
+    to {
+      transform: rotate(180deg) scale(1);
+      filter: blur(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes collapseBlur {
+    from {
+      max-height: 500px;
+      filter: blur(0);
+      opacity: 1;
+    }
+    to {
+      max-height: 0;
+      filter: blur(4px);
+      opacity: 0;
+    }
+  }
+
+  @keyframes expandBlur {
+    from {
+      max-height: 0;
+      filter: blur(4px);
+      opacity: 0;
+    }
+    to {
+      max-height: 500px;
+      filter: blur(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes pulseBlur {
+    0%, 100% {
+      filter: blur(0);
+      opacity: 1;
+    }
+    50% {
+      filter: blur(1px);
+      opacity: 0.8;
+    }
+  }
+
+  @keyframes glowPulse {
+    0%, 100% {
+      filter: brightness(1);
+      box-shadow: 0 0 10px hsl(217 91% 60% / 0.3);
+    }
+    50% {
+      filter: brightness(1.1);
+      box-shadow: 0 0 20px hsl(217 91% 60% / 0.6);
     }
   }
 

@@ -118,8 +118,11 @@ const ChatArea = ({
   };
 
   const scrollToBottom = (instant = false) => {
-    if (bottomRef.current && !userHasScrolled.current) {
-      bottomRef.current.scrollIntoView({ behavior: instant ? 'auto' : 'smooth', block: 'end' });
+    if (bottomRef.current) {
+      // Always scroll during loading, unless user explicitly scrolled up
+      if (!isLoading || !userHasScrolled.current) {
+        bottomRef.current.scrollIntoView({ behavior: instant ? 'auto' : 'smooth', block: 'end' });
+      }
     }
   };
 
@@ -309,10 +312,10 @@ const ChatArea = ({
               >
               <div
                 className={cn(
-                  'max-w-[90%] sm:max-w-[85%] min-w-0 rounded-2xl p-3 md:p-4 shadow-lg transition-all duration-300 hover:shadow-xl',
+                  'max-w-[90%] sm:max-w-[85%] min-w-0 rounded-2xl p-3 md:p-4 shadow-lg transition-all duration-300 hover:shadow-xl animate-blur-in',
                   message.role === 'user'
-                    ? 'bg-primary text-primary-foreground hover:scale-[1.02]'
-                    : 'bg-card border border-border hover:border-primary/30'
+                    ? 'bg-primary text-primary-foreground hover:scale-[1.02] hover:shadow-primary/50'
+                    : 'bg-card border border-border hover:border-primary/30 hover:shadow-primary/20'
                 )}
               >
                 {message.imageUrl && (
@@ -337,7 +340,10 @@ const ChatArea = ({
                     return (
                       <div className="w-full">
                         {thinking && (
-                          <Card className="my-4 p-4 border-2 border-indigo-500/30 bg-indigo-500/5 transition-all duration-200 hover:shadow-lg">
+                          <Card className={cn(
+                            "my-4 p-4 border-2 border-indigo-500/30 bg-indigo-500/5 transition-all duration-300 hover:shadow-xl hover:border-indigo-500/60 hover:bg-indigo-500/10",
+                            isThinking && "animate-pulse-blur"
+                          )}>
                             <button
                               onClick={() => {
                                 const newExpanded = new Set(expandedThinking);
@@ -348,27 +354,33 @@ const ChatArea = ({
                                 }
                                 setExpandedThinking(newExpanded);
                               }}
-                              className="w-full flex items-center gap-2 pb-2 border-b border-indigo-500/20"
+                              className="w-full flex items-center gap-2 pb-2 border-b border-indigo-500/20 hover:bg-indigo-500/5 transition-colors duration-300 rounded px-2 -mx-2"
                             >
-                              <span className="text-lg">💭</span>
-                              <Badge variant="outline" className="font-mono text-xs bg-indigo-500/10 text-indigo-500 border-indigo-500/20">
+                              <span className="text-lg animate-float">💭</span>
+                              <Badge variant="outline" className="font-mono text-xs bg-indigo-500/10 text-indigo-500 border-indigo-500/20 hover:bg-indigo-500/20 transition-all duration-300">
                                 &lt;think&gt;
                               </Badge>
-                              <span className="text-xs text-muted-foreground ml-auto">
-                                {isThinking ? 'Streaming...' : 'Reasoning Process'}
+                              <span className={cn(
+                                "text-xs text-muted-foreground ml-auto",
+                                isThinking && "animate-pulse font-semibold text-indigo-500"
+                              )}>
+                                {isThinking ? '🔄 Streaming...' : 'Reasoning Process'}
                               </span>
-                              <span className="text-xs">{isExpanded ? '▼' : '▶'}</span>
+                              <span className={cn(
+                                "text-xs transition-transform duration-300",
+                                isExpanded && "rotate-180"
+                              )}>{isExpanded ? '▼' : '▶'}</span>
                             </button>
                             {isExpanded && (
-                              <div className="mt-3 prose prose-sm dark:prose-invert max-w-none">
+                              <div className="mt-3 prose prose-sm dark:prose-invert max-w-none animate-expand-blur overflow-hidden">
                                 <ReactMarkdown 
                                   remarkPlugins={[remarkGfm, remarkMath]}
                                   rehypePlugins={[rehypeKatex]}
                                 >
                                   {thinking}
                                 </ReactMarkdown>
-                                <div className="flex items-center gap-2 mt-3 pt-2 border-t border-indigo-500/20 opacity-60">
-                                  <Badge variant="outline" className="font-mono text-xs bg-indigo-500/10 text-indigo-500 border-indigo-500/20">
+                                <div className="flex items-center gap-2 mt-3 pt-2 border-t border-indigo-500/20 opacity-60 hover:opacity-100 transition-opacity duration-300">
+                                  <Badge variant="outline" className="font-mono text-xs bg-indigo-500/10 text-indigo-500 border-indigo-500/20 hover:bg-indigo-500/20 transition-all duration-300">
                                     &lt;/think&gt;
                                   </Badge>
                                 </div>
@@ -523,13 +535,13 @@ const ChatArea = ({
           {/* Show loading spinner with stop button visible */}
           {isLoading && (
             <div className="flex gap-3 animate-bounce-in items-start">
-              <div className="bg-card border border-border rounded-2xl p-4 shadow-lg flex items-center gap-3 animate-pulse-glow">
+              <div className="bg-card border border-primary/40 rounded-2xl p-4 shadow-lg shadow-primary/20 flex items-center gap-3 animate-glow-pulse backdrop-blur-sm hover:shadow-xl transition-all duration-300">
                 <LoadingDots />
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={onStopGeneration}
-                  className="text-destructive hover:text-destructive hover:bg-destructive/10 transition-all duration-200 font-semibold"
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10 transition-all duration-200 font-semibold hover:scale-105"
                 >
                   <Square className="w-4 h-4 mr-1" />
                   Stop
@@ -563,12 +575,12 @@ const ChatArea = ({
         <div className="max-w-4xl mx-auto space-y-2 md:space-y-3">
           {/* Image Preview */}
           {uploadedImage && (
-            <div className="relative inline-block animate-scale-in">
-              <img src={uploadedImage} alt="Upload preview" className="h-20 w-20 object-cover rounded-lg border border-border" />
+            <div className="relative inline-block animate-scale-in hover:shadow-lg hover:shadow-primary/30 rounded-lg transition-all duration-300">
+              <img src={uploadedImage} alt="Upload preview" className="h-20 w-20 object-cover rounded-lg border border-primary/40 hover:border-primary/80 transition-all duration-300 hover:scale-105" />
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-destructive hover:bg-destructive/90"
+                className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-destructive hover:bg-destructive/90 animate-scale-in hover:scale-110 transition-all duration-200"
                 onClick={() => setUploadedImage(null)}
               >
                 <X className="w-3 h-3" />
@@ -605,58 +617,67 @@ const ChatArea = ({
               className="hidden"
             />
             <Button
-              variant="ghost"
-              size="icon"
-              className="h-10 w-10 flex-shrink-0"
-              onClick={() => fileInputRef.current?.click()}
-              title="Upload image for vision AI"
-            >
-              <Paperclip className="w-4 h-4 md:w-5 md:h-5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-10 w-10 flex-shrink-0"
-            >
-              <Mic className="w-4 h-4 md:w-5 md:h-5" />
-            </Button>
-            <Button
-              onClick={handleSend}
-              disabled={isLoading || isAnalyzing || isUploading}
-              className="h-10 w-10 flex-shrink-0"
-              size="icon"
-            >
-              {isLoading || isAnalyzing || isUploading ? (
-                <Loader2 className="w-4 h-4 md:w-5 md:h-5 animate-spin" />
-              ) : (
-                <Send className="w-4 h-4 md:w-5 md:h-5" />
-              )}
-            </Button>
+               variant="ghost"
+               size="icon"
+               className="h-10 w-10 flex-shrink-0 hover:scale-110 hover:bg-primary/10 transition-all duration-300 hover:text-primary"
+               onClick={() => fileInputRef.current?.click()}
+               title="Upload image for vision AI"
+             >
+               <Paperclip className="w-4 h-4 md:w-5 md:h-5" />
+             </Button>
+             <Button
+               variant="ghost"
+               size="icon"
+               className="h-10 w-10 flex-shrink-0 hover:scale-110 hover:bg-primary/10 transition-all duration-300 hover:text-primary"
+             >
+               <Mic className="w-4 h-4 md:w-5 md:h-5" />
+             </Button>
+             <Button
+               onClick={handleSend}
+               disabled={isLoading || isAnalyzing || isUploading}
+               className={cn(
+                 "h-10 w-10 flex-shrink-0 transition-all duration-300 hover:scale-110",
+                 isLoading || isAnalyzing || isUploading ? "bg-primary/70" : "hover:shadow-lg hover:shadow-primary/50"
+               )}
+               size="icon"
+             >
+               {isLoading || isAnalyzing || isUploading ? (
+                 <Loader2 className="w-4 h-4 md:w-5 md:h-5 animate-spin" />
+               ) : (
+                 <Send className="w-4 h-4 md:w-5 md:h-5" />
+               )}
+             </Button>
             </div>
             </div>
 
             {/* Advanced Menu */}
-          <div className="flex items-center justify-end gap-2 flex-wrap">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowAdvanced(!showAdvanced)}
-              className="gap-2"
-            >
-              <SearchIcon className="w-4 h-4" />
-              Advanced
-              {showAdvanced ? <X className="w-3 h-3" /> : null}
-            </Button>
-          </div>
+            <div className="flex items-center justify-end gap-2 flex-wrap">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                className={cn(
+                  "gap-2 transition-all duration-300 hover:border-primary/60 hover:bg-primary/5",
+                  showAdvanced && "border-primary/60 bg-primary/5"
+                )}
+              >
+                <SearchIcon className={cn(
+                  "w-4 h-4 transition-transform duration-300",
+                  showAdvanced && "rotate-180"
+                )} />
+                Advanced
+                {showAdvanced ? <X className="w-3 h-3" /> : null}
+              </Button>
+            </div>
 
           {/* Advanced Options Panel */}
           {showAdvanced && (
-            <div className="border border-border rounded-lg p-3 bg-card/50 space-y-3 animate-scale-in">
+            <div className="border border-primary/40 rounded-lg p-3 bg-card/50 backdrop-blur-sm space-y-3 animate-expand-blur shadow-lg shadow-primary/10 hover:shadow-primary/20 transition-all duration-300">
               {onTaskModeChange && (
-                <div className="flex items-center gap-2">
-                  <Label htmlFor="task-mode-adv" className="whitespace-nowrap text-xs min-w-[80px]">Task Mode:</Label>
+                <div className="flex items-center gap-2 group">
+                  <Label htmlFor="task-mode-adv" className="whitespace-nowrap text-xs min-w-[80px] group-hover:text-primary transition-colors duration-300">Task Mode:</Label>
                   <Select value={taskMode} onValueChange={(value: any) => onTaskModeChange(value)}>
-                    <SelectTrigger id="task-mode-adv" className="h-8 flex-1">
+                    <SelectTrigger id="task-mode-adv" className="h-8 flex-1 transition-all duration-300 hover:border-primary/60">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -670,8 +691,8 @@ const ChatArea = ({
               )}
               
               <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="web-search-adv" className="flex items-center gap-2 cursor-pointer">
+                <div className="flex items-center justify-between group hover:bg-primary/5 px-2 py-1 rounded transition-all duration-300">
+                  <Label htmlFor="web-search-adv" className="flex items-center gap-2 cursor-pointer group-hover:text-primary transition-colors duration-300">
                     <Globe className="w-4 h-4" />
                     Web Search
                   </Label>
@@ -682,8 +703,8 @@ const ChatArea = ({
                   />
                 </div>
                 
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="deep-search-adv" className="flex items-center gap-2 cursor-pointer">
+                <div className="flex items-center justify-between group hover:bg-primary/5 px-2 py-1 rounded transition-all duration-300">
+                  <Label htmlFor="deep-search-adv" className="flex items-center gap-2 cursor-pointer group-hover:text-primary transition-colors duration-300">
                     <SearchIcon className="w-4 h-4" />
                     Deep Search
                   </Label>

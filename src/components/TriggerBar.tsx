@@ -92,7 +92,7 @@ const TriggerBar = ({ triggers, taggedSegments = [], onTriggerClick }: TriggerBa
       </div>
 
       {!isBarCollapsed && (
-        <div className="px-4 pb-4 flex flex-wrap gap-3">
+        <div className="px-4 pb-4 flex flex-wrap gap-3 animate-expand-blur">
           {triggers.map((trigger) => {
             const isExpanded = expandedTriggers.has(trigger.tag) || viewAll;
             const matchingSegment = taggedSegments.find(seg => seg.tag === trigger.tag);
@@ -106,76 +106,76 @@ const TriggerBar = ({ triggers, taggedSegments = [], onTriggerClick }: TriggerBa
               >
                 <CollapsibleTrigger asChild>
                    <Badge
-                     className={cn(
-                       'cursor-pointer transition-all duration-300 px-4 py-2 text-xs font-bold border-2 hover:scale-105 hover:-translate-y-1',
-                       getCategoryColor(trigger.category)
-                     )}
-                     onClick={() => onTriggerClick?.(trigger)}
-                   >
-                     <span className="mr-2 text-sm">{getCategoryIcon(trigger.category)}</span>
-                     {trigger.name}
-                     {isExpanded ? (
-                       <ChevronUp className="ml-2 w-4 h-4" />
-                     ) : (
-                       <ChevronDown className="ml-2 w-4 h-4" />
-                     )}
-                   </Badge>
-                 </CollapsibleTrigger>
-
-                <CollapsibleContent className="mt-3 animate-slide-down">
-                   <Card className="p-4 bg-gradient-to-r border-l-4 border-2 shadow-lg" style={{
-                     borderLeftColor: getCategoryColor(trigger.category).includes('blue') ? '#3b82f6' :
-                       getCategoryColor(trigger.category).includes('emerald') ? '#10b981' :
-                       getCategoryColor(trigger.category).includes('violet') ? '#a855f7' :
-                       getCategoryColor(trigger.category).includes('amber') ? '#f97316' : '#6b7280',
-                     backgroundImage: getCategoryColor(trigger.category).includes('blue') ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(96, 165, 250, 0.04))' :
-                       getCategoryColor(trigger.category).includes('emerald') ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(52, 211, 153, 0.04))' :
-                       getCategoryColor(trigger.category).includes('violet') ? 'linear-gradient(135deg, rgba(168, 85, 247, 0.08), rgba(196, 108, 250, 0.04))' :
-                       getCategoryColor(trigger.category).includes('amber') ? 'linear-gradient(135deg, rgba(249, 115, 22, 0.08), rgba(251, 146, 60, 0.04))' : 'linear-gradient(135deg, rgba(107, 114, 128, 0.08), rgba(148, 163, 184, 0.04))'
-                   }}>
-                    <div className="space-y-2 text-xs">
-                      <div>
-                        <span className="font-semibold text-foreground">Category:</span>
-                        <span className="ml-2 text-muted-foreground">{trigger.category}</span>
-                      </div>
-                      
-                      <div>
-                        <span className="font-semibold text-foreground">Purpose:</span>
-                        <p className="mt-1 text-muted-foreground">{trigger.metadata.purpose}</p>
-                      </div>
-
-                      <div>
-                        <span className="font-semibold text-foreground">Context Used:</span>
-                        <p className="mt-1 text-muted-foreground">{trigger.metadata.context_used}</p>
-                      </div>
-
-                      <div>
-                        <span className="font-semibold text-foreground">Influence Scope:</span>
-                        <p className="mt-1 text-muted-foreground">{trigger.metadata.influence_scope}</p>
-                      </div>
-
-                      {matchingSegment && (
-                        <div>
-                          <span className="font-semibold text-foreground">Tagged Content Preview:</span>
-                          <div className="mt-1 p-2 bg-background/50 rounded border border-border">
-                            <p className="text-muted-foreground line-clamp-3">
-                              {matchingSegment.content.substring(0, 200)}
-                              {matchingSegment.content.length > 200 && '...'}
-                            </p>
-                          </div>
-                        </div>
+                      className={cn(
+                        'cursor-pointer transition-all duration-300 px-4 py-2 text-xs font-bold border-2 hover:scale-105 hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-500/50',
+                        getCategoryColor(trigger.category)
                       )}
+                      onClick={() => onTriggerClick?.(trigger)}
+                    >
+                      <span className="mr-2 text-sm">{getCategoryIcon(trigger.category)}</span>
+                      {trigger.name}
+                      {isExpanded ? (
+                        <ChevronUp className="ml-2 w-4 h-4 transition-transform duration-300" />
+                      ) : (
+                        <ChevronDown className="ml-2 w-4 h-4 transition-transform duration-300" />
+                      )}
+                    </Badge>
+                  </CollapsibleTrigger>
 
-                      <div>
-                        <span className="font-semibold text-foreground">System Instruction:</span>
-                        <div className="mt-1 p-2 bg-background/50 rounded border border-border font-mono">
-                          <code className="text-xs text-muted-foreground">{trigger.instruction}</code>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                </CollapsibleContent>
-              </Collapsible>
+                 <CollapsibleContent className="mt-3 animate-expand-blur overflow-hidden">
+                    <Card className="p-4 bg-gradient-to-r border-l-4 border-2 shadow-lg backdrop-blur-sm hover:shadow-xl transition-all duration-300" style={{
+                      borderLeftColor: getCategoryColor(trigger.category).includes('blue') ? '#3b82f6' :
+                        getCategoryColor(trigger.category).includes('emerald') ? '#10b981' :
+                        getCategoryColor(trigger.category).includes('violet') ? '#a855f7' :
+                        getCategoryColor(trigger.category).includes('amber') ? '#f97316' : '#6b7280',
+                      backgroundImage: getCategoryColor(trigger.category).includes('blue') ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(96, 165, 250, 0.04))' :
+                        getCategoryColor(trigger.category).includes('emerald') ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(52, 211, 153, 0.04))' :
+                        getCategoryColor(trigger.category).includes('violet') ? 'linear-gradient(135deg, rgba(168, 85, 247, 0.08), rgba(196, 108, 250, 0.04))' :
+                        getCategoryColor(trigger.category).includes('amber') ? 'linear-gradient(135deg, rgba(249, 115, 22, 0.08), rgba(251, 146, 60, 0.04))' : 'linear-gradient(135deg, rgba(107, 114, 128, 0.08), rgba(148, 163, 184, 0.04))'
+                    }}>
+                     <div className="space-y-2 text-xs animate-blur-in">
+                       <div className="transition-all duration-300 hover:pl-2">
+                         <span className="font-semibold text-foreground">Category:</span>
+                         <span className="ml-2 text-muted-foreground">{trigger.category}</span>
+                       </div>
+                       
+                       <div className="transition-all duration-300 hover:pl-2">
+                         <span className="font-semibold text-foreground">Purpose:</span>
+                         <p className="mt-1 text-muted-foreground">{trigger.metadata.purpose}</p>
+                       </div>
+
+                       <div className="transition-all duration-300 hover:pl-2">
+                         <span className="font-semibold text-foreground">Context Used:</span>
+                         <p className="mt-1 text-muted-foreground">{trigger.metadata.context_used}</p>
+                       </div>
+
+                       <div className="transition-all duration-300 hover:pl-2">
+                         <span className="font-semibold text-foreground">Influence Scope:</span>
+                         <p className="mt-1 text-muted-foreground">{trigger.metadata.influence_scope}</p>
+                       </div>
+
+                       {matchingSegment && (
+                         <div className="transition-all duration-300 hover:pl-2">
+                           <span className="font-semibold text-foreground">Tagged Content Preview:</span>
+                           <div className="mt-1 p-2 bg-background/50 rounded border border-border hover:border-primary/50 transition-colors duration-300">
+                             <p className="text-muted-foreground line-clamp-3">
+                               {matchingSegment.content.substring(0, 200)}
+                               {matchingSegment.content.length > 200 && '...'}
+                             </p>
+                           </div>
+                         </div>
+                       )}
+
+                       <div className="transition-all duration-300 hover:pl-2">
+                         <span className="font-semibold text-foreground">System Instruction:</span>
+                         <div className="mt-1 p-2 bg-background/50 rounded border border-border font-mono hover:border-primary/50 transition-colors duration-300">
+                           <code className="text-xs text-muted-foreground">{trigger.instruction}</code>
+                         </div>
+                       </div>
+                     </div>
+                   </Card>
+                 </CollapsibleContent>
+               </Collapsible>
             );
           })}
         </div>
