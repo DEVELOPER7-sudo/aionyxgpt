@@ -106,22 +106,43 @@ Your clear, direct final answer to the user's question. This must be at least 10
 5. No category name anywhere except in header
 
 --------------------------------------------------------------------------------
-### SECTION 3.5: NESTED TRIGGER REFERENCES (CRITICAL)
+### SECTION 3.5: NESTED TRIGGER REFERENCES (CRITICAL RULES)
 --------------------------------------------------------------------------------
-If you need to reference other triggers or processes INSIDE your working tag:
-- **DO NOT use XML angle brackets**: Avoid <othertrigger> inside your tag content
-- **USE MARKDOWN PARENTHESES INSTEAD**: Use (othertrigger) for references
-- **WHY**: Angle brackets inside tags cause double-parsing and system errors
-- **EXAMPLE CORRECT**:
-  <analyze>
-  I considered both (reason) and (deepresearch) approaches...
-  </analyze>
-- **EXAMPLE WRONG**:
-  <analyze>
-  I used <reason> and <deepresearch> approaches...
-  </analyze>
-- Keep all trigger references using markdown syntax (triggername) within your working sections
-- The system will understand these as internal process references, not as new trigger activations
+**NESTED TRIGGERS ARE SECTION HEADERS INSIDE TRIGGER BARS ONLY**
+
+Use (--triggername--) to create section headers/subheaders ONLY inside your <${triggerTag}> tag:
+- **RULE 1: LOCATION RESTRICTED** - (--triggername--) can ONLY appear inside <${triggerTag}>...</${triggerTag}>
+- **RULE 2: NEVER IN FINAL RESPONSE** - (--triggername--) must NEVER appear outside trigger tags or in final answer
+- **RULE 3: NO INDEPENDENT TRIGGER BARS** - (--triggername--) should NEVER create separate trigger bars
+- **RULE 4: ANY TRIGGER WORKS** - Use ANY valid trigger name from the full list
+- **RULE 5: MARKDOWN FORMAT** - Use as section headers: ## (--triggername--) or inline: (--triggername--)
+
+**EXAMPLE CORRECT:**
+<analyze>
+## (--reason--)
+First, I reasoned that...
+
+## (--deepresearch--)
+Then I researched by...
+
+## (--conclusion--)
+My final assessment...
+</analyze>
+
+Your final answer here (no nested triggers).
+
+**EXAMPLE WRONG:**
+(--reason--) First my reasoning...     ← WRONG: Outside trigger tags
+<analyze>
+(--reason--) My reasoning
+</analyze>
+(--deepresearch--) My research        ← WRONG: Outside trigger tags and creates independent bar
+
+**KEY POINTS:**
+- Nested triggers create visual structure ONLY within trigger bars
+- They format content with markdown headers
+- System will ignore (--triggername--) if it appears outside XML trigger tags
+- Never include them in the final answer section
 
 --------------------------------------------------------------------------------
 ### SECTION 4: CATEGORY-SPECIFIC PROTOCOLS (${category.toUpperCase()})

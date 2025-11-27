@@ -1882,6 +1882,7 @@ export const parseTriggeredResponse = (content: string): {
 
 /**
  * Deduplicates content between trigger bars and final response
+ * Also removes any nested trigger references (--triggername--) that leak into final response
  * If content appears in both taggedSegments and cleanContent, removes it from cleanContent
  * Returns cleaned response without duplicate content
  */
@@ -1894,6 +1895,10 @@ export const deduplicateResponseContent = (
   }
 
   let result = cleanContent;
+  
+  // CRITICAL: Remove any nested trigger references from final response
+  // (--triggername--) should ONLY appear inside trigger bars, NEVER in final response
+  result = result.replace(/\(\-\-[a-zA-Z_][a-zA-Z0-9_]*\-\-\)/g, '');
   const contentThreshold = 50; // Minimum similarity threshold
 
   // For each tagged segment, check if its content appears in cleanContent
@@ -1982,6 +1987,49 @@ function calculateStringSimilarity(str1: string, str2: string): number {
   
   return matches / longer.length;
 }
+
+/**
+ * Convert nested trigger markdown syntax (--triggername--) to styled text
+ * This renders nested triggers as formatted headers/subheaders ONLY within trigger bars
+ * IMPORTANT: This should ONLY be applied to trigger bar content, never to final response
+ */
+export const formatNestedTriggerReferences = (content: string): string => {
+  if (!content) return content;
+
+  // Pattern: (--triggername--) - these should only be inside trigger bars
+  // Convert to markdown-style headers or badges
+  const nestedTriggerPattern = /^(\s*)?\(\-\-([a-zA-Z_][a-zA-Z0-9_]*)\-\-\)(.*)$/gm;
+  
+  return content.replace(nestedTriggerPattern, (match, indent, triggerName, rest) => {
+    // If it's at the start of a line, format as a subheader
+    if (match.trim().startsWith('(--')) {
+      return `${indent || ''}**[${triggerName}]**${rest}`;
+    }
+    // If inline, format as bold badge
+    return match.replace(`(--${triggerName}--)`, `**[${triggerName}]**`);
+  });
+};
+
+/**
+ * Extract nested trigger references from content
+ * Returns array of trigger names found in (--triggername--) format
+ */
+export const extractNestedTriggerReferences = (content: string): string[] => {
+  if (!content) return [];
+
+  const nestedTriggerPattern = /\(\-\-([a-zA-Z_][a-zA-Z0-9_]*)\-\-\)/g;
+  const matches: string[] = [];
+  let match;
+
+  while ((match = nestedTriggerPattern.exec(content)) !== null) {
+    const triggerName = match[1];
+    if (!matches.includes(triggerName)) {
+      matches.push(triggerName);
+    }
+  }
+
+  return matches;
+};
 
 export const resetToBuiltIn = () => {
   saveTriggers(BUILT_IN_TRIGGERS);

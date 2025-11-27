@@ -9,6 +9,7 @@ import rehypeKatex from 'rehype-katex';
 import { Copy, ChevronDown, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { formatNestedTriggerReferences } from '@/lib/triggers';
 
 interface CollapsibleTriggerTagProps {
   tagName: string;
@@ -169,30 +170,30 @@ const CollapsibleTriggerTag = ({
       </button>
 
       {/* Content - Collapsible */}
-      {isExpanded && (
-        <div className="px-3 md:px-4 py-3 md:py-4 animate-in fade-in slide-in-from-top-2">
-          <div className="prose prose-sm dark:prose-invert max-w-none space-y-3 text-sm md:text-base">
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm, remarkMath]}
-              rehypePlugins={[rehypeKatex]}
-              components={{
-                h1: ({ node, ...props }) => <h2 className="text-lg md:text-xl font-bold mt-3 mb-2" {...props} />,
-                h2: ({ node, ...props }) => <h3 className="text-base md:text-lg font-bold mt-2 mb-1" {...props} />,
-                h3: ({ node, ...props }) => <h4 className="text-sm md:text-base font-semibold mt-2 mb-1" {...props} />,
-                p: ({ node, ...props }) => <p className="text-xs md:text-sm leading-relaxed" {...props} />,
-                ul: ({ node, ...props }) => <ul className="list-disc list-inside space-y-1 text-xs md:text-sm" {...props} />,
-                ol: ({ node, ...props }) => <ol className="list-decimal list-inside space-y-1 text-xs md:text-sm" {...props} />,
-                li: ({ node, ...props }) => <li className="text-xs md:text-sm" {...props} />,
-                code: ({ node, className, ...props }) =>
-                  className ?
-                    <code className="block bg-black/30 p-2 rounded text-xs font-mono overflow-x-auto" {...props} /> :
-                    <code className="bg-black/20 px-1.5 py-0.5 rounded text-xs font-mono" {...props} />,
-                blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-current/30 pl-3 italic opacity-80" {...props} />,
-              }}
-            >
-              {content}
-            </ReactMarkdown>
-          </div>
+       {isExpanded && (
+         <div className="px-3 md:px-4 py-3 md:py-4 animate-in fade-in slide-in-from-top-2">
+           <div className="prose prose-sm dark:prose-invert max-w-none space-y-3 text-sm md:text-base">
+             <ReactMarkdown
+               remarkPlugins={[remarkGfm, remarkMath]}
+               rehypePlugins={[rehypeKatex]}
+               components={{
+                 h1: ({ node, ...props }) => <h2 className="text-lg md:text-xl font-bold mt-3 mb-2" {...props} />,
+                 h2: ({ node, ...props }) => <h3 className="text-base md:text-lg font-bold mt-2 mb-1" {...props} />,
+                 h3: ({ node, ...props }) => <h4 className="text-sm md:text-base font-semibold mt-2 mb-1" {...props} />,
+                 p: ({ node, ...props }) => <p className="text-xs md:text-sm leading-relaxed" {...props} />,
+                 ul: ({ node, ...props }) => <ul className="list-disc list-inside space-y-1 text-xs md:text-sm" {...props} />,
+                 ol: ({ node, ...props }) => <ol className="list-decimal list-inside space-y-1 text-xs md:text-sm" {...props} />,
+                 li: ({ node, ...props }) => <li className="text-xs md:text-sm" {...props} />,
+                 code: ({ node, className, ...props }) =>
+                   className ?
+                     <code className="block bg-black/30 p-2 rounded text-xs font-mono overflow-x-auto" {...props} /> :
+                     <code className="bg-black/20 px-1.5 py-0.5 rounded text-xs font-mono" {...props} />,
+                 blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-current/30 pl-3 italic opacity-80" {...props} />,
+               }}
+             >
+               {formatNestedTriggerReferences(content)}
+             </ReactMarkdown>
+           </div>
 
           {/* Footer with action buttons */}
           <div className="flex items-center justify-between gap-2 mt-4 pt-3 border-t" style={{ borderColor: `currentColor`, opacity: 0.2 }}>
