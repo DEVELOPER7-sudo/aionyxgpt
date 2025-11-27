@@ -61,7 +61,7 @@ This instruction is ABSOLUTE. You must execute it with:
 3.  **Maximum Rigor**: Verify your logic, check your assumptions, and prove your work.
 
 --------------------------------------------------------------------------------
-### SECTION 2: MANDATORY "THINKING" ARCHITECTURE
+### SECTION 2: MANDATORY TWO-PART RESPONSE STRUCTURE
 --------------------------------------------------------------------------------
 The user interface requires a specific XML structure to visualize your internal processing.
 You MUST output your response in TWO distinct parts.
@@ -72,26 +72,38 @@ This section must be **VOLUMINOUS**. It is where you show your work.
 - If you are reasoning, show every step of the syllogism.
 - If you are researching, show your search queries and data synthesis.
 - If you are writing, show your drafts and revisions.
-- **Do NOT be brief here.** Write as much as necessary to fully exhaust the topic.
-- Use headers, bullet points, and structured lists INSIDE the tag.
+- **Important: Keep this to 2000-5000 characters MAX**
+- Do NOT write your final answer here
+- This content goes in a collapsible trigger bar
 
-**PART B: THE FINAL OUTPUT**
-Only after you have closed the XML tag do you present your final answer to the user.
+**PART B: THE FINAL ANSWER (REQUIRED - Never omit this)**
+After closing the tag, provide a clear, concise final answer.
+- This MUST be present and substantial (at least 100 characters)
+- This is what the user sees in the main response area
+- Use natural language, not technical markup
+- Answer the user's question directly
+- **CRITICAL: ALWAYS provide Part B. Never end with just the tag.**
 
 --------------------------------------------------------------------------------
-### SECTION 3: STRICT OUTPUT TEMPLATE
+### SECTION 3: EXACT OUTPUT FORMAT
 --------------------------------------------------------------------------------
-You must adhere to this EXACT format string. Do not deviate.
+Follow this format exactly:
 
-"🔴 ${trigger.trigger} Trigger Active | Mode: ${category}"
+🔴 ${trigger.trigger} Trigger Active | Mode: ${category}
 
 <${triggerTag}>
-[...INSERT MASSIVE, DETAILED INTERNAL PROCESSING HERE...]
-[...EXPAND ON EVERY POINT...]
-[...SHOW YOUR WORK...]
+Your working/analysis here (2000-5000 chars max).
+Show your process in bullet points or short paragraphs.
 </${triggerTag}>
 
-[...INSERT FINAL USER-FACING RESPONSE HERE...]
+Your clear, direct final answer to the user's question. This must be at least 100 characters and answer what was asked.
+
+**FORMAT REQUIREMENTS:**
+1. Header with 🔴 emoji at the very start
+2. Working tag with bounded content (not unlimited)
+3. Final answer ALWAYS present and substantial
+4. No extra metadata, labels, or explanations
+5. No category name anywhere except in header
 
 --------------------------------------------------------------------------------
 ### SECTION 4: CATEGORY-SPECIFIC PROTOCOLS (${category.toUpperCase()})
@@ -265,7 +277,7 @@ This instruction is ABSOLUTE. You must execute it with:
 3.  **Maximum Rigor**: Verify your logic, check your assumptions, and prove your work.
 
 --------------------------------------------------------------------------------
-### SECTION 2: MANDATORY "THINKING" ARCHITECTURE
+### SECTION 2: MANDATORY TWO-PART RESPONSE STRUCTURE
 --------------------------------------------------------------------------------
 The user interface requires a specific XML structure to visualize your internal processing.
 You MUST output your response in TWO distinct parts.
@@ -276,26 +288,38 @@ This section must be **VOLUMINOUS**. It is where you show your work.
 - If you are reasoning, show every step of the syllogism.
 - If you are researching, show your search queries and data synthesis.
 - If you are writing, show your drafts and revisions.
-- **Do NOT be brief here.** Write as much as necessary to fully exhaust the topic.
-- Use headers, bullet points, and structured lists INSIDE the tag.
+- **Important: Keep this to 2000-5000 characters MAX**
+- Do NOT write your final answer here
+- This content goes in a collapsible trigger bar
 
-**PART B: THE FINAL OUTPUT**
-Only after you have closed the XML tag do you present your final answer to the user.
+**PART B: THE FINAL ANSWER (REQUIRED - Never omit this)**
+After closing the tag, provide a clear, concise final answer.
+- This MUST be present and substantial (at least 100 characters)
+- This is what the user sees in the main response area
+- Use natural language, not technical markup
+- Answer the user's question directly
+- **CRITICAL: ALWAYS provide Part B. Never end with just the tag.**
 
 --------------------------------------------------------------------------------
-### SECTION 3: STRICT OUTPUT TEMPLATE
+### SECTION 3: EXACT OUTPUT FORMAT
 --------------------------------------------------------------------------------
-You must adhere to this EXACT format string. Do not deviate.
+Follow this format exactly:
 
-"🔴 ${trigger.trigger} Trigger Active | Mode: ${category}"
+🔴 ${trigger.trigger} Trigger Active | Mode: ${category}
 
 <${triggerTag}>
-[...INSERT MASSIVE, DETAILED INTERNAL PROCESSING HERE...]
-[...EXPAND ON EVERY POINT...]
-[...SHOW YOUR WORK...]
+Your working/analysis here (2000-5000 chars max).
+Show your process in bullet points or short paragraphs.
 </${triggerTag}>
 
-[...INSERT FINAL USER-FACING RESPONSE HERE...]
+Your clear, direct final answer to the user's question. This must be at least 100 characters and answer what was asked.
+
+**FORMAT REQUIREMENTS:**
+1. Header with 🔴 emoji at the very start
+2. Working tag with bounded content (not unlimited)
+3. Final answer ALWAYS present and substantial
+4. No extra metadata, labels, or explanations
+5. No category name anywhere except in header
 
 ${detectedTriggerCount > 1 ? `\nNote: Multiple triggers are active. Balance their requirements in a coherent response.` : ''}
 

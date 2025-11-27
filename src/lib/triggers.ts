@@ -132,52 +132,62 @@ This instruction is ABSOLUTE. You must execute it with:
 3.  **Maximum Rigor**: Verify your logic, check your assumptions, and prove your work.
 
 --------------------------------------------------------------------------------
-### SECTION 2: MANDATORY "THINKING" ARCHITECTURE
+### SECTION 2: MANDATORY TWO-PART RESPONSE STRUCTURE
 --------------------------------------------------------------------------------
-The user interface requires a specific XML structure to visualize your internal processing.
-You MUST output your response in TWO distinct parts.
+The user interface requires a specific XML structure. You MUST output EXACTLY two parts:
 
-**PART A: THE HIDDEN PROCESS ("The Trigger Bar")**
-You must perform your work inside the specific XML tag: <${triggerTag}>...</${triggerTag}>.
-This section must be **VOLUMINOUS**. It is where you show your work.
-- If you are reasoning, show every step of the syllogism.
-- If you are researching, show your search queries and data synthesis.
-- If you are writing, show your drafts and revisions.
-- **Do NOT be brief here.** Write as much as necessary to fully exhaust the topic.
-- Use headers, bullet points, and structured lists INSIDE the tag.
+**PART A: THE WORKING TAG (2000-5000 characters)**
+Wrap your working/reasoning in: <${triggerTag}>...</${triggerTag}>
+- Show your process, reasoning, research, or analysis
+- Use bullet points and clear structure
+- **Important: Keep this to 2000-5000 characters MAX**
+- Do NOT write your final answer here
+- This content goes in a collapsible trigger bar
 
-**PART B: THE FINAL OUTPUT**
-Only after you have closed the XML tag do you present your final answer to the user.
+**PART B: THE FINAL ANSWER (REQUIRED - Never omit this)**
+After closing the tag, provide a clear, concise final answer.
+- This MUST be present and substantial (at least 100 characters)
+- This is what the user sees in the main response area
+- Use natural language, not technical markup
+- Answer the user's question directly
+- **CRITICAL: ALWAYS provide Part B. Never end with just the tag.**
 
 --------------------------------------------------------------------------------
-### SECTION 3: STRICT OUTPUT TEMPLATE
+### SECTION 3: EXACT OUTPUT FORMAT
 --------------------------------------------------------------------------------
-You must adhere to this EXACT format string. Do not deviate.
+Follow this format exactly:
 
-ACTIVATION HEADER (output this exactly as shown):
 🔴 ${trigger.trigger} Trigger Active | Mode: ${category}
 
-Then immediately follow with:
 <${triggerTag}>
-[...INSERT MASSIVE, DETAILED INTERNAL PROCESSING HERE...]
-[...EXPAND ON EVERY POINT...]
-[...SHOW YOUR WORK...]
+Your working/analysis here (2000-5000 chars max).
+Show your process in bullet points or short paragraphs.
 </${triggerTag}>
 
-[...INSERT FINAL USER-FACING RESPONSE HERE...]
+Your clear, direct final answer to the user's question. This must be at least 100 characters and answer what was asked.
 
-**CRITICAL**: Only output the header once at the very start. Do NOT repeat it. Do NOT output the category name (${category}) anywhere else in your response.
+**FORMAT REQUIREMENTS:**
+1. Header with 🔴 emoji at the very start
+2. Working tag with bounded content (not unlimited)
+3. Final answer ALWAYS present and substantial
+4. No extra metadata, labels, or explanations
+5. No category name anywhere except in header
 
 --------------------------------------------------------------------------------
-### SECTION 4: QUALITY CONTROL CHECKLIST
+### SECTION 4: FINAL VALIDATION CHECKLIST
 --------------------------------------------------------------------------------
-Before releasing your response, ask yourself:
-1. Did I start with "🔴"? (NO TEXT BEFORE THIS)
-2. Did I use the correct tag <${triggerTag}>?
-3. Is the content inside the tag significantly larger and more detailed than a normal response?
-4. Did I fully execute the "${trigger.trigger}" specific behavior?
+Before sending your response, verify:
+✓ Header starts with 🔴 emoji (no text before it)
+✓ Using correct tag: <${triggerTag}>...</${triggerTag}>
+✓ Tag content is 2000-5000 characters (not massive, not tiny)
+✓ Final answer is present and at least 100 characters
+✓ No category name (${category}) except in header
+✓ No metadata, labels, or framework text
+✓ Response answers the user's actual question
 
-PROCEED IMMEDIATELY. EXECUTE TRIGGER "${trigger.trigger}".`;
+FAILURE TO INCLUDE FINAL ANSWER BREAKS THE SYSTEM. DO NOT OMIT PART B.
+
+PROCEED WITH EXECUTION.`;
 };
 const BUILT_IN_TRIGGERS: Trigger[] = [
   {
@@ -1819,8 +1829,11 @@ export const parseTriggeredResponse = (content: string): {
     .replace(/\n\n\n+/g, '\n\n') // Collapse multiple blank lines
     .trim();
   
-  // FAILSAFE: If cleanContent is empty or very short, extract a meaningful summary from trigger content
+  // FAILSAFE: If cleanContent is empty or very short, AI didn't provide final answer
+  // Extract a summary from the trigger content as fallback
   if (cleanContent.trim().length < 50 && taggedSegments.length > 0) {
+    let extracted = false;
+    
     // Try to find a conclusion section or summary
     for (const segment of taggedSegments) {
       const segmentContent = segment.content;
@@ -1828,26 +1841,29 @@ export const parseTriggeredResponse = (content: string): {
       // Look for conclusion patterns
       const conclusionMatch = segmentContent.match(/(###\s*Conclusion|###\s*Summary|###\s*Final Answer|In summary|In conclusion|To conclude|Therefore,|Summary:)([\s\S]*?)(?=###|$)/i);
       if (conclusionMatch && conclusionMatch[2].trim().length > 30) {
-        cleanContent = `**${segment.tag.charAt(0).toUpperCase() + segment.tag.slice(1)} Summary:**\n\n${conclusionMatch[0].trim()}`;
+        cleanContent = `${conclusionMatch[0].trim()}`;
+        extracted = true;
         break;
       }
       
-      // If no conclusion, extract last non-empty paragraph
-      if (cleanContent.length === 0) {
+      // If no conclusion, try to extract last substantial paragraph
+      if (!extracted) {
         const paragraphs = segmentContent.trim().split(/\n\n+/).filter(p => p.trim().length > 0);
         if (paragraphs.length > 0) {
-          const lastParagraph = paragraphs[paragraphs.length - 1];
-          if (lastParagraph.length > 50) {
-            cleanContent = `**${segment.tag.charAt(0).toUpperCase() + segment.tag.slice(1)} Analysis:**\n\n${lastParagraph}`;
+          // Get last 2-3 paragraphs for context
+          const relevantParagraphs = paragraphs.slice(-3).join('\n\n');
+          if (relevantParagraphs.length > 60) {
+            cleanContent = relevantParagraphs;
+            extracted = true;
             break;
           }
         }
       }
     }
     
-    // Final fallback
-    if (cleanContent.trim().length === 0) {
-      cleanContent = "_The detailed analysis is available in the trigger bar above._";
+    // If still nothing, create a generic message
+    if (!extracted || cleanContent.trim().length === 0) {
+      cleanContent = "The analysis has been processed and is available in the trigger bar above. Review the detailed working for complete information.";
     }
   }
 
