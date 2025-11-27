@@ -1820,10 +1820,19 @@ export const parseTriggeredResponse = (content: string): {
     cleanContent = cleanContent.substring(0, replacement.start) + cleanContent.substring(replacement.end);
   }
   
+  // Remove all trigger tags from cleanContent
   for (const tag of VALID_TRIGGER_TAGS) {
-    const closingRegex = new RegExp(`</${tag}>`, 'g');
+    // Remove both opening and closing tags
+    const openingRegex = new RegExp(`<${tag}>`, 'gi');
+    const closingRegex = new RegExp(`</${tag}>`, 'gi');
+    cleanContent = cleanContent.replace(openingRegex, '');
     cleanContent = cleanContent.replace(closingRegex, '');
   }
+  
+  // Fallback: Remove any remaining XML-style tags that look like trigger tags
+  // This catches tags that weren't in VALID_TRIGGER_TAGS or had case variations
+  cleanContent = cleanContent.replace(/<([a-zA-Z_][a-zA-Z0-9_]*)>/g, '');
+  cleanContent = cleanContent.replace(/<\/([a-zA-Z_][a-zA-Z0-9_]*)>/g, '');
   
   // Final cleanup: normalize whitespace
   cleanContent = cleanContent
