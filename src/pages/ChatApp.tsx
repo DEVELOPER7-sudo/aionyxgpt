@@ -450,7 +450,21 @@ const ChatApp = () => {
           fullResponse += part?.text || '';
           
           // Parse trigger tags and extract clean content
-          const { cleanContent, taggedSegments } = parseTriggeredResponse(fullResponse);
+          let cleanContent = fullResponse;
+          let taggedSegments: any[] = [];
+          
+          try {
+            const parsed = parseTriggeredResponse(fullResponse);
+            cleanContent = parsed.cleanContent;
+            taggedSegments = parsed.taggedSegments || [];
+          } catch (parseError) {
+            // If parsing fails, just use the raw response
+            if (import.meta.env.DEV) {
+              console.warn('[DEBUG] Failed to parse trigger response:', parseError);
+            }
+            cleanContent = fullResponse;
+            taggedSegments = [];
+          }
           
           // Always update with the same assistant message, just changing content
           const currentMessages = [...messages, { 

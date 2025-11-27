@@ -1742,7 +1742,7 @@ export const parseTriggeredResponse = (content: string): {
   
   // STEP 3: Remove any standalone labels that start with asterisks
   // E.g. "**CORE FRAMEWORK...", "**1. STRENGTHS:"
-  cleanContent = cleanContent.replace(/^\s*\*\*[A-Z][^]*?(?=\n|<|$)/gim, '');
+  cleanContent = cleanContent.replace(/^\s*\*\*[A-Z][\s\S]*?(?=\n|<|$)/gim, '');
   
   // STEP 4: Clean up excessive newlines
   cleanContent = cleanContent.replace(/^\s+/, '').trim();
@@ -1751,6 +1751,7 @@ export const parseTriggeredResponse = (content: string): {
   
   tagRegex.lastIndex = 0;
   
+  let match;
   while ((match = tagRegex.exec(content)) !== null) {
     const [fullMatch, tagName, tagContent] = match;
     if (isValidTriggerTag(tagName) && !isInsideCodeBlock(content, match.index)) {
