@@ -45,7 +45,7 @@ export const CustomTriggerManager = ({ onTriggerChange }: CustomTriggerManagerPr
   const [formData, setFormData] = useState({
     trigger: '',
     category: '',
-    system_instruction: '',
+    systemInstruction: '',
     example: '',
   });
 
@@ -53,7 +53,7 @@ export const CustomTriggerManager = ({ onTriggerChange }: CustomTriggerManagerPr
     setFormData({
       trigger: '',
       category: '',
-      system_instruction: '',
+      systemInstruction: '',
       example: '',
     });
     setEditingTrigger(null);
@@ -69,7 +69,7 @@ export const CustomTriggerManager = ({ onTriggerChange }: CustomTriggerManagerPr
     setFormData({
       trigger: trigger.trigger,
       category: trigger.category,
-      system_instruction: trigger.system_instruction,
+      systemInstruction: trigger.systemInstruction,
       example: trigger.example,
     });
     setEditingTrigger(trigger);
@@ -78,7 +78,7 @@ export const CustomTriggerManager = ({ onTriggerChange }: CustomTriggerManagerPr
   };
 
   const handleSave = () => {
-    if (!formData.trigger.trim() || !formData.category || !formData.system_instruction.trim()) {
+    if (!formData.trigger.trim() || !formData.category || !formData.systemInstruction.trim()) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -87,7 +87,7 @@ export const CustomTriggerManager = ({ onTriggerChange }: CustomTriggerManagerPr
       const newTrigger: Trigger = {
         trigger: formData.trigger.trim(),
         category: formData.category as any,
-        system_instruction: formData.system_instruction.trim(),
+        systemInstruction: formData.systemInstruction.trim(),
         example: formData.example.trim(),
         enabled: true,
         custom: true,

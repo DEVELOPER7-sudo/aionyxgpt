@@ -15,6 +15,9 @@ const WelcomeMessage = () => {
           <p className="text-lg text-muted-foreground animate-slide-up">
             Your intelligent companion for conversations, creativity, and analysis
           </p>
+          <p className="text-sm text-muted-foreground mt-2 animate-slide-up" style={{ animationDelay: '0.15s' }}>
+            Use different kinds of Fluxes and Fluxspaces to enhance your AI interactions
+          </p>
         </div>
 
         {/* Features grid */}

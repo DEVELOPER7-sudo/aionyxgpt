@@ -66,6 +66,8 @@ export interface AppSettings {
   streamingEnabled?: boolean; // New: toggle streaming
   defaultTriggers?: string[]; // Default triggers to apply to all messages
   customModelPrefix?: 'openrouter' | 'togetherai'; // Custom model API prefix
+  useCustomSystemPrompt?: boolean; // Toggle custom system prompt
+  customSystemPrompt?: string; // Custom system prompt text
 }
 
 export interface CustomBot {

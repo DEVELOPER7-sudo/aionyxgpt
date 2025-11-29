@@ -117,14 +117,14 @@ const InlineTriggerBar = ({
               <div>
                 <span className="font-semibold text-foreground block mb-1">Context Used:</span>
                 <p className="text-muted-foreground text-xs leading-relaxed">
-                  {trigger.metadata.context_used}
+                  {trigger.metadata.contextUsed}
                 </p>
               </div>
 
               <div>
                 <span className="font-semibold text-foreground block mb-1">Influence Scope:</span>
                 <p className="text-muted-foreground text-xs leading-relaxed">
-                  {trigger.metadata.influence_scope}
+                  {trigger.metadata.influenceScope}
                 </p>
               </div>
 

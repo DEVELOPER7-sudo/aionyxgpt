@@ -26,7 +26,7 @@ interface ChatSidebarProps {
   onNewChat: () => void;
   onSelectChat: (chatId: string) => void;
   onDeleteChat: (chatId: string) => Promise<void>;
-  onNavigate: (section: 'images' | 'memory' | 'search' | 'settings' | 'logs' | 'triggers' | 'bots' | 'analytics') => void;
+  onNavigate: (section: 'images' | 'mindstore' | 'search' | 'settings' | 'logs' | 'fluxes' | 'analytics') => void;
   collapsed: boolean;
   onToggleCollapse: () => void;
 }
@@ -55,11 +55,8 @@ const ChatSidebar = ({
         collapsed ? 'w-16' : 'w-72'
       )}
     >
-      {/* Header */}
-      <div className="p-4 border-b border-sidebar-border flex items-center justify-between">
-        {!collapsed && (
-          <h2 className="font-bold text-lg">OnyxGPT</h2>
-        )}
+      {/* Toggle Button */}
+      <div className="p-4 border-b border-sidebar-border flex items-center justify-end">
         <Button
           variant="ghost"
           size="icon"
@@ -143,37 +140,19 @@ const ChatSidebar = ({
           variant="ghost"
           className="w-full justify-start hover:bg-sidebar-accent"
           size={collapsed ? 'icon' : 'default'}
-          onClick={() => onNavigate('memory')}
+          onClick={() => onNavigate('mindstore')}
         >
           <Brain className="w-5 h-5" />
-          {!collapsed && <span className="ml-2">Memory</span>}
+          {!collapsed && <span className="ml-2">Mindstore</span>}
         </Button>
         <Button
           variant="ghost"
           className="w-full justify-start hover:bg-sidebar-accent"
           size={collapsed ? 'icon' : 'default'}
-          onClick={() => onNavigate('search')}
-        >
-          <Search className="w-5 h-5" />
-          {!collapsed && <span className="ml-2">Search</span>}
-        </Button>
-        <Button
-          variant="ghost"
-          className="w-full justify-start hover:bg-sidebar-accent"
-          size={collapsed ? 'icon' : 'default'}
-          onClick={() => onNavigate('triggers')}
+          onClick={() => onNavigate('fluxes')}
         >
           <Zap className="w-5 h-5" />
-          {!collapsed && <span className="ml-2">Triggers</span>}
-        </Button>
-        <Button
-          variant="ghost"
-          className="w-full justify-start hover:bg-sidebar-accent"
-          size={collapsed ? 'icon' : 'default'}
-          onClick={() => onNavigate('bots')}
-        >
-          <Bot className="w-5 h-5" />
-          {!collapsed && <span className="ml-2">Custom Bots</span>}
+          {!collapsed && <span className="ml-2">Fluxes</span>}
         </Button>
         <Button
           variant="ghost"

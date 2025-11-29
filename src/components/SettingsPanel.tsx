@@ -503,6 +503,44 @@ const SettingsPanel = ({
             <p className="text-xs text-muted-foreground mt-1">Configure advanced AI behavior and privacy settings</p>
           </div>
 
+          {/* Custom System Prompt */}
+          <div className="space-y-3 p-4 bg-secondary/30 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <Label htmlFor="custom-prompt" className="text-base font-medium cursor-pointer flex items-center gap-2">
+                  🤖 Custom System Prompt
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Override default AI behavior with your own system instructions
+                </p>
+              </div>
+              <Switch
+                id="custom-prompt-toggle"
+                checked={localSettings.useCustomSystemPrompt || false}
+                onCheckedChange={(checked) =>
+                  setLocalSettings({ ...localSettings, useCustomSystemPrompt: checked })
+                }
+              />
+            </div>
+            
+            {localSettings.useCustomSystemPrompt && (
+              <div className="pt-2 space-y-2">
+                <textarea
+                  id="custom-prompt"
+                  placeholder="Enter your custom system prompt here..."
+                  value={localSettings.customSystemPrompt || ''}
+                  onChange={(e) =>
+                    setLocalSettings({ ...localSettings, customSystemPrompt: e.target.value })
+                  }
+                  className="w-full min-h-[120px] bg-background border border-border rounded-md p-3 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <p className="text-xs text-muted-foreground">
+                  This will be prepended to all AI requests. Use this to customize the AI's personality, tone, or specific behaviors.
+                </p>
+              </div>
+            )}
+          </div>
+
           {/* Streaming Toggle */}
           <div className="flex items-center justify-between p-4 bg-secondary/30 rounded-lg">
             <div className="space-y-1">

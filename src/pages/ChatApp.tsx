@@ -29,7 +29,6 @@ const MemoryEditor = lazy(() => import('@/components/MemoryEditor'));
 const SearchPanel = lazy(() => import('@/components/SearchPanel'));
 const LogCenter = lazy(() => import('@/components/LogCenter'));
 const TriggerGallery = lazy(() => import('@/components/TriggerGallery'));
-const CustomBotsManager = lazy(() => import('@/components/CustomBotsManager'));
 const AnalyticsPanel = lazy(() => import('@/components/AnalyticsPanel'));
 
 const ChatApp = () => {
@@ -39,7 +38,7 @@ const ChatApp = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [currentView, setCurrentView] = useState<'chat' | 'images' | 'memory' | 'search' | 'settings' | 'logs' | 'triggers' | 'bots' | 'analytics'>('chat');
+  const [currentView, setCurrentView] = useState<'chat' | 'images' | 'mindstore' | 'search' | 'settings' | 'logs' | 'fluxes' | 'analytics'>('chat');
   const [webSearchEnabled, setWebSearchEnabled] = useState(settings.enableWebSearch);
   const [deepSearchEnabled, setDeepSearchEnabled] = useState(settings.enableDeepSearch);
   const [taskMode, setTaskMode] = useState<'standard' | 'reasoning' | 'research' | 'creative'>(settings.taskMode || 'standard');
@@ -126,7 +125,7 @@ const ChatApp = () => {
   - Adjust temperature and creativity settings
   - Switch between reasoning modes (Standard, Reasoning, Research, Creative)
 
-  **Ready to start?** Just type your message or upload an image below! 🚀`,
+  **Ready to start?** Just type your message or upload an image below! Use different kinds of Fluxes and Fluxspaces to enhance your interactions! 🚀`,
        timestamp: Date.now(),
      };
 
@@ -949,7 +948,7 @@ const ChatApp = () => {
     toast.success(`Image generated with ${settings.imageModel}`);
   };
 
-  const handleNavigate = (section: 'images' | 'memory' | 'search' | 'settings' | 'logs' | 'analytics' | 'triggers' | 'bots' | 'collections' | 'bookmarks' | 'analytics-advanced') => {
+  const handleNavigate = (section: 'images' | 'mindstore' | 'search' | 'settings' | 'logs' | 'analytics' | 'fluxes') => {
     setCurrentView(section as any);
     setMobileMenuOpen(false);
   };
@@ -1139,7 +1138,7 @@ const ChatApp = () => {
             />
           )}
           {currentView === 'images' && <ImagesGallery />}
-          {currentView === 'memory' && <MemoryEditor />}
+          {currentView === 'mindstore' && <MemoryEditor />}
           {currentView === 'search' && (
             <SearchPanel onSelectChat={(id) => {
               setCurrentChatId(id);
@@ -1148,18 +1147,8 @@ const ChatApp = () => {
             }} />
           )}
           {currentView === 'logs' && <LogCenter />}
-          {currentView === 'triggers' && <TriggerGallery />}
+          {currentView === 'fluxes' && <TriggerGallery />}
           {currentView === 'analytics' && <AnalyticsPanel />}
-          {currentView === 'bots' && (
-            <CustomBotsManager 
-              onSelectBot={(bot) => {
-                // Create new chat with bot name format: "botName:new chat"
-                createNewChat(bot.name);
-                toast.success(`Started chat with ${bot.name}`);
-                setCurrentView('chat');
-              }}
-            />
-          )}
         </Suspense>
         </div>
       </div>
