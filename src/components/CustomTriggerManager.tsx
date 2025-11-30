@@ -237,9 +237,9 @@ export const CustomTriggerManager = ({ onTriggerChange }: CustomTriggerManagerPr
                 <Textarea
                   id="instruction"
                   placeholder="Describe how the AI should respond when this trigger is used..."
-                  value={formData.system_instruction}
+                  value={formData.systemInstruction}
                   onChange={(e) =>
-                    setFormData({ ...formData, system_instruction: e.target.value })
+                    setFormData({ ...formData, systemInstruction: e.target.value })
                   }
                   className="mt-1 min-h-[120px]"
                 />
@@ -312,7 +312,7 @@ export const CustomTriggerManager = ({ onTriggerChange }: CustomTriggerManagerPr
                   
                   <div className="mt-3 p-2 bg-background/50 rounded border border-border">
                     <p className="text-xs text-muted-foreground font-mono break-words max-h-[100px] overflow-y-auto">
-                      {trigger.system_instruction}
+                      {trigger.systemInstruction}
                     </p>
                   </div>
                 </div>
@@ -321,7 +321,7 @@ export const CustomTriggerManager = ({ onTriggerChange }: CustomTriggerManagerPr
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleCopyInstruction(trigger.system_instruction)}
+                    onClick={() => handleCopyInstruction(trigger.systemInstruction)}
                     title="Copy instruction"
                   >
                     <CopyIcon className="w-4 h-4" />

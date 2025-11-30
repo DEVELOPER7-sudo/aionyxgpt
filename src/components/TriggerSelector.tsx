@@ -29,7 +29,7 @@ const TriggerSelector = ({ selectedTriggers, onTriggersChange }: TriggerSelector
       t =>
         t.trigger.toLowerCase().includes(query) ||
         t.category.toLowerCase().includes(query) ||
-        t.system_instruction.toLowerCase().includes(query)
+        t.systemInstruction.toLowerCase().includes(query)
     );
   }, [triggers, searchQuery]);
 
@@ -58,13 +58,13 @@ const TriggerSelector = ({ selectedTriggers, onTriggersChange }: TriggerSelector
 
   const getCategoryColor = (category: Trigger['category']) => {
     switch (category) {
-      case 'Reasoning & Analysis':
+      case 'Reasoning and Analysis':
         return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
-      case 'Research & Information':
+      case 'Research and Information':
         return 'bg-green-500/10 text-green-500 border-green-500/20';
-      case 'Planning & Organization':
+      case 'Planning and Organization':
         return 'bg-purple-500/10 text-purple-500 border-purple-500/20';
-      case 'Communication & Style':
+      case 'Communication and Style':
         return 'bg-orange-500/10 text-orange-500 border-orange-500/20';
       default:
         return 'bg-gray-500/10 text-gray-500 border-gray-500/20';
@@ -73,13 +73,13 @@ const TriggerSelector = ({ selectedTriggers, onTriggersChange }: TriggerSelector
 
   const getCategoryIcon = (category: Trigger['category']) => {
     switch (category) {
-      case 'Reasoning & Analysis':
+      case 'Reasoning and Analysis':
         return '🧩';
-      case 'Research & Information':
+      case 'Research and Information':
         return '🔍';
-      case 'Planning & Organization':
+      case 'Planning and Organization':
         return '📋';
-      case 'Communication & Style':
+      case 'Communication and Style':
         return '✨';
       default:
         return '⚡';
@@ -174,7 +174,7 @@ const TriggerSelector = ({ selectedTriggers, onTriggersChange }: TriggerSelector
                                 )}
                               </div>
                               <p className="text-xs text-muted-foreground line-clamp-2">
-                                {trigger.system_instruction.replace(/Use tags.*?final_response\.\s*/i, '')}
+                                {trigger.systemInstruction.replace(/Use tags.*?final_response\.\s*/i, '')}
                               </p>
                             </button>
                           );

@@ -74,22 +74,22 @@ const TriggerGallery = ({
   // Form state
   const [formData, setFormData] = useState({
     trigger: '',
-    category: 'Reasoning & Analysis' as Trigger['category'],
-    system_instruction: '',
+    category: 'Reasoning and Analysis' as Trigger['category'],
+    systemInstruction: '',
     example: '',
     enabled: true,
   });
 
   const categories: Trigger['category'][] = [
-    'Reasoning & Analysis',
-    'Research & Information',
-    'Planning & Organization',
-    'Communication & Style',
-    'Coding & Development',
-    'Creative & Writing',
-    'Data & Analytics',
-    'Business & Strategy',
-    'Education & Learning',
+    'Reasoning and Analysis',
+    'Research and Information',
+    'Planning and Organization',
+    'Communication and Style',
+    'Coding and Development',
+    'Creative and Writing',
+    'Data and Analytics',
+    'Business and Strategy',
+    'Education and Learning',
   ];
 
   // Filter triggers
@@ -102,7 +102,7 @@ const TriggerGallery = ({
       filtered = filtered.filter(
         t =>
           t.trigger.toLowerCase().includes(query) ||
-          t.system_instruction.toLowerCase().includes(query) ||
+          t.systemInstruction.toLowerCase().includes(query) ||
           t.example.toLowerCase().includes(query)
       );
     }
@@ -141,8 +141,8 @@ const TriggerGallery = ({
     setEditingTrigger(null);
     setFormData({
       trigger: '',
-      category: 'Reasoning & Analysis',
-      system_instruction: '',
+      category: 'Reasoning and Analysis',
+      systemInstruction: '',
       example: '',
       enabled: true,
     });
@@ -155,7 +155,7 @@ const TriggerGallery = ({
     setFormData({
       trigger: trigger.trigger,
       category: trigger.category,
-      system_instruction: trigger.system_instruction,
+      systemInstruction: trigger.systemInstruction,
       example: trigger.example,
       enabled: trigger.enabled,
     });
@@ -168,7 +168,7 @@ const TriggerGallery = ({
         toast.error('Trigger name is required');
         return;
       }
-      if (!formData.system_instruction.trim()) {
+      if (!formData.systemInstruction.trim()) {
         toast.error('System instruction is required');
         return;
       }
@@ -176,7 +176,7 @@ const TriggerGallery = ({
       const newTrigger: Trigger = {
         trigger: formData.trigger.trim(),
         category: formData.category,
-        system_instruction: formData.system_instruction.trim(),
+        systemInstruction: formData.systemInstruction.trim(),
         example: formData.example.trim(),
         enabled: formData.enabled,
         custom: true,
@@ -241,23 +241,23 @@ const TriggerGallery = ({
 
   const getCategoryColor = (category: Trigger['category']) => {
     switch (category) {
-      case 'Reasoning & Analysis':
+      case 'Reasoning and Analysis':
         return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
-      case 'Research & Information':
+      case 'Research and Information':
         return 'bg-green-500/10 text-green-500 border-green-500/20';
-      case 'Planning & Organization':
+      case 'Planning and Organization':
         return 'bg-purple-500/10 text-purple-500 border-purple-500/20';
-      case 'Communication & Style':
+      case 'Communication and Style':
         return 'bg-orange-500/10 text-orange-500 border-orange-500/20';
-      case 'Coding & Development':
+      case 'Coding and Development':
         return 'bg-red-500/10 text-red-500 border-red-500/20';
-      case 'Creative & Writing':
+      case 'Creative and Writing':
         return 'bg-pink-500/10 text-pink-500 border-pink-500/20';
-      case 'Data & Analytics':
+      case 'Data and Analytics':
         return 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20';
-      case 'Business & Strategy':
+      case 'Business and Strategy':
         return 'bg-amber-500/10 text-amber-500 border-amber-500/20';
-      case 'Education & Learning':
+      case 'Education and Learning':
         return 'bg-teal-500/10 text-teal-500 border-teal-500/20';
       default:
         return 'bg-gray-500/10 text-gray-500 border-gray-500/20';
@@ -395,7 +395,7 @@ const TriggerGallery = ({
                                 <span className="font-medium text-xs">{trigger.trigger}</span>
                               </div>
                               <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
-                                {trigger.system_instruction.replace(/When.*?as follows:\s*/i, '').replace(/<.*?>/g, '').replace(/Then provide.*$/i, '').trim()}
+                                {trigger.systemInstruction.replace(/When.*?as follows:\s*/i, '').replace(/<.*?>/g, '').replace(/Then provide.*$/i, '').trim()}
                               </p>
                             </div>
                           ))}
@@ -538,7 +538,7 @@ const TriggerGallery = ({
                       </div>
 
                       <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                        {trigger.system_instruction}
+                        {trigger.systemInstruction}
                       </p>
 
                       <div className="bg-muted/50 rounded p-2 mb-3">
@@ -627,9 +627,9 @@ const TriggerGallery = ({
               <Label htmlFor="instruction">System Instruction *</Label>
               <Textarea
                 id="instruction"
-                value={formData.system_instruction}
+                value={formData.systemInstruction}
                 onChange={e =>
-                  setFormData({ ...formData, system_instruction: e.target.value })
+                  setFormData({ ...formData, systemInstruction: e.target.value })
                 }
                 placeholder="Describe how the AI should behave when this trigger is detected..."
                 rows={4}

@@ -144,15 +144,15 @@ const TriggerBar = ({ triggers, taggedSegments = [], onTriggerClick }: TriggerBa
                          <p className="mt-1 text-muted-foreground">{trigger.metadata.purpose}</p>
                        </div>
 
-                       <div className="transition-all duration-300 hover:pl-2">
-                         <span className="font-semibold text-foreground">Context Used:</span>
-                         <p className="mt-1 text-muted-foreground">{trigger.metadata.context_used}</p>
-                       </div>
+                        <div className="transition-all duration-300 hover:pl-2">
+                          <span className="font-semibold text-foreground">Context Used:</span>
+                          <p className="mt-1 text-muted-foreground">{trigger.metadata.contextUsed}</p>
+                        </div>
 
-                       <div className="transition-all duration-300 hover:pl-2">
-                         <span className="font-semibold text-foreground">Influence Scope:</span>
-                         <p className="mt-1 text-muted-foreground">{trigger.metadata.influence_scope}</p>
-                       </div>
+                        <div className="transition-all duration-300 hover:pl-2">
+                          <span className="font-semibold text-foreground">Influence Scope:</span>
+                          <p className="mt-1 text-muted-foreground">{trigger.metadata.influenceScope}</p>
+                        </div>
 
                        {matchingSegment && (
                          <div className="transition-all duration-300 hover:pl-2">

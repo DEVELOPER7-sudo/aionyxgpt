@@ -28,16 +28,9 @@ export const useBookmarks = () => {
   const loadBookmarks = useCallback(async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from('bookmarks')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setBookmarks(data || []);
-      setBookmarkedMessageIds(
-        new Set((data || []).map((b) => b.message_id))
-      );
+      // Database table doesn't exist yet - feature coming soon
+      console.log('Bookmarks feature coming soon');
+      setBookmarks([]);
     } catch (error) {
       console.error('Error loading bookmarks:', error);
     } finally {
@@ -47,13 +40,9 @@ export const useBookmarks = () => {
 
   const loadFolders = useCallback(async () => {
     try {
-      const { data, error } = await supabase
-        .from('bookmark_folders')
-        .select('*')
-        .order('created_at');
-
-      if (error) throw error;
-      setFolders(data || []);
+      // Database table doesn't exist yet - feature coming soon
+      console.log('Bookmark folders feature coming soon');
+      setFolders([]);
     } catch (error) {
       console.error('Error loading folders:', error);
       toast.error('Failed to load folders');
@@ -63,21 +52,10 @@ export const useBookmarks = () => {
   const addBookmark = useCallback(
     async (messageId: string, messageContent: string, folderId?: string) => {
       try {
-        const { data, error } = await supabase
-          .from('bookmarks')
-          .insert({
-            message_id: messageId,
-            message_content: messageContent,
-            folder_id: folderId,
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
-        setBookmarks([data, ...bookmarks]);
-        setBookmarkedMessageIds((prev) => new Set([...prev, messageId]));
-        toast.success('Message bookmarked');
-        return data;
+        // Database table doesn't exist yet - feature coming soon
+        console.log('Add bookmark feature coming soon');
+        toast.info('Bookmarks feature coming soon');
+        return null;
       } catch (error) {
         console.error('Error adding bookmark:', error);
         toast.error('Failed to bookmark message');
@@ -90,19 +68,9 @@ export const useBookmarks = () => {
   const removeBookmark = useCallback(
     async (bookmarkId: string, messageId: string) => {
       try {
-        const { error } = await supabase
-          .from('bookmarks')
-          .delete()
-          .eq('id', bookmarkId);
-
-        if (error) throw error;
-        setBookmarks(bookmarks.filter((b) => b.id !== bookmarkId));
-        setBookmarkedMessageIds((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(messageId);
-          return newSet;
-        });
-        toast.success('Bookmark removed');
+        // Database table doesn't exist yet - feature coming soon
+        console.log('Remove bookmark feature coming soon');
+        toast.info('Bookmarks feature coming soon');
       } catch (error) {
         console.error('Error removing bookmark:', error);
         toast.error('Failed to remove bookmark');
@@ -114,16 +82,10 @@ export const useBookmarks = () => {
   const createFolder = useCallback(
     async (name: string) => {
       try {
-        const { data, error } = await supabase
-          .from('bookmark_folders')
-          .insert({ name })
-          .select()
-          .single();
-
-        if (error) throw error;
-        setFolders([...folders, data]);
-        toast.success('Folder created');
-        return data;
+        // Database table doesn't exist yet - feature coming soon
+        console.log('Create folder feature coming soon');
+        toast.info('Bookmark folders feature coming soon');
+        return null;
       } catch (error) {
         console.error('Error creating folder:', error);
         toast.error('Failed to create folder');
@@ -136,14 +98,9 @@ export const useBookmarks = () => {
   const deleteFolder = useCallback(
     async (folderId: string) => {
       try {
-        const { error } = await supabase
-          .from('bookmark_folders')
-          .delete()
-          .eq('id', folderId);
-
-        if (error) throw error;
-        setFolders(folders.filter((f) => f.id !== folderId));
-        toast.success('Folder deleted');
+        // Database table doesn't exist yet - feature coming soon
+        console.log('Delete folder feature coming soon');
+        toast.info('Bookmark folders feature coming soon');
       } catch (error) {
         console.error('Error deleting folder:', error);
         toast.error('Failed to delete folder');
@@ -155,18 +112,9 @@ export const useBookmarks = () => {
   const moveBookmarkToFolder = useCallback(
     async (bookmarkId: string, folderId: string) => {
       try {
-        const { data, error } = await supabase
-          .from('bookmarks')
-          .update({ folder_id: folderId })
-          .eq('id', bookmarkId)
-          .select()
-          .single();
-
-        if (error) throw error;
-        setBookmarks(
-          bookmarks.map((b) => (b.id === bookmarkId ? data : b))
-        );
-        toast.success('Bookmark moved');
+        // Database table doesn't exist yet - feature coming soon
+        console.log('Move bookmark feature coming soon');
+        toast.info('Bookmarks feature coming soon');
       } catch (error) {
         console.error('Error moving bookmark:', error);
         toast.error('Failed to move bookmark');
