@@ -2,6 +2,10 @@ import { beautifyModelName, getProviderFromModelId, getCustomModels } from './mo
 import { ALL_OPENROUTER_MODELS } from './all-models';
 
 export const TEXT_MODELS = [
+  // OnyxAI Uncensored Models (Pollinations API endpoint)
+  { id: 'OnyxAI-EvilGPT', name: 'OnyxAI EvilGPT 🔥 (Uncensored)', provider: 'OnyxAI', isPollinations: true },
+  { id: 'OnyxAI-RpGPT', name: 'OnyxAI RpGPT 🎭 (Uncensored)', provider: 'OnyxAI', isPollinations: true },
+  
   // Venice Uncensored Model (OpenRouter endpoint)
   { id: 'openrouter:cognitivecomputations/dolphin-mistral-24b-venice-edition:free', name: 'Dolphin Mistral 24B Venice 🐬 (Uncensored)', provider: 'OpenRouter' },
   

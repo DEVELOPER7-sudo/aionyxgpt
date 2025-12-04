@@ -196,6 +196,150 @@ const ChatApp = () => {
     }
   };
 
+  const handlePollinationsChat = async (messages: Message[], chatId: string, userText: string, selectedTriggers?: string[]) => {
+    try {
+      setIsLoading(true);
+      
+      // Get model ID
+      const modelId = settings.textModel;
+      
+      // Detect triggers and build system prompt
+      let { systemPrompt: triggerPrompt, detectedTriggers, enhancedSystemPrompt } = detectTriggersAndBuildPrompt(userText);
+      
+      // Merge default triggers + selected triggers
+      let extraInstructions: string[] = [];
+      if (settings.defaultTriggers && settings.defaultTriggers.length > 0) {
+        const allTriggersData = getAllTriggers();
+        settings.defaultTriggers.forEach((trigName) => {
+          const found = allTriggersData.find(a => a.trigger.toLowerCase() === trigName.toLowerCase());
+          if (found) {
+            extraInstructions.push(found.system_instruction);
+          }
+        });
+      }
+
+      if (selectedTriggers && selectedTriggers.length > 0) {
+        const allTriggersData = getAllTriggers();
+        selectedTriggers.forEach((trigName) => {
+          const found = allTriggersData.find(a => a.trigger.toLowerCase() === trigName.toLowerCase());
+          if (found && !extraInstructions.includes(found.system_instruction)) {
+            extraInstructions.push(found.system_instruction);
+          }
+        });
+      }
+
+      if (extraInstructions.length > 0) {
+        triggerPrompt += '\n\n' + extraInstructions.join('\n\n');
+      }
+      
+      // Build final system prompt
+      let baseSystemPrompt = enhancedSystemPrompt && enhancedSystemPrompt.length > 0 
+        ? enhancedSystemPrompt 
+        : triggerPrompt;
+        
+      let finalSystemPrompt = baseSystemPrompt;
+      
+      if (detectedTriggers.length > 0 || extraInstructions.length > 0) {
+        finalSystemPrompt = `${TRIGGER_TAG_ENFORCEMENT_PREFIX}\n\n${baseSystemPrompt}`;
+      } else {
+        finalSystemPrompt = 'Respond helpfully, truthfully, and concisely.';
+      }
+      
+      // Add task mode instructions
+      if (taskMode !== 'standard') {
+        finalSystemPrompt += `\n\nTask Mode: ${taskMode.charAt(0).toUpperCase() + taskMode.slice(1)}`;
+      }
+      
+      if (webSearchEnabled) {
+        finalSystemPrompt += '\n\nNote: You may use web knowledge if available. Wrap findings in <research> tags.';
+      }
+      if (deepSearchEnabled) {
+        finalSystemPrompt += '\n\nNote: Prefer deeper step-by-step reasoning when needed. Use <stepbystep> tags for detailed breakdowns.';
+      }
+      
+      // Add memory context
+      const memoryContext = buildSystemPromptWithMemoryContext(detectedTriggers);
+      if (memoryContext.trim()) {
+        finalSystemPrompt += '\n\n' + memoryContext;
+      }
+      
+      // Build complete prompt for Pollinations API
+      // Pollinations API expects a single prompt string
+      const combinedPrompt = `${finalSystemPrompt}\n\nUser: ${userText}`;
+      
+      if (import.meta.env.DEV && settings.enableDebugLogs) {
+        console.log('[Pollinations] Model:', modelId);
+        console.log('[Pollinations] System Prompt:', finalSystemPrompt);
+      }
+      
+      // Call Pollinations API
+      const pollinationsUrl = `https://text.pollinations.ai/${encodeURIComponent(combinedPrompt)}`;
+      
+      const response = await fetch(pollinationsUrl);
+      
+      if (!response.ok) {
+        throw new Error(`Pollinations API error: ${response.status} ${response.statusText}`);
+      }
+      
+      let fullResponse = await response.text();
+      
+      // Create assistant message
+      const assistantMessage: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: fullResponse,
+        timestamp: Date.now(),
+        triggers: detectedTriggers.length > 0 ? detectedTriggers : undefined,
+      };
+      
+      // Update chat with response
+      const chat = chats.find(c => c.id === chatId);
+      if (!chat) return;
+      
+      const currentMessages = [...messages, assistantMessage];
+      storage.updateChat(chatId, { messages: currentMessages });
+      setChats(prevChats => prevChats.map(c => c.id === chatId ? { ...c, messages: currentMessages } : c));
+      
+      // Record analytics
+      const tokenEstimate = Math.ceil(fullResponse.length / 4);
+      recordStats(modelId, tokenEstimate);
+      
+      playMessageComplete();
+      
+      if (import.meta.env.DEV && settings.enableDebugLogs) {
+        console.log('[Pollinations] Response received:', fullResponse.slice(0, 200));
+      }
+    } catch (error: any) {
+      console.error('Pollinations API error:', error);
+      playError();
+      
+      let errorMessage = 'Pollinations API error. Please try again.';
+      if (error.message?.includes('rate limit')) {
+        errorMessage = 'Rate limit exceeded. Please try again later.';
+      } else if (error.message?.includes('429')) {
+        errorMessage = 'Too many requests. Please wait before trying again.';
+      }
+      
+      toast.error(errorMessage);
+      
+      const errorMsg: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: errorMessage,
+        timestamp: Date.now(),
+      };
+      
+      const chat = chats.find(c => c.id === chatId);
+      if (chat) {
+        const errorMessages = [...messages, errorMsg];
+        storage.updateChat(chatId, { messages: errorMessages });
+        setChats(chats.map(c => c.id === chatId ? { ...c, messages: errorMessages } : c));
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSendMessage = async (content: string, imageData?: { imageUrl: string; prompt: string }) => {
     if (!currentChatId || !currentChat) return;
 
@@ -296,6 +440,14 @@ const ChatApp = () => {
 
      // Use selected model
      const modelId = settings.textModel;
+
+     // Check if this is a Pollinations API model
+     const isPollinationsModel = modelId === 'OnyxAI-EvilGPT' || modelId === 'OnyxAI-RpGPT';
+     
+     if (isPollinationsModel) {
+       await handlePollinationsChat(messages, chatId, userText, selectedTriggers);
+       return;
+     }
 
      // @ts-ignore - Puter is loaded via script tag (HTML style)
     const puter = (window as any)?.puter;
