@@ -2,12 +2,9 @@ import { beautifyModelName, getProviderFromModelId, getCustomModels } from './mo
 import { ALL_OPENROUTER_MODELS } from './all-models';
 
 export const TEXT_MODELS = [
-  // OnyxAI Uncensored Models (Pollinations API endpoint)
-  { id: 'OnyxAI-EvilGPT', name: 'OnyxAI EvilGPT 🔥 (Uncensored)', provider: 'OnyxAI', isPollinations: true },
-  { id: 'OnyxAI-RpGPT', name: 'OnyxAI RpGPT 🎭 (Uncensored)', provider: 'OnyxAI', isPollinations: true },
-  
-  // Venice Uncensored Model (OpenRouter endpoint)
-  { id: 'openrouter:cognitivecomputations/dolphin-mistral-24b-venice-edition:free', name: 'Dolphin Mistral 24B Venice 🐬 (Uncensored)', provider: 'OpenRouter' },
+  // Top pinned models
+  { id: 'OnyxAI-EvilGPT', name: 'OnyxAI EvilGPT', provider: 'OnyxAI', isPollinations: true },
+  { id: 'OnyxAI-RpGPT', name: 'OnyxAI RpGPT', provider: 'OnyxAI', isPollinations: true },
   
   // Featured Models (Puter JS endpoint with OpenRouter prefix)
   { id: 'openrouter:openai/gpt-5', name: 'GPT-5', provider: 'OpenAI' },
@@ -60,6 +57,7 @@ export function getAllTextModels() {
 }
 
 export const IMAGE_MODELS = [
+  { id: 'flux-puter', name: 'FLUX.1-schnell (Puter JS)', description: 'High quality generation via Puter.js', isPuter: true, provider: 'Puter' },
   { id: 'flux', name: 'Flux', description: 'High quality, fast generation' },
   { id: 'kontext', name: 'Kontext', description: 'Contextual understanding' },
   { id: 'turbo', name: 'Turbo', description: 'Ultra fast generation' },

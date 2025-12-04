@@ -272,33 +272,60 @@ const ChatApp = () => {
         console.log('[Pollinations] System Prompt:', finalSystemPrompt);
       }
       
-      // Call Pollinations API
-      const pollinationsUrl = `https://text.pollinations.ai/${encodeURIComponent(combinedPrompt)}`;
+      // Call Pollinations API with streaming enabled
+      const pollinationsUrl = `https://text.pollinations.ai/${encodeURIComponent(combinedPrompt)}?stream=true`;
       
-      const response = await fetch(pollinationsUrl);
+      const controller = new AbortController();
+      setAbortController(controller);
+      
+      const response = await fetch(pollinationsUrl, { signal: controller.signal });
       
       if (!response.ok) {
         throw new Error(`Pollinations API error: ${response.status} ${response.statusText}`);
       }
       
-      let fullResponse = await response.text();
-      
-      // Create assistant message
+      let fullResponse = '';
       const assistantMessage: Message = {
         id: Date.now().toString(),
         role: 'assistant',
-        content: fullResponse,
+        content: '',
         timestamp: Date.now(),
         triggers: detectedTriggers.length > 0 ? detectedTriggers : undefined,
       };
       
-      // Update chat with response
       const chat = chats.find(c => c.id === chatId);
       if (!chat) return;
       
-      const currentMessages = [...messages, assistantMessage];
-      storage.updateChat(chatId, { messages: currentMessages });
-      setChats(prevChats => prevChats.map(c => c.id === chatId ? { ...c, messages: currentMessages } : c));
+      // Stream the response
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      
+      if (!reader) {
+        // Fallback to non-streaming if body is not readable
+        fullResponse = await response.text();
+        const currentMessages = [...messages, { ...assistantMessage, content: fullResponse }];
+        storage.updateChat(chatId, { messages: currentMessages });
+        setChats(prevChats => prevChats.map(c => c.id === chatId ? { ...c, messages: currentMessages } : c));
+      } else {
+        // Process stream
+        while (true) {
+          if (controller.signal.aborted) {
+            break;
+          }
+          
+          const { done, value } = await reader.read();
+          if (done) break;
+          
+          const chunk = decoder.decode(value);
+          fullResponse += chunk;
+          
+          const currentMessages = [...messages, { ...assistantMessage, content: fullResponse }];
+          storage.updateChat(chatId, { messages: currentMessages });
+          setChats(prevChats => prevChats.map(c => c.id === chatId ? { ...c, messages: currentMessages } : c));
+        }
+        
+        setAbortController(null);
+      }
       
       // Record analytics
       const tokenEstimate = Math.ceil(fullResponse.length / 4);
@@ -1061,13 +1088,46 @@ const ChatApp = () => {
   const handleImageGeneration = async (prompt: string, chatId: string) => {
     console.log('Generating image with model:', settings.imageModel);
     
-    // Random seed for variety
-    const seed = Math.floor(Math.random() * 1000000);
-
-    // @ts-ignore
-    const response = await fetch(`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?model=${settings.imageModel}&seed=${seed}&width=1024&height=1024&nologo=true`);
+    let imageUrl: string;
     
-    const imageUrl = response.url;
+    // Check if using Puter.js FLUX model
+    if (settings.imageModel === 'flux-puter') {
+      try {
+        // @ts-ignore - Puter is loaded via script tag
+        const puter = (window as any)?.puter;
+        if (!puter?.ai?.txt2img) {
+          toast.error('Puter.js not available');
+          return;
+        }
+        
+        // Use Puter.js for FLUX image generation
+        const image = await puter.ai.txt2img(prompt, {
+          model: 'black-forest-labs/FLUX.1-schnell-Free'
+        });
+        
+        // The image returned is an HTML Image element, convert to data URL
+        const canvas = document.createElement('canvas');
+        canvas.width = image.width;
+        canvas.height = image.height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(image, 0, 0);
+          imageUrl = canvas.toDataURL('image/png');
+        } else {
+          toast.error('Failed to process image');
+          return;
+        }
+      } catch (error) {
+        console.error('Puter.js image generation error:', error);
+        toast.error('Failed to generate image with Puter.js');
+        return;
+      }
+    } else {
+      // Use Pollinations API for other models
+      const seed = Math.floor(Math.random() * 1000000);
+      const response = await fetch(`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?model=${settings.imageModel}&seed=${seed}&width=1024&height=1024&nologo=true`);
+      imageUrl = response.url;
+    }
 
     const imageMessage: Message = {
       id: Date.now().toString(),

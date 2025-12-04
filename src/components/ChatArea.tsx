@@ -15,8 +15,6 @@ import { useVisionAI } from '@/hooks/useVisionAI';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useAnalytics } from '@/hooks/useFeatures';
-import { useSpeechToText } from '@/hooks/useSpeechToText';
-import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { toast } from 'sonner';
 
 import LoadingDots from '@/components/LoadingDots';
@@ -25,7 +23,6 @@ import CollapsibleTriggerTag from '@/components/CollapsibleTriggerTag';
 
 import {
     Send,
-    Mic,
     Image as ImageIcon,
     Copy,
     RotateCcw,
@@ -35,9 +32,6 @@ import {
     Paperclip,
     ChevronDown,
     Edit2,
-    Volume2,
-    Volume,
-    StopCircle,
   } from 'lucide-react';
 import { Chat, Message } from '@/types/chat';
 import { cn } from '@/lib/utils';
@@ -56,8 +50,6 @@ interface ChatAreaProps {
   currentModel?: string;
   taskMode?: 'standard' | 'reasoning' | 'research' | 'creative';
   onTaskModeChange?: (mode: 'standard' | 'reasoning' | 'research' | 'creative') => void;
-  speechVoice?: 'alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer';
-  autoPlaySpeech?: boolean;
 }
 
 const ChatArea = ({
@@ -74,8 +66,6 @@ const ChatArea = ({
   currentModel = 'gpt-5-nano',
   taskMode = 'standard',
   onTaskModeChange,
-  speechVoice = 'nova',
-  autoPlaySpeech = false,
 }: ChatAreaProps) => {
   const [input, setInput] = useState('');
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
@@ -84,7 +74,6 @@ const ChatArea = ({
   const [expandedThinking, setExpandedThinking] = useState<Set<string>>(new Set());
   const [selectedTriggers, setSelectedTriggers] = useState<string[]>([]);
   const [showScrollBottom, setShowScrollBottom] = useState(false);
-  const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
    const scrollRef = useRef<HTMLDivElement>(null);
    const bottomRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -94,12 +83,6 @@ const ChatArea = ({
   const { uploadFile, isUploading } = useFileUpload();
   const { playButtonClick, playMessageSent } = useSoundEffects();
   const { recordStats } = useAnalytics();
-  const { isRecording, isTranscribing, startRecording, stopRecording } = useSpeechToText({
-    onTranscribed: (text) => {
-      setInput(input + (input ? ' ' : '') + text);
-    },
-  });
-  const { isSpeaking, isGenerating, speak, stop } = useTextToSpeech({ voice: speechVoice });
 
   // Extract thinking and main content separately - handle incomplete tags
   const processThinking = (content: string): { thinking: string | null; main: string; isThinking: boolean } => {
@@ -477,30 +460,7 @@ const ChatArea = ({
                       >
                         <Copy className="w-4 h-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className={cn(
-                          "h-6 w-6 transition-all duration-200 hover:scale-110",
-                          speakingMessageId === message.id && "text-primary scale-110"
-                        )}
-                        onClick={() => {
-                          if (speakingMessageId === message.id) {
-                            stop();
-                            setSpeakingMessageId(null);
-                          } else {
-                            setSpeakingMessageId(message.id);
-                            speak(message.content, speechVoice);
-                          }
-                        }}
-                        title={speakingMessageId === message.id ? "Stop speaking" : "Read response"}
-                      >
-                        {speakingMessageId === message.id ? (
-                          <StopCircle className="w-4 h-4" />
-                        ) : (
-                          <Volume2 className="w-4 h-4" />
-                        )}
-                      </Button>
+
                       <Button
                         variant="ghost"
                         size="icon"
@@ -624,27 +584,7 @@ const ChatArea = ({
              >
                <Paperclip className="w-4 h-4 md:w-5 md:h-5" />
              </Button>
-             <Button
-               variant="ghost"
-               size="icon"
-               className={cn(
-                 "h-10 w-10 flex-shrink-0 transition-all duration-300",
-                 isRecording 
-                   ? "bg-destructive/20 text-destructive hover:bg-destructive/30 scale-110" 
-                   : "hover:scale-110 hover:bg-primary/10 hover:text-primary"
-               )}
-               onClick={async () => {
-                 if (isRecording) {
-                   const transcribed = await stopRecording();
-                 } else {
-                   startRecording();
-                 }
-               }}
-               disabled={isTranscribing}
-               title={isRecording ? "Stop recording" : "Record voice input"}
-             >
-               <Mic className={cn("w-4 h-4 md:w-5 md:h-5", isRecording && "animate-pulse")} />
-             </Button>
+
              <Button
                onClick={handleSend}
                disabled={isLoading || isAnalyzing || isUploading}

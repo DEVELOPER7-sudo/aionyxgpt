@@ -166,54 +166,7 @@ const SettingsPanel = ({
         </div>
       </Card>
 
-      {/* Venice Uncensored Info & OpenRouter API Key */}
-      <Card className="p-6 space-y-4 bg-blue-500/5 border-blue-500/20">
-        <div>
-          <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
-            🐬 Venice Uncensored Model & OpenRouter API
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Configure your OpenRouter API key for accessing Venice and other uncensored models securely.
-          </p>
-        </div>
-        
-        <div className="space-y-3">
-          <p className="text-sm">
-            ✅ <strong>Uncensored responses</strong> - No content filtering<br/>
-            ✅ <strong>Server-side encryption</strong> - API keys encrypted at rest<br/>
-            ✅ <strong>Secure transmission</strong> - HTTPS only communication
-          </p>
-        </div>
 
-        {/* OpenRouter API Key Input */}
-        <div className="border-t border-blue-500/20 pt-4 space-y-4">
-          <div>
-            <Label htmlFor="openrouter-key" className="text-base font-medium">OpenRouter API Key</Label>
-            <p className="text-xs text-muted-foreground mt-1">
-              Your API key is encrypted and stored securely on the server. It's never exposed to the browser.
-            </p>
-          </div>
-          
-          <div className="space-y-2">
-            <Input
-              id="openrouter-key"
-              type="password"
-              placeholder="sk-or-v1-..."
-              value={localSettings.customOpenRouterKey || ''}
-              onChange={(e) =>
-                setLocalSettings({ ...localSettings, customOpenRouterKey: e.target.value })
-              }
-              className="bg-input font-mono text-sm"
-            />
-            <p className="text-xs text-muted-foreground flex items-start gap-2">
-              <span>🔒</span>
-              <span>
-                Get your free API key from <a href="https://openrouter.ai" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">openrouter.ai</a>. Your key will be securely transmitted to our server and encrypted.
-              </span>
-            </p>
-          </div>
-        </div>
-      </Card>
 
       {/* Model Selection */}
       <Card className="p-6 space-y-6">
