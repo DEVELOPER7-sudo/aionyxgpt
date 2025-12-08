@@ -15,6 +15,7 @@ import { getAllTriggers } from '@/lib/triggers';
 import { toast } from 'sonner';
 import { Download, Upload, LogOut, LogIn, Trash2, Plus, X, BarChart3 } from 'lucide-react';
 import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
+import { ThemeCustomizer } from '@/components/ThemeCustomizer';
 
 interface SettingsPanelProps {
   settings: AppSettings;
@@ -127,6 +128,9 @@ const SettingsPanel = ({
         </TabsList>
 
         <TabsContent value="settings" className="space-y-6">
+      {/* Theme Customization */}
+      <ThemeCustomizer settings={localSettings} onUpdateSettings={onUpdateSettings} />
+
       {/* Pollinations API Key */}
       <Card className="p-6 space-y-4 border-blue-500/50 bg-blue-500/5">
         <div>
