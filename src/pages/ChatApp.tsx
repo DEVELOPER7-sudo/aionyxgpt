@@ -272,14 +272,35 @@ const ChatApp = () => {
         console.log('[Pollinations] System Prompt:', finalSystemPrompt);
       }
       
-      // Call Pollinations API with streaming enabled and NSFW filtering disabled for EvilGPT/RpGPT
-      const isNsfwModel = modelId === 'OnyxAI-EvilGPT' || modelId === 'OnyxAI-RpGPT';
-      const pollinationsUrl = `https://text.pollinations.ai/${encodeURIComponent(combinedPrompt)}?stream=true${isNsfwModel ? '&filter=false' : ''}`;
+      // Call Pollinations API with streaming enabled and provided API key
+      const pollinationsUrl = `https://api.pollinations.ai/v1/chat/completions`;
+      const requestBody = {
+        model: modelId, // Use 'evil' or 'unity'
+        messages: messages.map(m => ({
+          role: m.role,
+          content: m.content
+        })),
+        stream: true,
+        temperature: settings.temperature || 0.7,
+        max_tokens: settings.maxTokens || 2048,
+      };
       
       const controller = new AbortController();
       setAbortController(controller);
       
-      const response = await fetch(pollinationsUrl, { signal: controller.signal });
+      if (!settings.pollinationsApiKey) {
+        throw new Error('Pollinations API key not configured. Please add it in Settings.');
+      }
+      
+      const response = await fetch(pollinationsUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${settings.pollinationsApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+        signal: controller.signal,
+      });
       
       if (!response.ok) {
         throw new Error(`Pollinations API error: ${response.status} ${response.statusText}`);
@@ -518,7 +539,7 @@ const ChatApp = () => {
      const modelId = settings.textModel;
 
      // Check if this is a Pollinations API model
-     const isPollinationsModel = modelId === 'OnyxAI-EvilGPT' || modelId === 'OnyxAI-RpGPT';
+     const isPollinationsModel = modelId === 'evil' || modelId === 'unity';
      
      if (isPollinationsModel) {
        await handlePollinationsChat(messages, chatId, userText, selectedTriggers);

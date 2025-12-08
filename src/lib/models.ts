@@ -3,8 +3,8 @@ import { ALL_OPENROUTER_MODELS } from './all-models';
 
 export const TEXT_MODELS = [
   // Top pinned models
-  { id: 'OnyxAI-EvilGPT', name: 'OnyxAI EvilGPT', provider: 'OnyxAI', isPollinations: true, streaming: true, nsfw: true },
-  { id: 'OnyxAI-RpGPT', name: 'OnyxAI RpGPT', provider: 'OnyxAI', isPollinations: true, streaming: true, nsfw: true },
+  { id: 'evil', name: 'Evil', provider: 'Pollinations', isPollinations: true, streaming: true, nsfw: true },
+  { id: 'unity', name: 'Unity Unrestricted Agent', provider: 'Pollinations', isPollinations: true, streaming: true, nsfw: true },
   
   // Featured Models (Puter JS endpoint with OpenRouter prefix)
   { id: 'openrouter:openai/gpt-5', name: 'GPT-5', provider: 'OpenAI' },
