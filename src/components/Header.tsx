@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
-import { User, LogOut, Menu, Coins } from 'lucide-react';
+import { User, LogOut, Menu, Coins, Volume2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import onyxLogo from '@/assets/onyx-logo.png';
 import {
@@ -26,6 +27,7 @@ interface PuterUser {
 }
 
 const Header = ({ onMenuClick, showMenuButton = false, user, onSignOut }: HeaderProps) => {
+  const navigate = useNavigate();
   const [puterUser, setPuterUser] = useState<PuterUser | null>(null);
 
   useEffect(() => {
@@ -74,6 +76,17 @@ const Header = ({ onMenuClick, showMenuButton = false, user, onSignOut }: Header
             500+ AI Models
           </span>
         </div>
+
+        {/* Voice Chat Button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate('/voice')}
+          className="hidden md:flex mr-2 transition-all duration-200 hover:scale-110 hover:bg-primary/10"
+          title="Voice Chat"
+        >
+          <Volume2 className="h-5 w-5" />
+        </Button>
 
         {user || puterUser ? (
           <DropdownMenu>
