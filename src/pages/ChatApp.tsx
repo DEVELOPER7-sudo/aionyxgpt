@@ -1065,27 +1065,170 @@ const ChatApp = () => {
   };
 
   const handleVisionChat = async (imageUrl: string | string[], prompt: string, messages: Message[], chatId: string) => {
-    // @ts-ignore - Puter is loaded via script tag
-    const puter = (window as any)?.puter;
-    if (!puter?.ai?.chat) {
-      toast.error('Puter AI service not available. Please refresh the page.');
-      setIsLoading(false);
-      return;
-    }
-
     const controller = new AbortController();
     setAbortController(controller);
 
-    const logger = createPuterAPILogger();
+    const modelId = settings.textModel;
+    const isPollinationsModel = modelId === 'evil' || modelId === 'unity';
 
     try {
       console.log('[Vision] Analyzing image(s):', imageUrl);
       console.log('[Vision] Prompt:', prompt);
-      console.log('[Vision] Using model:', settings.textModel);
+      console.log('[Vision] Using model:', modelId);
       
+      // Handle Pollinations vision models
+      if (isPollinationsModel) {
+        if (!settings.pollinationsApiKey) {
+          throw new Error('Pollinations API key not configured. Please add it in Settings.');
+        }
+
+        const pollinationsUrl = `https://api.pollinations.ai/v1/chat/completions`;
+        const imageArray = Array.isArray(imageUrl) ? imageUrl : [imageUrl];
+        const contentArray: any[] = [
+          {
+            type: 'text',
+            text: prompt,
+          },
+        ];
+
+        // Add images as content
+        for (const img of imageArray) {
+          contentArray.push({
+            type: 'image_url',
+            image_url: {
+              url: img,
+            },
+          });
+        }
+
+        const requestBody = {
+          model: modelId,
+          messages: [
+            ...messages.filter(m => m.role !== 'assistant').map(m => ({
+              role: m.role,
+              content: m.content,
+            })),
+            {
+              role: 'user',
+              content: contentArray,
+            },
+          ],
+          stream: true,
+          temperature: settings.temperature || 0.7,
+          max_tokens: settings.maxTokens || 2048,
+        };
+
+        const response = await fetch(pollinationsUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${settings.pollinationsApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Pollinations API error: ${response.status} ${response.statusText}`);
+        }
+
+        let fullResponse = '';
+        const assistantMessage: Message = {
+          id: Date.now().toString(),
+          role: 'assistant',
+          content: '',
+          timestamp: Date.now(),
+        };
+
+        const chat = chats.find(c => c.id === chatId);
+        if (!chat) return;
+
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+
+        if (!reader) {
+          fullResponse = await response.text();
+          const currentMessages = [...messages, { ...assistantMessage, content: fullResponse }];
+          storage.updateChat(chatId, { messages: currentMessages });
+          setChats(prevChats => prevChats.map(c => c.id === chatId ? { ...c, messages: currentMessages } : c));
+        } else {
+          let buffer = '';
+          while (true) {
+            if (controller.signal.aborted) break;
+
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value, { stream: true });
+            buffer += chunk;
+
+            const lines = buffer.split('\n');
+            for (let i = 0; i < lines.length - 1; i++) {
+              const line = lines[i].trim();
+              if (line.startsWith('data: ')) {
+                const jsonStr = line.slice(6);
+                if (jsonStr === '[DONE]') continue;
+                try {
+                  const data = JSON.parse(jsonStr);
+                  if (data.choices && Array.isArray(data.choices) && data.choices[0]?.delta?.content) {
+                    fullResponse += data.choices[0].delta.content;
+                  }
+                } catch (e) {
+                  fullResponse += line;
+                }
+              } else if (line && !line.startsWith('data:')) {
+                fullResponse += line;
+              }
+            }
+            buffer = lines[lines.length - 1];
+
+            const currentMessages = [...messages, { ...assistantMessage, content: fullResponse }];
+            storage.updateChat(chatId, { messages: currentMessages });
+            setChats(prevChats => prevChats.map(c => c.id === chatId ? { ...c, messages: currentMessages } : c));
+          }
+
+          if (buffer.trim()) {
+            const line = buffer.trim();
+            if (line.startsWith('data: ')) {
+              const jsonStr = line.slice(6);
+              if (jsonStr !== '[DONE]') {
+                try {
+                  const data = JSON.parse(jsonStr);
+                  if (data.choices && Array.isArray(data.choices) && data.choices[0]?.delta?.content) {
+                    fullResponse += data.choices[0].delta.content;
+                  }
+                } catch (e) {
+                  fullResponse += jsonStr;
+                }
+              }
+            } else {
+              fullResponse += line;
+            }
+          }
+        }
+
+        const tokenEstimate = Math.ceil(fullResponse.length / 4);
+        recordStats(modelId, tokenEstimate);
+        playMessageComplete();
+        console.log('[Vision] Analysis complete');
+        setAbortController(null);
+        return;
+      }
+
+      // Handle Puter vision models
+      // @ts-ignore - Puter is loaded via script tag
+      const puter = (window as any)?.puter;
+      if (!puter?.ai?.chat) {
+        toast.error('Puter AI service not available. Please refresh the page.');
+        setIsLoading(false);
+        return;
+      }
+
+      const logger = createPuterAPILogger();
+
       // Use streaming for real-time response
       const response = await puter.ai.chat(prompt, imageUrl, {
-        model: settings.textModel,
+        model: modelId,
         stream: true,
       });
 
