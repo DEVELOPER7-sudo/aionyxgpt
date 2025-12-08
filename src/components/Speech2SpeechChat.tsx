@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { useSpeech2Speech } from '@/hooks/useSpeech2Speech';
+import { useOnyxSpeak } from '@/hooks/useOnyxSpeak';
 import { toast } from 'sonner';
 import {
   Mic,
@@ -56,7 +56,7 @@ const Speech2SpeechChat = ({ onClose }: Speech2SpeechChatProps) => {
     stopAudio,
     setTranscript,
     setAudioUrl,
-  } = useSpeech2Speech();
+  } = useOnyxSpeak();
 
   const [conversation, setConversation] = useState<ConversationItem[]>([]);
   const [selectedVoice, setSelectedVoice] = useState('21m00Tcm4TlvDq8ikWAM');
@@ -189,7 +189,7 @@ const Speech2SpeechChat = ({ onClose }: Speech2SpeechChatProps) => {
             <Volume2 className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold">Speech-to-Speech Chat</h2>
+            <h2 className="text-lg font-semibold">OnyxGPT.Speak</h2>
             <p className="text-xs text-muted-foreground">Speak, listen, and convert voices in real-time</p>
           </div>
         </div>

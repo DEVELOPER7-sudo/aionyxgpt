@@ -24,8 +24,8 @@ const VoiceChat = () => {
               <Volume2 className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold">Voice Chat</h1>
-              <p className="text-xs text-muted-foreground">Speak and convert voices instantly</p>
+              <h1 className="text-lg font-semibold">OnyxGPT.Speak</h1>
+              <p className="text-xs text-muted-foreground">AI voice chat and conversion</p>
             </div>
           </div>
         </div>
