@@ -272,8 +272,9 @@ const ChatApp = () => {
         console.log('[Pollinations] System Prompt:', finalSystemPrompt);
       }
       
-      // Call Pollinations API with streaming enabled
-      const pollinationsUrl = `https://text.pollinations.ai/${encodeURIComponent(combinedPrompt)}?stream=true`;
+      // Call Pollinations API with streaming enabled and NSFW filtering disabled for EvilGPT/RpGPT
+      const isNsfwModel = modelId === 'OnyxAI-EvilGPT' || modelId === 'OnyxAI-RpGPT';
+      const pollinationsUrl = `https://text.pollinations.ai/${encodeURIComponent(combinedPrompt)}?stream=true${isNsfwModel ? '&filter=false' : ''}`;
       
       const controller = new AbortController();
       setAbortController(controller);
