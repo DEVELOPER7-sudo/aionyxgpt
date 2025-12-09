@@ -122,31 +122,28 @@ export const useOnyxSpeak = () => {
       setError(null);
 
       try {
-        // Check if puter is available
-        const puter = (window as any).puter;
-        if (!puter) {
-          throw new Error('OnyxGPT.Speak SDK not loaded. Please refresh the page.');
-        }
-
-        // Check if ai module exists
-        if (!puter.ai) {
-          throw new Error('AI module not available in OnyxGPT.Speak');
+        // Wait for Puter SDK to be fully loaded
+        let puter = (window as any).puter;
+        let retries = 0;
+        while (!puter || !puter.ai || typeof puter.ai.speech2speech !== 'function') {
+          if (retries > 10) {
+            throw new Error('Voice conversion API (speech2speech) is not available. Please ensure Puter SDK is loaded and you are signed in.');
+          }
+          await new Promise(resolve => setTimeout(resolve, 100));
+          puter = (window as any).puter;
+          retries++;
         }
 
         let convertedAudio: any;
         
         // Use speech2speech API from Puter SDK
-        if (typeof puter.ai.speech2speech === 'function') {
-          convertedAudio = await puter.ai.speech2speech(audioBlob, {
-            voice: options.voice || '21m00Tcm4TlvDq8ikWAM',
-            model: options.model || 'eleven_multilingual_sts_v2',
-            output_format: options.output_format || 'mp3_44100_128',
-            removeBackgroundNoise: options.removeBackgroundNoise ?? false,
-            voiceSettings: options.voiceSettings,
-          });
-        } else {
-          throw new Error('Voice conversion API (speech2speech) is not available in the Puter SDK.');
-        }
+        convertedAudio = await puter.ai.speech2speech(audioBlob, {
+          voice: options.voice || '21m00Tcm4TlvDq8ikWAM',
+          model: options.model || 'eleven_multilingual_sts_v2',
+          output_format: options.output_format || 'mp3_44100_128',
+          removeBackgroundNoise: options.removeBackgroundNoise ?? false,
+          voiceSettings: options.voiceSettings,
+        });
 
         // Convert to URL if needed
         let url: string;

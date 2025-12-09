@@ -1,4 +1,5 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ChatSidebar from '@/components/ChatSidebar';
 import ChatArea from '@/components/ChatArea';
 import Header from '@/components/Header';
@@ -32,21 +33,22 @@ const TriggerGallery = lazy(() => import('@/components/TriggerGallery'));
 const AnalyticsPanel = lazy(() => import('@/components/AnalyticsPanel'));
 
 const ChatApp = () => {
-  const [chats, setChats] = useState<Chat[]>([]);
-  const [currentChatId, setCurrentChatId] = useState<string | null>(null);
-  const [settings, setSettings] = useState<AppSettings>(storage.getSettings());
-  const [isLoading, setIsLoading] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [currentView, setCurrentView] = useState<'chat' | 'images' | 'mindstore' | 'search' | 'settings' | 'logs' | 'fluxes' | 'analytics'>('chat');
-  const [webSearchEnabled, setWebSearchEnabled] = useState(settings.enableWebSearch);
-  const [deepSearchEnabled, setDeepSearchEnabled] = useState(settings.enableDeepSearch);
-  const [taskMode, setTaskMode] = useState<'standard' | 'reasoning' | 'research' | 'creative'>(settings.taskMode || 'standard');
-  const [abortController, setAbortController] = useState<AbortController | null>(null);
-  
-  const { user, signOut, loading: authLoading } = useAuth();
-  const { playMessageComplete, playError } = useSoundEffects();
-  const { recordStats } = useAnalytics();
+   const navigate = useNavigate();
+   const [chats, setChats] = useState<Chat[]>([]);
+   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
+   const [settings, setSettings] = useState<AppSettings>(storage.getSettings());
+   const [isLoading, setIsLoading] = useState(false);
+   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+   const [currentView, setCurrentView] = useState<'chat' | 'images' | 'mindstore' | 'search' | 'settings' | 'logs' | 'fluxes' | 'analytics'>('chat');
+   const [webSearchEnabled, setWebSearchEnabled] = useState(settings.enableWebSearch);
+   const [deepSearchEnabled, setDeepSearchEnabled] = useState(settings.enableDeepSearch);
+   const [taskMode, setTaskMode] = useState<'standard' | 'reasoning' | 'research' | 'creative'>(settings.taskMode || 'standard');
+   const [abortController, setAbortController] = useState<AbortController | null>(null);
+   
+   const { user, signOut, loading: authLoading } = useAuth();
+   const { playMessageComplete, playError } = useSoundEffects();
+   const { recordStats } = useAnalytics();
 
   // Apply theme
   useTheme(settings);
