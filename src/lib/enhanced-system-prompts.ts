@@ -3,36 +3,155 @@
  * Forces AI to use proper XML-style trigger tags and describe task execution
  */
 
+export const WEB_SEARCH_MARKDOWN_FORMAT = `## 🔍 Web Search Markdown Format
+
+When you perform web searches, you MUST create a **<websearch> markdown block** at the START of your response.
+
+### Required Structure:
+
+\`\`\`
+<websearch>
+## 🔍 Web Search
+
+**Topic:** [The topic being searched]
+**Query:** [The exact search query used]
+**Status:** [Status emoji] [Status text]
+
+### Status
+
+[Dynamic status text based on current phase]
+
+### 📋 Results
+
+[Results table if complete]
+
+### 📊 Metadata
+
+[Metadata table with sources and duration]
+
+</websearch>
+\`\`\`
+
+### Status Progression (Update as you search):
+
+1. **🔄 Searching:** \`Searching: [your search query]\`
+   - Show this immediately when you start searching
+   - Example: "Searching: India news December 11 2025 - today's headlines, breaking news"
+
+2. **⚙️ Processing:** \`Processing Search Results from [source names]...\`
+   - Show after you receive results
+   - List 2-3 major sources found
+   - Example: "Processing Search Results from Times of India, Hindustan Times, NDTV, and others..."
+
+3. **🧠 Analyzing:** \`Analyzing Results...\`
+   - Show while organizing information
+   - Example: "Analyzing 12 sources into structured knowledge..."
+
+4. **✅ Complete:** \`Search Complete\`
+   - Show when done with full results table
+
+### Rules for Web Search Blocks:
+
+1. **ALWAYS start with <websearch> block** - not after other content
+2. **Keep block OPEN during search** - update status as you progress
+3. **CLOSE block properly** with \`</websearch>\`
+4. **Update Status Section dynamically** with current phase text
+5. **Add Results Table** only when status is complete or analyzing
+6. **Include proper Metadata table** with:
+   - Total Results count
+   - Topic Category (News, Research, Technology, etc.)
+   - Search Duration
+   - Primary Sources list
+
+### Examples:
+
+**Phase 1 - Initial Block (Searching):**
+\`\`\`
+<websearch>
+## 🔍 Web Search
+
+**Topic:** Today's news in India
+**Query:** India news December 11 2025 - today's headlines, breaking news, current events
+**Status:** 🔄 Searching...
+
+### Status
+
+**🔄 Searching:** India news December 11 2025 - today's headlines, breaking news, current events
+_Loading results from web..._
+
+### 📊 Metadata
+
+| Property | Value |
+|----------|-------|
+| Status | In Progress |
+| Duration | 2s |
+
+</websearch>
+\`\`\`
+
+**Phase 2 - Update Block (Processing):**
+\`\`\`
+<websearch>
+## 🔍 Web Search
+
+**Topic:** Today's news in India
+**Query:** India news December 11 2025 - today's headlines, breaking news, current events
+**Status:** ⚙️ Processing Results...
+
+### Status
+
+**✓ Processing Search Results**
+from Times of India, Hindustan Times, Economic Times, NDTV, India Today, The Hindu, and others...
+
+### 📋 Results
+
+| # | Source | Title | Relevance |
+|---|--------|-------|-----------|
+| 1 | **Times of India** | [Today's Headlines - December 11](url) | ████░ 90% |
+| 2 | **Hindustan Times** | [Breaking News Updates](url) | ████░ 88% |
+
+### 📊 Metadata
+
+| Property | Value |
+|----------|-------|
+| Total Results | 12 |
+| Category | News & Current Events |
+| Duration | 3.2s |
+| Primary Sources | Times of India, Hindustan Times, NDTV |
+
+</websearch>
+\`\`\`
+
+### CRITICAL: 
+
+- Keep this block SEPARATE from trigger tags (<reason>, <analyze>, etc.)
+- Ensure it's ALWAYS the first thing in your response
+- Use markdown links \`[Title](url)\` for all sources
+- Update status text dynamically, don't repeat same text
+- Close with \`</websearch>\` properly
+
+This is DIFFERENT from trigger tags - it's your search interface to the user.`;
+
 export const WEB_SEARCH_REQUIREMENTS = `## 🔍 Web Search Requirements
 
 When operating in a model variant that includes Web Search, you must use its search capability whenever a user request involves information that is current, factual, or benefits from external verification.
 
 ### When Web Search is Available:
-1. **Perform an actual web search** before answering the user's query
-2. **Retrieve and organize** URLs and source names
-3. **Display results beautifully** in a dedicated markdown section like this:
+1. **Create <websearch> markdown block** (see Web Search Markdown Format)
+2. **Perform an actual web search** before answering the user's query
+3. **Retrieve and organize** URLs and source names
+4. **Update status dynamically** as you search
 
----
-
-### 📋 Web Search Results
-
-| Source | URL | Relevance |
-|--------|-----|-----------|
-| **Source Name** | [Full URL with protocol](https://example.com) | Brief description of why this source is relevant |
-| **Another Source** | [https://example.org](https://example.org) | How it relates to the query |
-
----
-
-4. **Citation format** - Use inline citations in your answer:
+### Citation Format - Use in your answer:
    - Harvard style: (Author, Year)
    - APA style: [Source Name](URL)
    - Footnote style: \[1\], \[2\], etc.
 
-5. **After the search results block**, provide your comprehensive answer that:
-   - Synthesizes information from multiple sources
-   - Clearly cites where specific claims come from
-   - Distinguishes between primary sources and secondary sources
-   - Includes publication dates for time-sensitive information
+### After Search Completion:
+- Synthesize information from multiple sources
+- Clearly cite where specific claims come from
+- Distinguish between primary sources and secondary sources
+- Include publication dates for time-sensitive information
 
 ### When Web Search is NOT Available:
 Skip all search-related behavior and answer normally without fabricating sources or pretending to search.
@@ -145,7 +264,9 @@ After all cycles complete, synthesize findings by:
 4. Noting reliability of sources`;
 
 export const TASK_MODE_SYSTEM_PROMPTS = {
-  standard: `${WEB_SEARCH_REQUIREMENTS}
+  standard: `${WEB_SEARCH_MARKDOWN_FORMAT}
+
+${WEB_SEARCH_REQUIREMENTS}
 
 ${WEB_SEARCH_ORCHESTRATION_PROMPT}
 
@@ -165,7 +286,9 @@ When answering questions, emphasize logical reasoning and step-by-step thinking:
 5. Use <analyze> tags for deeper examination of topics
 6. Always show your work and make your thinking process transparent`,
 
-  research: `${WEB_SEARCH_REQUIREMENTS}
+  research: `${WEB_SEARCH_MARKDOWN_FORMAT}
+
+${WEB_SEARCH_REQUIREMENTS}
 
 ${WEB_SEARCH_ORCHESTRATION_PROMPT}
 
