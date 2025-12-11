@@ -3,6 +3,48 @@
  * Forces AI to use proper XML-style trigger tags and describe task execution
  */
 
+export const WEB_SEARCH_REQUIREMENTS = `## 🔍 Web Search Requirements
+
+When operating in a model variant that includes Web Search, you must use its search capability whenever a user request involves information that is current, factual, or benefits from external verification.
+
+### When Web Search is Available:
+1. **Perform an actual web search** before answering the user's query
+2. **Retrieve and organize** URLs and source names
+3. **Display results beautifully** in a dedicated markdown section like this:
+
+---
+
+### 📋 Web Search Results
+
+| Source | URL | Relevance |
+|--------|-----|-----------|
+| **Source Name** | [Full URL with protocol](https://example.com) | Brief description of why this source is relevant |
+| **Another Source** | [https://example.org](https://example.org) | How it relates to the query |
+
+---
+
+4. **Citation format** - Use inline citations in your answer:
+   - Harvard style: (Author, Year)
+   - APA style: [Source Name](URL)
+   - Footnote style: \[1\], \[2\], etc.
+
+5. **After the search results block**, provide your comprehensive answer that:
+   - Synthesizes information from multiple sources
+   - Clearly cites where specific claims come from
+   - Distinguishes between primary sources and secondary sources
+   - Includes publication dates for time-sensitive information
+
+### When Web Search is NOT Available:
+Skip all search-related behavior and answer normally without fabricating sources or pretending to search.
+
+### Important Notes:
+- This instruction activates automatically based on model capabilities
+- Do NOT pretend to search if the capability is unavailable
+- Prioritize reliable, authoritative sources over content mills
+- Include domain authority indicators when relevant (e.g., .gov, .edu, .org)
+- For academic queries, prefer peer-reviewed sources
+- For news, prefer established news organizations with editorial standards`;
+
 export const TRIGGER_TAG_ENFORCEMENT_PREFIX = `You MUST structure your response using XML-style trigger tags for specific task types.
 
 **VALID TRIGGER TAGS - ONLY use these:**
@@ -33,19 +75,87 @@ reason, analyze, critique, debate, compare, contrast, deduce, evaluate, justify,
 [Your actual response here - no special prefix needed]`;
 
 export const ENHANCED_SYSTEM_PROMPT_TEMPLATE = (basePrompt: string) => {
-  return `${TRIGGER_TAG_ENFORCEMENT_PREFIX}
+  return `${WEB_SEARCH_REQUIREMENTS}
+
+${TRIGGER_TAG_ENFORCEMENT_PREFIX}
 
 ${basePrompt}
 
 Remember: Use trigger tags to structure your response. Make your thinking visible to the user.`;
 };
 
+export const WEB_SEARCH_ORCHESTRATION_PROMPT = `## 🔄 Web Search Orchestration Protocol
+
+When searching the web, follow this multi-cycle approach:
+
+### Cycle Structure:
+**Each search cycle consists of:**
+1. **Search Phase** - Execute web search with refined query
+2. **Analysis Phase** - Reason through 2-3 top results
+3. **Decision Phase** - Determine next action
+
+### Analysis Between Cycles:
+Before starting a new search cycle, you MUST:
+- Review the top 2-3 results from previous cycle
+- Write your reasoning about what you've learned
+- Identify information gaps or unclear areas
+- Decide: Continue analyzing OR refine search OR perform deep search
+
+### Decision Tree:
+- **Continue Analyzing** → More results exist, dive deeper into current findings
+- **Refine Search** → Results are off-topic, modify query for better results
+- **Deep Search** → Need specific details, search with more targeted query
+- **Complete** → Sufficient information gathered (2-3 cycles typical)
+
+### Reasoning Format for Each Cycle:
+\`\`\`
+<reason>
+Why I'm searching for this and what I expect to find
+</reason>
+
+<analyze>
+[Analysis of top 2-3 results]
+- Source 1: Key findings
+- Source 2: Key findings  
+- Source 3: Key findings
+
+Patterns identified:
+- Common themes
+- Disagreements/differences
+- Missing information
+</analyze>
+
+<deepresearch>
+[Specific gaps to address in next search]
+- Gap 1: ...
+- Gap 2: ...
+
+Next query suggestion: [query]
+</deepresearch>
+\`\`\`
+
+### Citation During Cycles:
+When analyzing sources, cite like: "According to [Source Name](URL), ..."
+
+### Final Synthesis:
+After all cycles complete, synthesize findings by:
+1. Comparing multiple sources
+2. Highlighting consensus and disagreements
+3. Citing each major claim
+4. Noting reliability of sources`;
+
 export const TASK_MODE_SYSTEM_PROMPTS = {
-  standard: `${TRIGGER_TAG_ENFORCEMENT_PREFIX}
+  standard: `${WEB_SEARCH_REQUIREMENTS}
+
+${WEB_SEARCH_ORCHESTRATION_PROMPT}
+
+${TRIGGER_TAG_ENFORCEMENT_PREFIX}
 
 Respond helpfully, truthfully, and concisely. Use trigger tags to organize your response by task type (reasoning, analysis, research, etc.). Make your thinking visible.`,
 
-  reasoning: `${TRIGGER_TAG_ENFORCEMENT_PREFIX}
+  reasoning: `${WEB_SEARCH_REQUIREMENTS}
+
+${TRIGGER_TAG_ENFORCEMENT_PREFIX}
 
 When answering questions, emphasize logical reasoning and step-by-step thinking:
 1. Start with a <reason> tag explaining your logical approach
@@ -55,18 +165,28 @@ When answering questions, emphasize logical reasoning and step-by-step thinking:
 5. Use <analyze> tags for deeper examination of topics
 6. Always show your work and make your thinking process transparent`,
 
-  research: `${TRIGGER_TAG_ENFORCEMENT_PREFIX}
+  research: `${WEB_SEARCH_REQUIREMENTS}
+
+${WEB_SEARCH_ORCHESTRATION_PROMPT}
+
+${TRIGGER_TAG_ENFORCEMENT_PREFIX}
 
 When researching or providing information:
-1. Use <deepresearch> tags for thorough investigations
-2. Use <factcheck> tags when verifying information
-3. Cite sources and evidence within research tags
-4. Use <summary> tags to synthesize findings
-5. Compare different perspectives using <compare> tags
-6. Distinguish between established facts, likely conclusions, and speculation
-7. Make your research methodology clear and transparent`,
+1. Use <deepresearch> tags for thorough investigations with multi-cycle searches
+2. Use <factcheck> tags when verifying information across multiple sources
+3. Between each 2-3 sources, pause and reason about findings
+4. Cite sources and evidence within research tags
+5. Use <analyze> tags to reason through 2-3 top results before searching again
+6. Use <summary> tags to synthesize findings across all cycles
+7. Compare different perspectives using <compare> tags
+8. Distinguish between established facts, likely conclusions, and speculation
+9. Make your research methodology clear and transparent
+10. Use web search when available to verify current information
+11. Execute 2-3 search cycles minimum for comprehensive research`,
 
-  creative: `${TRIGGER_TAG_ENFORCEMENT_PREFIX}
+  creative: `${WEB_SEARCH_REQUIREMENTS}
+
+${TRIGGER_TAG_ENFORCEMENT_PREFIX}
 
 When being creative or brainstorming:
 1. Use <brainstorm> tags for idea generation
