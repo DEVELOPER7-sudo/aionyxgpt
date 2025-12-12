@@ -59,9 +59,7 @@ The VERY LAST line must be:
 ### EXACT STRUCTURE - COPY THIS EXACTLY:
 
 <websearch>
-## 🔍 URLs Searched
-
-**Status**: ✅ Search Complete (12s)
+## URLs Searched
 
 - [Source Name 1](https://url1.com) - Brief description
 - [Source Name 2](https://url2.com) - Brief description
@@ -69,17 +67,7 @@ The VERY LAST line must be:
 - [Source Name 4](https://url4.com) - Brief description
 - [Source Name 5](https://url5.com) - Brief description
 
-## 📊 Search Process
-
-| Stage | Time | Status |
-|-------|------|--------|
-| Finding On Google | 2-3s | Locating relevant sources |
-| Searching Databases | 3-4s | Querying academic and reference databases |
-| Processing Results | 2-3s | Analyzing and organizing findings |
-| Verification | 2-3s | Cross-checking source validity |
-| Compilation | 2-3s | Compiling research summary |
-
-## 📝 Findings
+## Findings
 
 According to [Source Name 1](https://url1.com), [finding 1].
 
@@ -181,23 +169,11 @@ export const generateWebSearchResponseTemplate = (
     .join('\n');
 
   return `<websearch>
-## 🔍 URLs Searched
-
-**Status**: ✅ Search Complete (12-15s)
+## URLs Searched
 
 ${urlList}
 
-## 📊 Search Process
-
-| Stage | Time | Status |
-|-------|------|--------|
-| Finding On Google | 2-3s | Locating relevant sources |
-| Searching Databases | 3-4s | Querying academic and reference databases |
-| Processing Results | 2-3s | Analyzing and organizing findings |
-| Verification | 2-3s | Cross-checking source validity |
-| Compilation | 2-3s | Compiling research summary |
-
-## 📝 Findings
+## Findings
 
 ${findings}
 </websearch>`;
@@ -238,12 +214,6 @@ export const validateWebSearchBlock = (content: string): {
   // 4. Check for "Findings" section (with or without emoji)
   if (!content.includes('Findings')) {
     errors.push('Missing "Findings" section header');
-  }
-  
-  // 5. Check for "Search Process" section (optional but recommended)
-  const hasSearchProcess = content.includes('Search Process');
-  if (!hasSearchProcess) {
-    warnings.push('Consider adding "Search Process" section with timing information');
   }
 
   // 5. Extract URLs from markdown links
@@ -339,23 +309,11 @@ export const formatURLsToWebSearchBlock = (
     .join('\n');
 
   return `<websearch>
-## 🔍 URLs Searched
-
-**Status**: ✅ Search Complete (${duration}s)
+## URLs Searched
 
 ${urlList}
 
-## 📊 Search Process
-
-| Stage | Time | Status |
-|-------|------|--------|
-| Finding On Google | 2-3s | Locating relevant sources |
-| Searching Databases | 3-4s | Querying academic and reference databases |
-| Processing Results | 2-3s | Analyzing and organizing findings |
-| Verification | 2-3s | Cross-checking source validity |
-| Compilation | 2-3s | Compiling research summary |
-
-## 📝 Findings
+## Findings
 
 ${findings}
 </websearch>`;
