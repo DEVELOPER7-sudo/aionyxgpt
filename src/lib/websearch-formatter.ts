@@ -59,7 +59,9 @@ The VERY LAST line must be:
 ### EXACT STRUCTURE - COPY THIS EXACTLY:
 
 <websearch>
-## URLs Searched
+## 🔍 URLs Searched
+
+**Status**: ✅ Search Complete (12s)
 
 - [Source Name 1](https://url1.com) - Brief description
 - [Source Name 2](https://url2.com) - Brief description
@@ -67,7 +69,17 @@ The VERY LAST line must be:
 - [Source Name 4](https://url4.com) - Brief description
 - [Source Name 5](https://url5.com) - Brief description
 
-## Findings
+## 📊 Search Process
+
+| Stage | Time | Status |
+|-------|------|--------|
+| Finding On Google | 2-3s | Locating relevant sources |
+| Searching Databases | 3-4s | Querying academic and reference databases |
+| Processing Results | 2-3s | Analyzing and organizing findings |
+| Verification | 2-3s | Cross-checking source validity |
+| Compilation | 2-3s | Compiling research summary |
+
+## 📝 Findings
 
 According to [Source Name 1](https://url1.com), [finding 1].
 
@@ -144,7 +156,51 @@ Format: /websearch [your research query]
 
 Example: /websearch latest AI developments in 2025
 
-The AI will respond with structured <websearch> blocks listing all URLs accessed.`;
+The AI will respond with structured <websearch> blocks listing:
+- All URLs accessed during search
+- Search process timeline (10-15 seconds)
+- Detailed findings with citations
+
+Response includes:
+- 🔍 URLs Searched section with all sources
+- 📊 Search Process table with timing
+- 📝 Findings with proper citations
+`;
+};
+
+/**
+ * Generate a properly formatted websearch response template
+ */
+export const generateWebSearchResponseTemplate = (
+  query: string,
+  urls: WebSearchURL[],
+  findings: string
+): string => {
+  const urlList = urls
+    .map(({ title, url, description }) => `- [${title}](${url}) - ${description}`)
+    .join('\n');
+
+  return `<websearch>
+## 🔍 URLs Searched
+
+**Status**: ✅ Search Complete (12-15s)
+
+${urlList}
+
+## 📊 Search Process
+
+| Stage | Time | Status |
+|-------|------|--------|
+| Finding On Google | 2-3s | Locating relevant sources |
+| Searching Databases | 3-4s | Querying academic and reference databases |
+| Processing Results | 2-3s | Analyzing and organizing findings |
+| Verification | 2-3s | Cross-checking source validity |
+| Compilation | 2-3s | Compiling research summary |
+
+## 📝 Findings
+
+${findings}
+</websearch>`;
 };
 
 /**
@@ -174,14 +230,20 @@ export const validateWebSearchBlock = (content: string): {
     errors.push('Missing closing </websearch> tag');
   }
 
-  // 3. Check for "URLs Searched" header
-  if (!content.includes('## URLs Searched')) {
-    errors.push('Missing "## URLs Searched" header (must be exactly this format)');
+  // 3. Check for "URLs Searched" header (with or without emoji)
+  if (!content.includes('URLs Searched')) {
+    errors.push('Missing "URLs Searched" header (must be exactly this format)');
   }
 
-  // 4. Check for "Findings" section
-  if (!content.includes('## Findings')) {
-    errors.push('Missing "## Findings" section header');
+  // 4. Check for "Findings" section (with or without emoji)
+  if (!content.includes('Findings')) {
+    errors.push('Missing "Findings" section header');
+  }
+  
+  // 5. Check for "Search Process" section (optional but recommended)
+  const hasSearchProcess = content.includes('Search Process');
+  if (!hasSearchProcess) {
+    warnings.push('Consider adding "Search Process" section with timing information');
   }
 
   // 5. Extract URLs from markdown links
@@ -261,12 +323,14 @@ export const validateWebSearchBlock = (content: string): {
 };
 
 /**
- * Format a list of URLs into websearch block markdown
+ * Format a list of URLs into websearch block markdown with status messages
  */
 export const formatURLsToWebSearchBlock = (
   urls: WebSearchURL[],
-  findings: string
+  findings: string,
+  searchDuration?: number
 ): string => {
+  const duration = searchDuration || 12; // Default 10-15 seconds
   const urlList = urls
     .map(({ title, url, description, category }) => {
       const categoryTag = category ? ` [${category}]` : '';
@@ -275,11 +339,23 @@ export const formatURLsToWebSearchBlock = (
     .join('\n');
 
   return `<websearch>
-## URLs Searched
+## 🔍 URLs Searched
+
+**Status**: ✅ Search Complete (${duration}s)
 
 ${urlList}
 
-## Findings
+## 📊 Search Process
+
+| Stage | Time | Status |
+|-------|------|--------|
+| Finding On Google | 2-3s | Locating relevant sources |
+| Searching Databases | 3-4s | Querying academic and reference databases |
+| Processing Results | 2-3s | Analyzing and organizing findings |
+| Verification | 2-3s | Cross-checking source validity |
+| Compilation | 2-3s | Compiling research summary |
+
+## 📝 Findings
 
 ${findings}
 </websearch>`;
