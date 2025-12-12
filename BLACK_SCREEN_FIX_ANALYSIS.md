@@ -11,7 +11,7 @@ Fixed critical z-index layering bug causing black screen when opening trigger ba
 
 When users opened the Trigger Gallery or any dialog, they would see a completely black screen instead of the modal content. This was caused by overlay elements rendering on top of content elements due to equal or greater z-index values.
 
-### Visual Issue
+### Visual Issuewebsear
 ```
 ❌ BEFORE FIX:
 [Overlay (z-50, 80% opacity) visible on top]

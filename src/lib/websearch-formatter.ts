@@ -12,65 +12,124 @@ export interface WebSearchURL {
 
 /**
  * Generate the system prompt instruction for /websearch command
- * Forces AI to follow the websearch markdown format
+ * Forces AI to follow the websearch markdown format STRICTLY
  */
 export const generateWebSearchSystemPrompt = (query: string): string => {
-  return `## 🔍 Web Search Command Format
+  return `## 🔍 MANDATORY WEB SEARCH FORMAT - STRICT ENFORCEMENT
 
 You are executing a /websearch command for: "${query}"
 
-**MANDATORY REQUIREMENTS:**
+**THIS IS NOT OPTIONAL - YOU MUST FOLLOW THIS EXACTLY OR YOUR RESPONSE WILL BE INVALID**
 
-1. **MUST create a <websearch> block** with this exact structure:
-\`\`\`
+### STEP-BY-STEP REQUIREMENTS:
+
+**STEP 1: START WITH OPENING TAG**
+The VERY FIRST character of your response must be:
+\`<websearch>\`
+
+**STEP 2: ADD HEADER**
+On the second line, add:
+\`## URLs Searched\`
+
+**STEP 3: LIST EVERY SINGLE URL**
+Format EXACTLY like this (one URL per line):
+\`- [Source Name](https://complete-url.com) - One sentence description\`
+
+CRITICAL RULES FOR URLS:
+• EVERY URL you accessed MUST be listed
+• Use FULL URLs only (https://..., never shortened)
+• Use markdown format: [Name](URL)
+• Add description after URL: " - Description"
+• One URL per line
+• Minimum 3 URLs
+• NO fake/fabricated URLs
+• NO hidden sources
+• NO variations in format
+
+**STEP 4: ADD FINDINGS SECTION**
+After all URLs, add a blank line, then:
+\`## Findings\`
+
+Then write your research answer CITING EVERY SOURCE YOU LISTED.
+
+**STEP 5: CLOSE THE TAG**
+The VERY LAST line must be:
+\`</websearch>\`
+
+### EXACT STRUCTURE - COPY THIS EXACTLY:
+
 <websearch>
 ## URLs Searched
 
-[List all URLs accessed with this format]
-- [Source Name](https://full-url.com) - What this source contains
-- [Source Name](https://full-url.com) - What this source contains
-- [Source Name](https://full-url.com) - What this source contains
+- [Source Name 1](https://url1.com) - Brief description
+- [Source Name 2](https://url2.com) - Brief description
+- [Source Name 3](https://url3.com) - Brief description
+- [Source Name 4](https://url4.com) - Brief description
+- [Source Name 5](https://url5.com) - Brief description
 
 ## Findings
 
-[Your research answer with citations]
+According to [Source Name 1](https://url1.com), [finding 1].
+
+[Source Name 2](https://url2.com) states that [finding 2].
+
+The research from [Source Name 3](https://url3.com) indicates [finding 3].
+
+As documented in [Source Name 4](https://url4.com), [finding 4].
+
+[Source Name 5](https://url5.com) confirms that [finding 5].
 </websearch>
-\`\`\`
 
-2. **List EVERY URL** you search or access
-3. **Use full URLs** - not shortened or partial
-4. **Add descriptions** - briefly explain what each source is
-5. **Keep URLs organized** - group by relevance or category
-6. **Cite as you write** - Reference sources in your findings
-7. **Close the block properly** - End with </websearch>
-8. **No fake URLs** - Only list actual sources you accessed
+### ABSOLUTE RULES - ZERO TOLERANCE:
 
-**DO NOT:**
-- Create fake/fabricated URLs
-- Skip any URLs
-- Use shortened URLs
-- Provide URLs without descriptions
-- Hide sources you used
-- Use this block if not actually searching
+✅ MUST DO:
+• Start response with \`<websearch>\`
+• Include \`## URLs Searched\` header
+• List EVERY URL with format \`- [Name](URL) - Description\`
+• Use FULL URLs (https://example.com)
+• Add descriptions for EACH URL
+• Include blank line before \`## Findings\`
+• Write \`## Findings\` section
+• Cite sources in findings: "According to [Source](URL), ..."
+• Close with \`</websearch>\`
+• Include minimum 3 URLs
 
-**EXAMPLE FORMAT:**
-\`\`\`
-<websearch>
-## URLs Searched
+❌ MUST NOT:
+• Skip opening \`<websearch>\` tag
+• Miss any URLs you accessed
+• Use shortened URLs (bit.ly, goo.gl, tinyurl, etc.)
+• Skip source descriptions
+• Make up/fake URLs
+• Hide sources used
+• Provide findings WITHOUT citations
+• Mix URLs and findings in same section
+• Change format or structure
+• Add preamble before \`<websearch>\`
+• Add text after \`</websearch>\`
+• Use bullet points differently
+• Vary the URL list format
+• Include extra commentary outside tags
 
-- [TechCrunch](https://techcrunch.com/2025/12/11/ai-news) - Latest AI industry news
-- [ArXiv](https://arxiv.org/recent) - Recent computer science research papers
-- [OpenAI Blog](https://openai.com/news) - Official OpenAI announcements
-- [GitHub Trending](https://github.com/trending) - Currently trending open-source projects
+### VALIDATION - CHECK BEFORE SENDING:
 
-## Findings
+\[ \] Response starts with exactly \`<websearch>\` on line 1
+\[ \] Line 2 has exactly \`## URLs Searched\`
+\[ \] At least 3 URLs listed
+\[ \] Each URL follows format: \`- [Name](https://url.com) - Description\`
+\[ \] All URLs are complete (start with https://)
+\[ \] No shortened URLs
+\[ \] No fake URLs
+\[ \] Blank line before \`## Findings\`
+\[ \] \`## Findings\` header present
+\[ \] Each finding cites a source from the URL list
+\[ \] Citations use markdown link format: \`[Source](URL)\`
+\[ \] Response ends with exactly \`</websearch>\`
+\[ \] No text before \`<websearch>\`
+\[ \] No text after \`</websearch>\`
 
-Based on my search of these sources, here are the latest developments...
-[Your research findings with citations]
-</websearch>
-\`\`\`
+### IF YOU FAIL THESE CHECKS, YOUR RESPONSE IS INVALID.
 
-**This is a command-triggered web search. Follow the format EXACTLY.**`;
+**REMEMBER: ZERO FLEXIBILITY. EXACT FORMAT. NO EXCEPTIONS.**`;
 };
 
 /**
@@ -89,56 +148,114 @@ The AI will respond with structured <websearch> blocks listing all URLs accessed
 };
 
 /**
- * Validate websearch markdown format
+ * Validate websearch markdown format - STRICT VALIDATION
  */
 export const validateWebSearchBlock = (content: string): {
   isValid: boolean;
   errors: string[];
   foundURLs: string[];
+  warnings: string[];
 } => {
   const errors: string[] = [];
+  const warnings: string[] = [];
   const foundURLs: string[] = [];
 
-  // Check for websearch tags
-  if (!content.includes('<websearch>')) {
+  // 1. Check for opening tag at START
+  if (!content.trim().startsWith('<websearch>')) {
+    errors.push('CRITICAL: Response must start with <websearch> tag (no preamble allowed)');
+  } else if (!content.includes('<websearch>')) {
     errors.push('Missing opening <websearch> tag');
   }
-  if (!content.includes('</websearch>')) {
+
+  // 2. Check for closing tag at END
+  if (!content.trim().endsWith('</websearch>')) {
+    errors.push('CRITICAL: Response must end with </websearch> tag (no text after allowed)');
+  } else if (!content.includes('</websearch>')) {
     errors.push('Missing closing </websearch> tag');
   }
 
-  // Extract URLs from markdown links
-  const urlRegex = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g;
+  // 3. Check for "URLs Searched" header
+  if (!content.includes('## URLs Searched')) {
+    errors.push('Missing "## URLs Searched" header (must be exactly this format)');
+  }
+
+  // 4. Check for "Findings" section
+  if (!content.includes('## Findings')) {
+    errors.push('Missing "## Findings" section header');
+  }
+
+  // 5. Extract URLs from markdown links
+  const urlRegex = /^-\s*\[([^\]]+)\]\((https?:\/\/[^\)]+)\)\s*-\s*(.+)$/gm;
   let match;
+  const urlsWithDescription: Array<{ name: string; url: string; description: string }> = [];
+  
   while ((match = urlRegex.exec(content)) !== null) {
-    foundURLs.push(match[2]);
-  }
+    const url = match[2];
+    foundURLs.push(url);
+    urlsWithDescription.push({
+      name: match[1],
+      url: url,
+      description: match[3],
+    });
 
-  if (foundURLs.length === 0) {
-    errors.push('No URLs found in websearch block. Must include at least one URL.');
-  }
-
-  // Check for "URLs Searched" section
-  if (!content.includes('URLs Searched') && !content.includes('## URLs')) {
-    errors.push('Missing "URLs Searched" header in websearch block');
-  }
-
-  // Check for description after each URL
-  const urlLines = content.match(/^-\s*\[([^\]]+)\]\((https?:\/\/[^\)]+)\)\s*$/gm) || [];
-  urlLines.forEach((line, index) => {
-    if (!line.includes('-') || !line.includes('//')) {
-      return;
+    // Check for shortened URLs
+    if (url.includes('bit.ly') || url.includes('goo.gl') || url.includes('tinyurl') || 
+        url.includes('short.link') || url.includes('ow.ly')) {
+      errors.push(`CRITICAL: Shortened URL detected: ${url} (use full URLs only)`);
     }
-    // Check if line has description (text after URL)
-    const hasDescription = line.includes(')') && line.split(')').length > 1 && line.split(')')[1].trim().length > 0;
-    if (!hasDescription) {
-      errors.push(`URL ${index + 1}: Missing description after URL`);
+  }
+
+  // 6. Check URL count
+  if (foundURLs.length === 0) {
+    errors.push('CRITICAL: No URLs found. Must list at least 3 URLs with format: - [Name](https://url.com) - Description');
+  } else if (foundURLs.length < 3) {
+    errors.push(`CRITICAL: Only ${foundURLs.length} URLs found. Minimum required: 3`);
+  }
+
+  // 7. Check each URL has description
+  const urlLinesWithoutDesc = content.match(/^-\s*\[([^\]]+)\]\((https?:\/\/[^\)]+)\)(?:\s*-\s*)?$/gm) || [];
+  if (urlLinesWithoutDesc.length > 0) {
+    errors.push(`CRITICAL: ${urlLinesWithoutDesc.length} URL(s) missing description. Format: - [Name](URL) - Description`);
+  }
+
+  // 8. Check if findings cite sources
+  if (content.includes('## Findings')) {
+    const findingsSection = content.split('## Findings')[1] || '';
+    const citationCount = (findingsSection.match(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g) || []).length;
+    
+    if (citationCount === 0) {
+      errors.push('CRITICAL: Findings section must cite sources using [Source](URL) format');
+    } else if (citationCount < foundURLs.length / 2) {
+      warnings.push(`Only ${citationCount} source citations found but ${foundURLs.length} URLs listed. Consider citing more sources.`);
+    }
+  }
+
+  // 9. Check for fake URLs
+  const commonFakeDomains = ['example.com', 'test.com', 'fake.com', 'dummy.com', 'placeholder.com'];
+  foundURLs.forEach(url => {
+    if (commonFakeDomains.some(domain => url.includes(domain))) {
+      errors.push(`CRITICAL: Fake/placeholder URL detected: ${url}`);
     }
   });
+
+  // 10. Check structure order
+  const webSearchStart = content.indexOf('<websearch>');
+  const urlsSearchedPos = content.indexOf('## URLs Searched');
+  const findingsPos = content.indexOf('## Findings');
+  const webSearchEnd = content.indexOf('</websearch>');
+
+  if (webSearchStart !== -1 && urlsSearchedPos !== -1 && urlsSearchedPos < webSearchStart) {
+    errors.push('CRITICAL: URLs Searched header must come AFTER <websearch> tag');
+  }
+
+  if (urlsSearchedPos !== -1 && findingsPos !== -1 && findingsPos < urlsSearchedPos) {
+    errors.push('CRITICAL: Findings section must come AFTER URLs Searched section');
+  }
 
   return {
     isValid: errors.length === 0,
     errors,
+    warnings,
     foundURLs,
   };
 };
