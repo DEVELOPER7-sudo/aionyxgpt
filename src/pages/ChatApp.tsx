@@ -24,6 +24,7 @@ import { chatMessageSchema } from '@/lib/validation';
 import { generateEnhancedSystemPrompt, TRIGGER_TAG_ENFORCEMENT_PREFIX } from '@/lib/enhanced-system-prompts';
 import { generateWebSearchSystemPrompt } from '@/lib/websearch-formatter';
 import { buildSystemPromptWithMemoryContext, buildMemoryContextPayload } from '@/lib/memory-context-integration';
+import { formatMemoriesForAPI } from '@/lib/memory-api-formatter';
 
 // Lazy load heavy components
 const SettingsPanel = lazy(() => import('@/components/SettingsPanel'));
@@ -702,8 +703,9 @@ const ChatApp = () => {
 
     const logger = createOpenRouterAPILogger();
     
-    // Build memory context payload
-    const memoryContextPayload = buildMemoryContextPayload();
+    // Build memory context payload with full memory details
+    const userMemories = storage.getMemories();
+    const memoryContextPayload = formatMemoriesForAPI(userMemories);
     
     const apiParams = {
       messages: formattedMessages,
