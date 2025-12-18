@@ -101,11 +101,43 @@ export const storage = {
   // Memory
   getMemories: (): Memory[] => {
     const data = localStorage.getItem(STORAGE_KEYS.MEMORY);
-    return data ? JSON.parse(data) : [];
+    if (!data) return [];
+    
+    const memories = JSON.parse(data);
+    
+    // Migrate old key/value format to new title/content format
+    return memories.map((memory: any) => {
+      // If memory has old fields (key/value) but not new fields (title/content), migrate them
+      if ((memory.key || memory.value) && !memory.title && !memory.content) {
+        return {
+          ...memory,
+          title: memory.key || '',
+          content: memory.value || '',
+        };
+      }
+      // If memory has both, ensure title and content are populated
+      if (!memory.title && memory.key) {
+        memory.title = memory.key;
+      }
+      if (!memory.content && memory.value) {
+        memory.content = memory.value;
+      }
+      return memory;
+    });
   },
 
   saveMemories: (memories: Memory[]) => {
-    localStorage.setItem(STORAGE_KEYS.MEMORY, JSON.stringify(memories));
+    // Ensure all memories have both old (key/value) and new (title/content) fields
+    const memoriesWithBothFields = memories.map(m => ({
+      ...m,
+      // Ensure title/content fields exist
+      title: m.title || m.key || '',
+      content: m.content || m.value || '',
+      // Keep old fields for backward compatibility
+      key: m.key || m.title || '',
+      value: m.value || m.content || '',
+    }));
+    localStorage.setItem(STORAGE_KEYS.MEMORY, JSON.stringify(memoriesWithBothFields));
   },
 
   addMemory: (memory: Memory) => {

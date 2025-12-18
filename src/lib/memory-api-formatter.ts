@@ -17,7 +17,7 @@ export interface MemoryAPIPayload {
 export interface MemoryEntry {
   id: string;
   title: string; // Key/Title
-  content: string; // Value/Content
+  content: string; // Value/Content - CRITICAL: must be populated
   category: string;
   importance: 'low' | 'medium' | 'high';
   tags: string[]; // Comma-separated
@@ -25,6 +25,15 @@ export interface MemoryEntry {
   createdAt: number;
   expiresAt?: number;
   autoExtracted: boolean;
+}
+
+// Simple format for mindstore API parameter
+export interface SimplifiedMemory {
+  title: string;
+  content: string;
+  category?: string;
+  importance?: string;
+  organization?: string;
 }
 
 /**
@@ -48,6 +57,29 @@ export const formatMemoryEntry = (memory: Memory): MemoryEntry => {
     expiresAt: memory.expiresAt,
     autoExtracted: memory.autoExtracted || false,
   };
+};
+
+/**
+ * Create simplified memory format for mindstore API parameter
+ * Only sends title and content - CRITICAL for API to work
+ */
+export const formatMemoriesForMindstore = (memories: Memory[]): SimplifiedMemory[] => {
+  const now = Date.now();
+  return memories
+    .filter(m => !m.expiresAt || m.expiresAt > now) // Only active memories
+    .map(m => {
+      const title = m.title || m.key || '';
+      const content = m.content || m.value || '';
+      
+      return {
+        title,
+        content,
+        category: m.category,
+        importance: m.importance,
+        organization: m.organization,
+      };
+    })
+    .filter(m => m.title && m.content); // Ensure both fields exist
 };
 
 /**

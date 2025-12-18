@@ -24,7 +24,7 @@ import { chatMessageSchema } from '@/lib/validation';
 import { generateEnhancedSystemPrompt, TRIGGER_TAG_ENFORCEMENT_PREFIX } from '@/lib/enhanced-system-prompts';
 import { generateWebSearchSystemPrompt } from '@/lib/websearch-formatter';
 import { buildSystemPromptWithMemoryContext, buildMemoryContextPayload } from '@/lib/memory-context-integration';
-import { formatMemoriesForAPI } from '@/lib/memory-api-formatter';
+import { formatMemoriesForAPI, formatMemoriesForMindstore } from '@/lib/memory-api-formatter';
 
 // Lazy load heavy components
 const SettingsPanel = lazy(() => import('@/components/SettingsPanel'));
@@ -479,9 +479,9 @@ const ChatApp = () => {
     const islandTaskId = createTask(taskTitle, 'chat', 'Waiting for response...');
     let chunkCount = 0;
 
-    // Build memory context payload with full memory details for Puter
+    // Build memory context payload for Puter mindstore (simplified format)
     const userMemories = storage.getMemories();
-    const memoryContextPayload = formatMemoriesForAPI(userMemories);
+    const memoryContextPayload = formatMemoriesForMindstore(userMemories);
 
     try {
       const response = await puter.ai.chat(formattedMessages, {
@@ -708,9 +708,9 @@ const ChatApp = () => {
 
     const logger = createOpenRouterAPILogger();
     
-    // Build memory context payload with full memory details
+    // Build memory context payload (simplified format for API)
     const userMemories = storage.getMemories();
-    const memoryContextPayload = formatMemoriesForAPI(userMemories);
+    const memoryContextPayload = formatMemoriesForMindstore(userMemories);
     
     const apiParams = {
       messages: formattedMessages,
@@ -929,9 +929,9 @@ const ChatApp = () => {
       console.log('[Vision] Prompt:', prompt);
       console.log('[Vision] Using model:', settings.textModel);
       
-      // Build memory context payload with full memory details for vision chat
+      // Build memory context payload (simplified format for vision chat)
       const userMemories = storage.getMemories();
-      const memoryContextPayload = formatMemoriesForAPI(userMemories);
+      const memoryContextPayload = formatMemoriesForMindstore(userMemories);
       
       // Use streaming for real-time response
       const response = await puter.ai.chat(prompt, imageUrl, {
