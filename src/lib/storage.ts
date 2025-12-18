@@ -131,12 +131,16 @@ export const storage = {
   searchMemories: (query: string): Memory[] => {
     const memories = storage.getMemories();
     const lowerQuery = query.toLowerCase();
-    return memories.filter(m => 
-      m.key.toLowerCase().includes(lowerQuery) || 
-      m.value.toLowerCase().includes(lowerQuery) ||
-      m.category?.toLowerCase().includes(lowerQuery) ||
-      m.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))
-    );
+    return memories.filter(m => {
+      const title = m.title || m.key || '';
+      const content = m.content || m.value || '';
+      return (
+        title.toLowerCase().includes(lowerQuery) || 
+        content.toLowerCase().includes(lowerQuery) ||
+        m.category?.toLowerCase().includes(lowerQuery) ||
+        m.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))
+      );
+    });
   },
 
   getMemoriesByCategory: (category: string): Memory[] => {

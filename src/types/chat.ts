@@ -38,8 +38,8 @@ export interface ImageGeneration {
 
 export interface Memory {
   id: string;
-  key: string;
-  value: string;
+  title: string;  // Renamed from 'key' - unlimited length
+  content: string; // Renamed from 'value' - unlimited length
   timestamp: number;
   category?: string;
   expiresAt?: number;
@@ -47,6 +47,9 @@ export interface Memory {
   tags?: string[];
   autoExtracted?: boolean;
   organization?: string;
+  // Backward compatibility for API
+  key?: string;
+  value?: string;
 }
 
 export interface AppSettings {

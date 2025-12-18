@@ -29,10 +29,14 @@ const SearchPanel = ({ onSelectChat }: SearchPanelProps) => {
       img.prompt.toLowerCase().includes(query)
     );
 
-    const memoryResults = memories.filter(mem =>
-      mem.key.toLowerCase().includes(query) ||
-      mem.value.toLowerCase().includes(query)
-    );
+    const memoryResults = memories.filter(mem => {
+      const title = mem.title || mem.key || '';
+      const content = mem.content || mem.value || '';
+      return (
+        title.toLowerCase().includes(query) ||
+        content.toLowerCase().includes(query)
+      );
+    });
 
     return { chatResults, imageResults, memoryResults };
   }, [searchQuery, chats, images, memories]);
@@ -129,11 +133,11 @@ const SearchPanel = ({ onSelectChat }: SearchPanelProps) => {
                 <p className="text-muted-foreground text-center py-8">No memories found</p>
               ) : (
                 searchResults.memoryResults.map((memory) => (
-                  <Card key={memory.id} className="p-4 animate-slideUp hover:shadow-lg transition-all">
-                    <h3 className="font-semibold text-sm badge-blue mb-2">{memory.key}</h3>
-                    <p className="text-sm">{memory.value}</p>
-                  </Card>
-                ))
+                   <Card key={memory.id} className="p-4 animate-slideUp hover:shadow-lg transition-all">
+                     <h3 className="font-semibold text-sm badge-blue mb-2">{memory.title || memory.key}</h3>
+                     <p className="text-sm">{memory.content || memory.value}</p>
+                   </Card>
+                 ))
               )}
             </TabsContent>
           </Tabs>

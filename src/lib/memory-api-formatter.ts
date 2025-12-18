@@ -32,10 +32,14 @@ export interface MemoryEntry {
  * Ensures all user memories are properly formatted
  */
 export const formatMemoryEntry = (memory: Memory): MemoryEntry => {
+  // Support both old and new field names for backward compatibility
+  const title = memory.title || memory.key || '';
+  const content = memory.content || memory.value || '';
+  
   return {
     id: memory.id,
-    title: memory.key,
-    content: memory.value,
+    title,
+    content,
     category: memory.category || 'Personal',
     importance: memory.importance || 'medium',
     tags: memory.tags || [],
@@ -99,7 +103,7 @@ export const isValidUserMemory = (memory: Memory): boolean => {
     /demo account/i,
   ];
 
-  const text = `${memory.key} ${memory.value}`.toLowerCase();
+  const text = `${memory.title || memory.key} ${memory.content || memory.value}`.toLowerCase();
 
   // If key or value matches prebuilt patterns, it's not a valid user memory
   const hasPrebuiltContent = prebuiltPatterns.some(pattern => pattern.test(text));
@@ -175,7 +179,9 @@ export const buildCleanMemorySystemPrompt = (memories: Memory[]): string => {
   if (highImportance.length > 0) {
     lines.push('[IMPORTANT NOTES]');
     highImportance.slice(0, 5).forEach(m => {
-      lines.push(`- ${m.key}: ${m.value}`);
+      const title = m.title || m.key;
+      const content = m.content || m.value;
+      lines.push(`- ${title}: ${content}`);
     });
     lines.push('');
   }
