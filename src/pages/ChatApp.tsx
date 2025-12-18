@@ -14,6 +14,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useChatSync } from '@/hooks/useChatSync';
 import { useAnalytics } from '@/hooks/useFeatures';
 import { useDailyPushNotifications } from '@/hooks/useDailyPushNotifications';
+import { useDynamicIsland } from '@/hooks/useDynamicIsland';
 import MotionBackground from '@/components/MotionBackground';
 import { createPuterAPILogger, createOpenRouterAPILogger } from '@/lib/api-logger';
 import { supabase } from '@/integrations/supabase/client';
@@ -48,20 +49,21 @@ const ChatApp = () => {
    const [abortController, setAbortController] = useState<AbortController | null>(null);
     
     const { user, signOut, loading: authLoading } = useAuth();
-   const { playMessageComplete, playError } = useSoundEffects();
-   const { recordStats } = useAnalytics();
+    const { playMessageComplete, playError } = useSoundEffects();
+    const { recordStats } = useAnalytics();
+    const { createTask, updateProgress, completeTask, removeTask } = useDynamicIsland();
 
-  // Apply theme
-  useTheme(settings);
+    // Apply theme
+    useTheme(settings);
 
-  // Auto-persist chats locally
-  useChatPersistence(chats, currentChatId);
-  
-  // Sync chats to cloud if user is signed in
-  useChatSync(chats, user?.id, setChats);
+    // Auto-persist chats locally
+    useChatPersistence(chats, currentChatId);
+    
+    // Sync chats to cloud if user is signed in
+    useChatSync(chats, user?.id, setChats);
 
-  // Send daily push notifications to device
-  useDailyPushNotifications();
+    // Send daily push notifications to device
+    useDailyPushNotifications();
 
   useEffect(() => {
     try {
@@ -471,6 +473,11 @@ const ChatApp = () => {
       }
     };
 
+    // Create Dynamic Island task for this chat operation
+    const taskTitle = `Chat: ${userText.substring(0, 20)}${userText.length > 20 ? '...' : ''}`;
+    const islandTaskId = createTask(taskTitle, 'chat', 'Waiting for response...');
+    let chunkCount = 0;
+
     try {
       const response = await puter.ai.chat(formattedMessages, {
         model: modelId,
@@ -498,6 +505,11 @@ const ChatApp = () => {
           }
           
           fullResponse += part?.text || '';
+          chunkCount++;
+          
+          // Update island task progress (roughly based on chunk count, capped at 90%)
+          const estimatedProgress = Math.min(chunkCount * 5, 90);
+          updateProgress(islandTaskId, estimatedProgress);
           
           // Parse trigger tags and extract clean content
            let cleanContent = fullResponse;
@@ -797,6 +809,10 @@ const ChatApp = () => {
         }
       }
 
+      // Complete Dynamic Island task
+      completeTask(islandTaskId);
+      removeTask(islandTaskId);
+      
       // Record analytics
       const tokenEstimate = Math.ceil(fullResponse.length / 4);
       recordStats(modelId, tokenEstimate);
@@ -814,6 +830,9 @@ const ChatApp = () => {
       }
       setAbortController(null);
     } catch (error: any) {
+      // Remove failed task from island
+      removeTask(islandTaskId);
+      
       console.error('OpenRouter streaming error:', error);
       logger.logError(modelId, apiParams, error);
       playError();
@@ -892,6 +911,11 @@ const ChatApp = () => {
     setAbortController(controller);
 
     const logger = createPuterAPILogger();
+    
+    // Create Dynamic Island task for image analysis
+    const taskTitle = `Vision: ${prompt.substring(0, 20)}${prompt.length > 20 ? '...' : ''}`;
+    const islandTaskId = createTask(taskTitle, 'image', 'Analyzing image...');
+    let chunkCount = 0;
 
     try {
       console.log('[Vision] Analyzing image(s):', imageUrl);
@@ -922,10 +946,20 @@ const ChatApp = () => {
           }
           
           fullResponse += part?.text || '';
+          chunkCount++;
+          
+          // Update island task progress
+          const estimatedProgress = Math.min(chunkCount * 5, 90);
+          updateProgress(islandTaskId, estimatedProgress);
+          
           const currentMessages = [...messages, { ...assistantMessage, content: fullResponse }];
           storage.updateChat(chatId, { messages: currentMessages });
           setChats(prevChats => prevChats.map(c => c.id === chatId ? { ...c, messages: currentMessages } : c));
         }
+        
+        // Complete island task
+        completeTask(islandTaskId);
+        removeTask(islandTaskId);
         
         // Record analytics
         const tokenEstimate = Math.ceil(fullResponse.length / 4);
@@ -934,16 +968,19 @@ const ChatApp = () => {
         playMessageComplete();
         logger.logSuccess('puter.ai.chat (vision)', { prompt, imageUrl, model: settings.textModel }, fullResponse);
         console.log('[Vision] Analysis complete');
-      } finally {
+        } finally {
         setAbortController(null);
-      }
-    } catch (error: any) {
-      logger.logError('puter.ai.chat (vision)', { prompt, imageUrl }, error);
-      console.error('[Vision] Error:', error);
-      playError();
-      toast.error(error?.message || 'Failed to analyze image');
-      throw error;
-    }
+        }
+        } catch (error: any) {
+        // Remove failed task from island
+        removeTask(islandTaskId);
+        
+        logger.logError('puter.ai.chat (vision)', { prompt, imageUrl }, error);
+        console.error('[Vision] Error:', error);
+        playError();
+        toast.error(error?.message || 'Failed to analyze image');
+        throw error;
+        }
 
     // Auto-generate title for first message
     if (messages.length === 1) {
@@ -973,22 +1010,34 @@ const ChatApp = () => {
   const handleImageGeneration = async (prompt: string, chatId: string) => {
     console.log('Generating image with model:', settings.imageModel);
     
+    // Create Dynamic Island task for image generation
+    const taskTitle = `Image: ${prompt.substring(0, 20)}${prompt.length > 20 ? '...' : ''}`;
+    const islandTaskId = createTask(taskTitle, 'image', 'Generating image...');
+    
     let imageUrl: string;
     
-    // Check if using Puter.js FLUX model
-    if (settings.imageModel === 'flux-puter') {
-      try {
-        // @ts-ignore - Puter is loaded via script tag
-        const puter = (window as any)?.puter;
-        if (!puter?.ai?.txt2img) {
-          toast.error('Puter.js not available');
-          return;
-        }
-        
-        // Use Puter.js for FLUX image generation
-        const image = await puter.ai.txt2img(prompt, {
-          model: 'black-forest-labs/FLUX.1-schnell-Free'
-        });
+    try {
+      // Check if using Puter.js FLUX model
+      if (settings.imageModel === 'flux-puter') {
+        try {
+          // @ts-ignore - Puter is loaded via script tag
+          const puter = (window as any)?.puter;
+          if (!puter?.ai?.txt2img) {
+            toast.error('Puter.js not available');
+            removeTask(islandTaskId);
+            return;
+          }
+          
+          // Update progress
+          updateProgress(islandTaskId, 25);
+          
+          // Use Puter.js for FLUX image generation
+          const image = await puter.ai.txt2img(prompt, {
+            model: 'black-forest-labs/FLUX.1-schnell-Free'
+          });
+          
+          // Update progress
+          updateProgress(islandTaskId, 75);
         
         // The image returned is an HTML Image element, convert to data URL
         const canvas = document.createElement('canvas');
@@ -999,51 +1048,67 @@ const ChatApp = () => {
           ctx.drawImage(image, 0, 0);
           imageUrl = canvas.toDataURL('image/png');
         } else {
-          toast.error('Failed to process image');
-          return;
+           toast.error('Failed to process image');
+           removeTask(islandTaskId);
+           return;
+         }
+        } catch (error) {
+         console.error('Puter.js image generation error:', error);
+         toast.error('Failed to generate image with Puter.js');
+         removeTask(islandTaskId);
+         return;
         }
-      } catch (error) {
-        console.error('Puter.js image generation error:', error);
-        toast.error('Failed to generate image with Puter.js');
-        return;
-      }
-    } else {
-      // Use Pollinations API for other models
-      const seed = Math.floor(Math.random() * 1000000);
-      const response = await fetch(`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?model=${settings.imageModel}&seed=${seed}&width=1024&height=1024&nologo=true`);
-      imageUrl = response.url;
-    }
+        } else {
+        // Use Pollinations API for other models
+        updateProgress(islandTaskId, 50);
+        
+        const seed = Math.floor(Math.random() * 1000000);
+        const response = await fetch(`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?model=${settings.imageModel}&seed=${seed}&width=1024&height=1024&nologo=true`);
+        imageUrl = response.url;
+        
+        updateProgress(islandTaskId, 85);
+        }
 
-    const imageMessage: Message = {
-      id: Date.now().toString(),
-      role: 'assistant',
-      content: `Generated image with ${settings.imageModel}`,
-      timestamp: Date.now(),
-      imageUrl,
-      imagePrompt: prompt,
-    };
+        // Complete island task
+        completeTask(islandTaskId);
+        removeTask(islandTaskId);
 
-    const chat = chats.find(c => c.id === chatId);
-    if (!chat) return;
+        const imageMessage: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: `Generated image with ${settings.imageModel}`,
+        timestamp: Date.now(),
+        imageUrl,
+        imagePrompt: prompt,
+        };
 
-    const updatedMessages = [...chat.messages, imageMessage];
-    storage.updateChat(chatId, { messages: updatedMessages });
-    setChats(chats.map(c => c.id === chatId ? { ...c, messages: updatedMessages } : c));
+        const chat = chats.find(c => c.id === chatId);
+        if (!chat) return;
 
-    // Save to images gallery
-    const imageGen: ImageGeneration = {
-      id: Date.now().toString(),
-      prompt,
-      imageUrl,
-      timestamp: Date.now(),
-      model: settings.imageModel,
-      chatId,
-    };
-    storage.addImage(imageGen);
+        const updatedMessages = [...chat.messages, imageMessage];
+        storage.updateChat(chatId, { messages: updatedMessages });
+        setChats(chats.map(c => c.id === chatId ? { ...c, messages: updatedMessages } : c));
 
-    playMessageComplete();
-    toast.success(`Image generated with ${settings.imageModel}`);
-  };
+        // Save to images gallery
+        const imageGen: ImageGeneration = {
+        id: Date.now().toString(),
+        prompt,
+        imageUrl,
+        timestamp: Date.now(),
+        model: settings.imageModel,
+        chatId,
+        };
+        storage.addImage(imageGen);
+
+        playMessageComplete();
+        toast.success(`Image generated with ${settings.imageModel}`);
+        } catch (error) {
+        // Clean up island task on error
+        removeTask(islandTaskId);
+        console.error('Image generation error:', error);
+        toast.error('Failed to generate image');
+        }
+        };
 
   const handleNavigate = (section: 'images' | 'mindstore' | 'search' | 'settings' | 'logs' | 'analytics' | 'fluxes') => {
     setCurrentView(section as any);
