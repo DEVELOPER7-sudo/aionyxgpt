@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { User, LogOut, Menu, Coins, Volume2 } from 'lucide-react';
+import { User, LogOut, Menu, Coins, Volume2, Bot } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -76,6 +76,17 @@ const Header = ({ onMenuClick, showMenuButton = false, user, onSignOut }: Header
             500+ AI Models
           </span>
         </div>
+
+        {/* Bots Gallery Button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate('/bots')}
+          className="hidden md:flex mr-1 h-8 w-8 transition-all duration-200 hover:scale-110 hover:bg-primary/10"
+          title="Bots Gallery"
+        >
+          <Bot className="h-4 w-4" />
+        </Button>
 
         {/* Voice Chat Button */}
         <Button

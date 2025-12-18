@@ -86,3 +86,45 @@ export interface CustomBot {
   updatedAt: number;
   usageCount?: number;
 }
+
+export interface Bot {
+  uuid: string;
+  creator_id: string;
+  name: string;
+  description?: string;
+  category?: string;
+  pfp_url?: string;
+  system_prompt: string;
+  visibility: 'private' | 'unlisted' | 'public';
+  capabilities: {
+    memory: boolean;
+    files: boolean;
+    tools: string[];
+  };
+  created_at: string;
+  updated_at: string;
+  usage_count: number;
+}
+
+export interface BotChat {
+  id: string;
+  bot_uuid: string;
+  chat_id: string;
+  user_id: string;
+  bot_config: Partial<Bot>;
+  created_at: string;
+}
+
+export interface BotConfig {
+  name: string;
+  description: string;
+  category: string;
+  pfpUrl?: string;
+  systemPrompt: string;
+  visibility: 'private' | 'unlisted' | 'public';
+  capabilities: {
+    memory: boolean;
+    files: boolean;
+    tools: string[];
+  };
+}
