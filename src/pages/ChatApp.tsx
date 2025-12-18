@@ -479,12 +479,17 @@ const ChatApp = () => {
     const islandTaskId = createTask(taskTitle, 'chat', 'Waiting for response...');
     let chunkCount = 0;
 
+    // Build memory context payload with full memory details for Puter
+    const userMemories = storage.getMemories();
+    const memoryContextPayload = formatMemoriesForAPI(userMemories);
+
     try {
       const response = await puter.ai.chat(formattedMessages, {
         model: modelId,
         stream: true,
         temperature: settings.temperature,
         max_tokens: settings.maxTokens,
+        mindstore: memoryContextPayload,
       });
 
       let fullResponse = '';
@@ -924,10 +929,15 @@ const ChatApp = () => {
       console.log('[Vision] Prompt:', prompt);
       console.log('[Vision] Using model:', settings.textModel);
       
+      // Build memory context payload with full memory details for vision chat
+      const userMemories = storage.getMemories();
+      const memoryContextPayload = formatMemoriesForAPI(userMemories);
+      
       // Use streaming for real-time response
       const response = await puter.ai.chat(prompt, imageUrl, {
         model: settings.textModel,
         stream: true,
+        mindstore: memoryContextPayload,
       });
 
       let fullResponse = '';
