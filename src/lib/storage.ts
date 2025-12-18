@@ -101,42 +101,11 @@ export const storage = {
   // Memory
   getMemories: (): Memory[] => {
     const data = localStorage.getItem(STORAGE_KEYS.MEMORY);
-    if (!data) return [];
-    
-    const memories = JSON.parse(data);
-    
-    // Migrate old key/value format to new title/content format
-    return memories.map((memory: any) => {
-      // If memory has old fields (key/value) but not new fields (title/content), migrate them
-      if ((memory.key || memory.value) && !memory.title && !memory.content) {
-        return {
-          ...memory,
-          title: memory.key || '',
-          content: memory.value || '',
-        };
-      }
-      // If memory has both, ensure title and content are populated
-      if (!memory.title && memory.key) {
-        memory.title = memory.key;
-      }
-      if (!memory.content && memory.value) {
-        memory.content = memory.value;
-      }
-      return memory;
-    });
+    return data ? JSON.parse(data) : [];
   },
 
   saveMemories: (memories: Memory[]) => {
-    // Keep backend fields (content/value) from existing memories, only update title
-    const memoriesWithBackendFields = memories.map(m => ({
-      ...m,
-      title: m.title || m.key || '',
-      // Preserve content/value for backend API (even if not shown in frontend)
-      content: m.content || m.value || m.title || '',
-      key: m.key || m.title || '',
-      value: m.value || m.content || m.title || '',
-    }));
-    localStorage.setItem(STORAGE_KEYS.MEMORY, JSON.stringify(memoriesWithBackendFields));
+    localStorage.setItem(STORAGE_KEYS.MEMORY, JSON.stringify(memories));
   },
 
   addMemory: (memory: Memory) => {

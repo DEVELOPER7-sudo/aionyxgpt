@@ -16,11 +16,10 @@ export interface MemoryAPIPayload {
 
 export interface MemoryEntry {
   id: string;
-  title: string; // Key/Title
-  content: string; // Value/Content - CRITICAL: must be populated
+  title: string; // Memory content
   category: string;
   importance: 'low' | 'medium' | 'high';
-  tags: string[]; // Comma-separated
+  tags: string[];
   organization?: string;
   createdAt: number;
   expiresAt?: number;
@@ -30,7 +29,6 @@ export interface MemoryEntry {
 // Simple format for mindstore API parameter
 export interface SimplifiedMemory {
   title: string;
-  content: string;
   category?: string;
   importance?: string;
   organization?: string;
@@ -41,14 +39,9 @@ export interface SimplifiedMemory {
  * Ensures all user memories are properly formatted
  */
 export const formatMemoryEntry = (memory: Memory): MemoryEntry => {
-  // Support both old and new field names for backward compatibility
-  const title = memory.title || memory.key || '';
-  const content = memory.content || memory.value || '';
-  
   return {
     id: memory.id,
-    title,
-    content,
+    title: memory.title,
     category: memory.category || 'Personal',
     importance: memory.importance || 'medium',
     tags: memory.tags || [],
