@@ -114,7 +114,9 @@ export const botService = {
 
     if (error) {
       console.error('Error creating bot:', error);
-      throw error;
+      const errorMessage = error.message || 'Failed to create bot. Please check your input and try again.';
+      const err = new Error(errorMessage);
+      throw err;
     }
 
     return data;
@@ -170,7 +172,9 @@ export const botService = {
 
     if (error) {
       console.error('Error updating bot:', error);
-      throw error;
+      const errorMessage = error.message || 'Failed to update bot. Please check your input and try again.';
+      const err = new Error(errorMessage);
+      throw err;
     }
 
     return data;

@@ -40,6 +40,7 @@ const MODELS = [
   { id: 'gemini-2-5-pro', name: 'Gemini 2.5 Pro' },
   { id: 'deepseek-r1', name: 'DeepSeek R1' },
   { id: 'grok-3', name: 'Grok 3' },
+  { id: 'custom', name: 'Custom Model' },
 ];
 
 const BotCreator = () => {
@@ -52,6 +53,7 @@ const BotCreator = () => {
   const [pfpPreview, setPfpPreview] = useState<string>('');
   const [isEditing, setIsEditing] = useState(false);
   const [existingBot, setExistingBot] = useState<Bot | null>(null);
+  const [customModelId, setCustomModelId] = useState<string>('');
 
   // Apply main app theme from user settings
   useTheme();
@@ -143,16 +145,27 @@ const BotCreator = () => {
       return;
     }
 
+    // Validate model selection
+    let finalModelId = formData.model_id;
+    if (formData.model_id === 'custom') {
+      if (!customModelId.trim()) {
+        toast.error('Please enter a custom model ID');
+        return;
+      }
+      finalModelId = customModelId.trim();
+    }
+
     setLoading(true);
 
     try {
       let bot;
-      
+      const botConfig = { ...formData, model_id: finalModelId };
+
       if (isEditing && existingBot) {
         // Update existing bot
         bot = await botService.updateBot(
           existingBot.uuid,
-          formData,
+          botConfig,
           user.id,
           pfpFile || undefined
         );
@@ -161,18 +174,19 @@ const BotCreator = () => {
         // Create new bot
         const creatorUsername = generateRandomUsername();
         bot = await botService.createBot(
-          formData,
+          botConfig,
           user.id,
           creatorUsername,
           pfpFile || undefined
         );
         toast.success('Bot created successfully');
       }
-      
+
       navigate(`/bot/${bot.uuid}`);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving bot:', error);
-      toast.error(isEditing ? 'Failed to update bot' : 'Failed to create bot');
+      const errorMessage = error?.message || (isEditing ? 'Failed to update bot' : 'Failed to create bot');
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -180,7 +194,7 @@ const BotCreator = () => {
 
   const handleDeleteBot = async () => {
     if (!existingBot || !user?.id) return;
-    
+
     if (!window.confirm('Are you sure you want to delete this bot? This action cannot be undone.')) {
       return;
     }
@@ -229,7 +243,7 @@ const BotCreator = () => {
               {isEditing ? 'Edit Bot' : 'Create a New Bot'}
             </h1>
             <p className="text-muted-foreground">
-              {isEditing 
+              {isEditing
                 ? 'Update your bot\'s configuration and behavior'
                 : 'Build a custom AI bot with your own system prompt and capabilities'
               }
@@ -376,6 +390,23 @@ const BotCreator = () => {
                     </Select>
                   </div>
                 </div>
+
+                {/* Custom Model Input */}
+                {formData.model_id === 'custom' && (
+                  <div>
+                    <Label htmlFor="customModel">Custom Model ID *</Label>
+                    <Input
+                      id="customModel"
+                      placeholder="e.g., openrouter:anthropic/claude-3-opus"
+                      value={customModelId}
+                      onChange={(e) => setCustomModelId(e.target.value)}
+                      required
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Enter the full model ID from your AI provider
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
