@@ -42,17 +42,15 @@ ALTER TABLE bots ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bot_chats ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for bots
+-- Public bots viewable by everyone (including guests)
 CREATE POLICY "Users can view public bots"
   ON bots FOR SELECT
   USING (visibility = 'public');
 
+-- Users can view their own bots (private, unlisted, public)
 CREATE POLICY "Users can view their own bots"
   ON bots FOR SELECT
   USING (creator_id = auth.uid());
-
-CREATE POLICY "Users can view unlisted bots they have link to"
-  ON bots FOR SELECT
-  USING (visibility = 'unlisted' AND creator_id = auth.uid());
 
 CREATE POLICY "Users can create bots"
   ON bots FOR INSERT

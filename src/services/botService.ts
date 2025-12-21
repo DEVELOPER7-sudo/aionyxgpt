@@ -9,14 +9,9 @@ export const botService = {
     try {
       let query = supabase.from('bots').select('*');
 
-      // Filter by visibility
-      if (userId) {
-        query = query.or(`visibility.eq.public,creator_id.eq.${userId}`);
-      } else {
-        query = query.eq('visibility', 'public');
-      }
-
-      // Filter by category if provided
+      // Filter by visibility - RLS will handle private/unlisted bots
+      // Publicly visible bots can be seen by anyone
+      // User's own bots can be seen only by that user (RLS enforces this)
       if (category && category !== 'all') {
         query = query.eq('category', category);
       }
@@ -28,6 +23,7 @@ export const botService = {
 
       if (error) {
         console.error('Error fetching bots:', error);
+        console.error('Error details:', error.message, error.details);
         return [];
       }
 
@@ -75,7 +71,7 @@ export const botService = {
     creatorUsername: string,
     pfpFile?: File
   ): Promise<Bot> {
-    let pfpUrl = config.pfpUrl;
+    let pfpUrl = config.pfpUrl || null;
 
     // Upload profile picture if provided
     if (pfpFile) {
@@ -93,27 +89,30 @@ export const botService = {
       }
     }
 
+    const botData = {
+      creator_id: userId,
+      creator_username: creatorUsername || null,
+      name: config.name.trim(),
+      description: config.description && config.description.trim() ? config.description.trim() : null,
+      category: config.category || null,
+      pfp_url: pfpUrl,
+      system_prompt: config.systemPrompt.trim(),
+      model_id: config.model_id || 'gpt-5',
+      visibility: config.visibility || 'private',
+      capabilities: config.capabilities || { memory: false, files: false, tools: [] },
+    };
+
+    console.log('Creating bot with data:', botData);
+
     const { data, error } = await supabase
       .from('bots')
-      .insert([
-        {
-          creator_id: userId,
-          creator_username: creatorUsername,
-          name: config.name,
-          description: config.description,
-          category: config.category,
-          pfp_url: pfpUrl,
-          system_prompt: config.systemPrompt,
-          model_id: config.model_id,
-          visibility: config.visibility,
-          capabilities: config.capabilities,
-        },
-      ])
+      .insert([botData])
       .select()
       .single();
 
     if (error) {
       console.error('Error creating bot:', error);
+      console.error('Sent data:', botData);
       const errorMessage = error.message || 'Failed to create bot. Please check your input and try again.';
       const err = new Error(errorMessage);
       throw err;
@@ -153,14 +152,16 @@ export const botService = {
       updated_at: new Date().toISOString(),
     };
 
-    if (config.name) updateData.name = config.name;
-    if (config.description) updateData.description = config.description;
+    if (config.name) updateData.name = config.name.trim();
+    if (config.description !== undefined) updateData.description = config.description && config.description.trim() ? config.description.trim() : null;
     if (config.category) updateData.category = config.category;
-    if (config.systemPrompt) updateData.system_prompt = config.systemPrompt;
+    if (config.systemPrompt) updateData.system_prompt = config.systemPrompt.trim();
     if (config.model_id) updateData.model_id = config.model_id;
     if (config.visibility) updateData.visibility = config.visibility;
     if (config.capabilities) updateData.capabilities = config.capabilities;
     if (pfpUrl) updateData.pfp_url = pfpUrl;
+
+    console.log('Updating bot with data:', updateData);
 
     const { data, error } = await supabase
       .from('bots')
@@ -172,6 +173,7 @@ export const botService = {
 
     if (error) {
       console.error('Error updating bot:', error);
+      console.error('Sent data:', updateData);
       const errorMessage = error.message || 'Failed to update bot. Please check your input and try again.';
       const err = new Error(errorMessage);
       throw err;
