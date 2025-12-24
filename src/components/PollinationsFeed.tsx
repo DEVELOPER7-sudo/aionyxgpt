@@ -28,6 +28,8 @@ interface FeedImage {
   url: string;
   prompt: string;
   timestamp: number;
+  loaded: boolean;
+  error: boolean;
 }
 
 interface FeedText {
@@ -55,10 +57,24 @@ const PollinationsFeed = () => {
       url: imageUrl,
       prompt,
       timestamp: Date.now(),
+      loaded: false,
+      error: false,
     };
     
     setImages(prev => [newImage, ...prev].slice(0, 6));
   }, [isPaused]);
+
+  const handleImageLoad = (timestamp: number) => {
+    setImages(prev => prev.map(img => 
+      img.timestamp === timestamp ? { ...img, loaded: true } : img
+    ));
+  };
+
+  const handleImageError = (timestamp: number) => {
+    setImages(prev => prev.map(img => 
+      img.timestamp === timestamp ? { ...img, error: true } : img
+    ));
+  };
 
   const fetchText = useCallback(async () => {
     if (isPaused) return;
@@ -177,13 +193,27 @@ const PollinationsFeed = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {images.map((img, index) => (
                 <Card key={img.timestamp + index} className="overflow-hidden group hover:border-primary transition-all duration-300">
-                  <CardContent className="p-0 relative">
-                    <img
-                      src={img.url}
-                      alt={img.prompt}
-                      className="w-full aspect-square object-cover"
-                      loading="lazy"
-                    />
+                  <CardContent className="p-0 relative aspect-square">
+                    {!img.loaded && !img.error && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-muted">
+                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                      </div>
+                    )}
+                    {img.error ? (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted text-muted-foreground">
+                        <ImageIcon className="w-12 h-12 mb-2 opacity-50" />
+                        <p className="text-sm">Failed to load</p>
+                      </div>
+                    ) : (
+                      <img
+                        src={img.url}
+                        alt={img.prompt}
+                        className={`w-full h-full object-cover transition-opacity duration-300 ${img.loaded ? 'opacity-100' : 'opacity-0'}`}
+                        loading="lazy"
+                        onLoad={() => handleImageLoad(img.timestamp)}
+                        onError={() => handleImageError(img.timestamp)}
+                      />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
                       <p className="text-sm text-foreground line-clamp-2">{img.prompt}</p>
                     </div>
