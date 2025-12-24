@@ -366,7 +366,7 @@ const ChatApp = () => {
       settings.defaultTriggers.forEach((trigName) => {
         const found = allTriggersData.find(a => a.trigger.toLowerCase() === trigName.toLowerCase());
         if (found) {
-          extraInstructions.push(found.system_instruction);
+          extraInstructions.push(found.systemInstruction);
         }
       });
     }
@@ -375,8 +375,8 @@ const ChatApp = () => {
       const allTriggersData = getAllTriggers();
       selectedTriggers.forEach((trigName) => {
         const found = allTriggersData.find(a => a.trigger.toLowerCase() === trigName.toLowerCase());
-        if (found && !extraInstructions.includes(found.system_instruction)) {
-          extraInstructions.push(found.system_instruction);
+        if (found && !extraInstructions.includes(found.systemInstruction)) {
+          extraInstructions.push(found.systemInstruction);
         }
       });
     }
@@ -643,7 +643,7 @@ const ChatApp = () => {
        settings.defaultTriggers.forEach((trigName) => {
          const found = allTriggersData.find(a => a.trigger.toLowerCase() === trigName.toLowerCase());
          if (found) {
-           extraInstructions.push(found.system_instruction);
+           extraInstructions.push(found.systemInstruction);
          }
        });
      }
@@ -652,8 +652,8 @@ const ChatApp = () => {
        const allTriggersData = getAllTriggers();
        selectedTriggers.forEach((trigName) => {
          const found = allTriggersData.find(a => a.trigger.toLowerCase() === trigName.toLowerCase());
-         if (found && !extraInstructions.includes(found.system_instruction)) {
-           extraInstructions.push(found.system_instruction);
+         if (found && !extraInstructions.includes(found.systemInstruction)) {
+           extraInstructions.push(found.systemInstruction);
          }
        });
      }
@@ -707,6 +707,10 @@ const ChatApp = () => {
     setAbortController(controller);
 
     const logger = createOpenRouterAPILogger();
+    
+    // Create Dynamic Island task for this OpenRouter chat operation
+    const taskTitle = `Chat: ${userText.substring(0, 20)}${userText.length > 20 ? '...' : ''}`;
+    const islandTaskId = createTask(taskTitle, 'chat', 'Waiting for response...');
     
     // Build memory context payload (simplified format for API)
     const userMemories = storage.getMemories();
