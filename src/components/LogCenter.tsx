@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -11,104 +11,147 @@ interface LogEntry {
   type: 'info' | 'error' | 'warning' | 'api';
   message: string;
   timestamp: number;
-  details?: any;
+  details?: Record<string, unknown>;
 }
 
+// Sensitive keys to always redact
+const SENSITIVE_KEYS = [
+  'password', 'apikey', 'api_key', 'token', 'auth', 'secret', 
+  'access_token', 'refresh_token', 'bearer', 'credential', 'private_key',
+  'session', 'cookie', 'authorization', 'key', 'jwt'
+];
+
 const LogCenter = () => {
+  // Store logs in memory only - not persisted to localStorage for security
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [filter, setFilter] = useState<string>('all');
+  const originalConsolesRef = useRef<{
+    log: typeof console.log;
+    error: typeof console.error;
+    warn: typeof console.warn;
+  } | null>(null);
 
-  useEffect(() => {
-    // Load logs from localStorage
-    const savedLogs = localStorage.getItem('app_logs');
-    if (savedLogs) {
-      setLogs(JSON.parse(savedLogs));
-    }
-
-    // Intercept console methods
-    const originalConsoleLog = console.log;
-    const originalConsoleError = console.error;
-    const originalConsoleWarn = console.warn;
-
-    console.log = (...args: any[]) => {
-      originalConsoleLog(...args);
-      addLog('info', args.join(' '), args);
-    };
-
-    console.error = (...args: any[]) => {
-      originalConsoleError(...args);
-      addLog('error', args.join(' '), args);
-    };
-
-    console.warn = (...args: any[]) => {
-      originalConsoleWarn(...args);
-      addLog('warning', args.join(' '), args);
-    };
-
-    return () => {
-      console.log = originalConsoleLog;
-      console.error = originalConsoleError;
-      console.warn = originalConsoleWarn;
-    };
-  }, []);
-
-  const sanitizeLog = (log: any): LogEntry => {
-    // Sanitize to prevent sensitive data exposure
-    const sanitized = { ...log };
-    
-    // Remove potentially sensitive keys from details
-    if (sanitized.details) {
-      if (typeof sanitized.details === 'object') {
-        const sensitiveKeys = ['password', 'apiKey', 'api_key', 'token', 'auth', 'secret', 'access_token'];
-        Object.keys(sanitized.details).forEach(key => {
-          if (sensitiveKeys.some(sensitive => key.toLowerCase().includes(sensitive))) {
-            sanitized.details[key] = '[REDACTED]';
-          }
-        });
+  const sanitizeValue = (value: unknown): unknown => {
+    if (typeof value === 'string') {
+      // Redact values that look like tokens/keys (long alphanumeric strings)
+      if (value.length > 20 && /^[a-zA-Z0-9_-]+$/.test(value)) {
+        return '[REDACTED]';
       }
+      // Redact email addresses
+      if (/\S+@\S+\.\S+/.test(value)) {
+        return '[EMAIL_REDACTED]';
+      }
+      return value.substring(0, 500); // Truncate long strings
+    }
+    return value;
+  };
+
+  const sanitizeObject = (obj: unknown, depth = 0): unknown => {
+    if (depth > 3) return '[MAX_DEPTH]'; // Prevent deep recursion
+    
+    if (obj === null || obj === undefined) return obj;
+    
+    if (typeof obj !== 'object') {
+      return sanitizeValue(obj);
     }
     
-    // Truncate message if too long
-    if (sanitized.message && sanitized.message.length > 1000) {
-      sanitized.message = sanitized.message.substring(0, 1000) + '...[truncated]';
+    if (Array.isArray(obj)) {
+      return obj.slice(0, 10).map(item => sanitizeObject(item, depth + 1));
+    }
+    
+    const sanitized: Record<string, unknown> = {};
+    const entries = Object.entries(obj as Record<string, unknown>);
+    
+    for (const [key, value] of entries.slice(0, 20)) { // Limit keys
+      const lowerKey = key.toLowerCase();
+      if (SENSITIVE_KEYS.some(sensitive => lowerKey.includes(sensitive))) {
+        sanitized[key] = '[REDACTED]';
+      } else {
+        sanitized[key] = sanitizeObject(value, depth + 1);
+      }
     }
     
     return sanitized;
   };
 
-  const addLog = (type: LogEntry['type'], message: string, details?: any) => {
+  const addLog = (type: LogEntry['type'], message: string, details?: unknown) => {
+    const sanitizedMessage = typeof message === 'string' 
+      ? message.substring(0, 500) 
+      : String(message).substring(0, 500);
+    
     const newLog: LogEntry = {
-      id: Date.now().toString(),
+      id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       type,
-      message: message.substring(0, 1000), // Limit message length
+      message: sanitizedMessage,
       timestamp: Date.now(),
-      details,
+      details: details ? sanitizeObject(details) as Record<string, unknown> : undefined,
     };
 
     setLogs((prev) => {
-      const sanitized = sanitizeLog(newLog);
-      const updated = [sanitized, ...prev].slice(0, 500); // Keep last 500 logs
-      try {
-        localStorage.setItem('app_logs', JSON.stringify(updated));
-      } catch (e) {
-        // If localStorage is full, clear old logs
-        console.warn('localStorage full, clearing old logs');
-        localStorage.removeItem('app_logs');
-        localStorage.setItem('app_logs', JSON.stringify(updated.slice(0, 100)));
-      }
-      return updated;
+      // Keep only last 200 logs in memory
+      return [newLog, ...prev].slice(0, 200);
     });
   };
+
+  useEffect(() => {
+    // Store original console methods
+    originalConsolesRef.current = {
+      log: console.log.bind(console),
+      error: console.error.bind(console),
+      warn: console.warn.bind(console),
+    };
+
+    const originals = originalConsolesRef.current;
+
+    // Intercept console methods
+    console.log = (...args: unknown[]) => {
+      originals.log(...args);
+      const message = args.map(arg => 
+        typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+      ).join(' ');
+      addLog('info', message);
+    };
+
+    console.error = (...args: unknown[]) => {
+      originals.error(...args);
+      const message = args.map(arg => 
+        typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+      ).join(' ');
+      addLog('error', message);
+    };
+
+    console.warn = (...args: unknown[]) => {
+      originals.warn(...args);
+      const message = args.map(arg => 
+        typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+      ).join(' ');
+      addLog('warning', message);
+    };
+
+    return () => {
+      // Restore original methods
+      if (originalConsolesRef.current) {
+        console.log = originalConsolesRef.current.log;
+        console.error = originalConsolesRef.current.error;
+        console.warn = originalConsolesRef.current.warn;
+      }
+    };
+  }, []);
 
   const clearLogs = () => {
     if (confirm('Are you sure you want to clear all logs? This action cannot be undone.')) {
       setLogs([]);
-      localStorage.removeItem('app_logs');
     }
   };
 
   const exportLogs = () => {
-    const dataStr = JSON.stringify(logs, null, 2);
+    // Additional sanitization pass before export
+    const sanitizedLogs = logs.map(log => ({
+      ...log,
+      details: log.details ? sanitizeObject(log.details) : undefined,
+    }));
+    
+    const dataStr = JSON.stringify(sanitizedLogs, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
     const exportFileDefaultName = `onyxgpt-logs-${Date.now()}.json`;
 
@@ -141,7 +184,7 @@ const LogCenter = () => {
       <div className="max-w-6xl mx-auto p-3 md:p-6 h-full flex flex-col">
         <div className="space-y-2 mb-4">
           <h1 className="text-3xl font-bold">Log Center</h1>
-          <p className="text-muted-foreground">View application logs, errors, and API requests</p>
+          <p className="text-muted-foreground">View application logs, errors, and API requests (stored in memory only)</p>
         </div>
 
         <Card className="flex-1 flex flex-col overflow-hidden">
@@ -179,7 +222,7 @@ const LogCenter = () => {
             {filteredLogs.length === 0 ? (
               <div className="text-center text-muted-foreground py-12">
                 <p className="text-lg">No logs yet</p>
-                <p className="text-sm mt-2">Application logs will appear here</p>
+                <p className="text-sm mt-2">Application logs will appear here (memory only, not persisted)</p>
               </div>
             ) : (
               <div className="space-y-2">

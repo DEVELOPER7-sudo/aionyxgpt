@@ -14,12 +14,12 @@ const corsHeaders = (origin?: string | null): Record<string, string> => ({
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 });
 
-// Rate limiting: map of user_id -> { count, resetTime }
+// Fallback in-memory rate limiting (secondary protection)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-const RATE_LIMIT_REQUESTS = 50; // 50 requests
-const RATE_LIMIT_WINDOW = 60 * 60 * 1000; // per hour
+const RATE_LIMIT_REQUESTS = 50;
+const RATE_LIMIT_WINDOW = 60 * 60 * 1000; // 1 hour
 
-const checkRateLimit = (userId: string): { allowed: boolean; remaining: number; resetTime: number } => {
+const checkMemoryRateLimit = (userId: string): { allowed: boolean; remaining: number; resetTime: number } => {
   const now = Date.now();
   let userLimit = rateLimitMap.get(userId);
 
@@ -42,7 +42,6 @@ const checkRateLimit = (userId: string): { allowed: boolean; remaining: number; 
 
 const verifyJWT = async (token: string): Promise<{ sub: string } | null> => {
   try {
-    // Verify JWT with Supabase
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY');
     
@@ -52,8 +51,6 @@ const verifyJWT = async (token: string): Promise<{ sub: string } | null> => {
     }
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
-    
-    // Use Supabase's JWT verification
     const { data, error } = await supabase.auth.getUser(token);
     
     if (error || !data.user) {
@@ -67,11 +64,51 @@ const verifyJWT = async (token: string): Promise<{ sub: string } | null> => {
   }
 };
 
+const checkDatabaseRateLimit = async (
+  userId: string
+): Promise<{ allowed: boolean; remaining: number; resetTime: Date } | null> => {
+  try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.warn('Missing service role key, falling back to memory rate limit');
+      return null;
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    
+    const { data, error } = await supabase.rpc('check_rate_limit', {
+      _user_id: userId,
+      _endpoint: 'openrouter-chat',
+      _max_requests: RATE_LIMIT_REQUESTS,
+      _window_seconds: 3600,
+    });
+
+    if (error) {
+      console.error('Database rate limit check failed:', error);
+      return null;
+    }
+
+    if (data && data.length > 0) {
+      return {
+        allowed: data[0].allowed,
+        remaining: data[0].remaining,
+        resetTime: new Date(data[0].reset_time),
+      };
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Rate limit error:', error);
+    return null;
+  }
+};
+
 serve(async (req) => {
   const origin = req.headers.get('origin');
   const headers = corsHeaders(origin);
 
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { 
       headers,
@@ -80,7 +117,6 @@ serve(async (req) => {
   }
 
   try {
-    // Verify JWT token
     const authHeader = req.headers.get('authorization');
     if (!authHeader) {
       return new Response(
@@ -121,20 +157,35 @@ serve(async (req) => {
       );
     }
 
-    // Check rate limit
-    const rateLimit = checkRateLimit(userPayload.sub);
+    // Check rate limit - try database first, fallback to memory
+    let rateLimit = await checkDatabaseRateLimit(userPayload.sub);
+    let resetTimeMs: number;
+    
+    if (!rateLimit) {
+      // Fallback to memory-based rate limiting
+      const memoryLimit = checkMemoryRateLimit(userPayload.sub);
+      rateLimit = {
+        allowed: memoryLimit.allowed,
+        remaining: memoryLimit.remaining,
+        resetTime: new Date(memoryLimit.resetTime),
+      };
+      resetTimeMs = memoryLimit.resetTime;
+    } else {
+      resetTimeMs = rateLimit.resetTime.getTime();
+    }
+
     if (!rateLimit.allowed) {
       return new Response(
         JSON.stringify({ 
           error: 'Rate limit exceeded. Maximum 50 requests per hour.',
-          resetTime: rateLimit.resetTime,
+          resetTime: resetTimeMs,
         }),
         {
           status: 429,
           headers: { 
             ...headers, 
             'Content-Type': 'application/json',
-            'Retry-After': String(Math.ceil((rateLimit.resetTime - Date.now()) / 1000)),
+            'Retry-After': String(Math.ceil((resetTimeMs - Date.now()) / 1000)),
           },
         }
       );
@@ -142,7 +193,6 @@ serve(async (req) => {
 
     const { messages, model, temperature, max_tokens } = await req.json();
     
-    // Validate input
     if (!Array.isArray(messages) || messages.length === 0) {
       return new Response(
         JSON.stringify({ error: 'Invalid messages format' }),
@@ -153,7 +203,6 @@ serve(async (req) => {
       );
     }
     
-    // Validate message content and roles
     for (const msg of messages) {
       if (!msg.role || !['user', 'assistant', 'system'].includes(msg.role)) {
         return new Response(
@@ -184,7 +233,6 @@ serve(async (req) => {
       }
     }
     
-    // Use OpenRouter API key from server environment
     const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
 
     if (!OPENROUTER_API_KEY) {
@@ -218,7 +266,6 @@ serve(async (req) => {
       const errorText = await response.text();
       console.error('OpenRouter error:', response.status, errorText);
       
-      // Return specific error messages for rate limits and credits
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: 'Rate limit exceeded. Please wait before trying again.' }),
@@ -242,13 +289,12 @@ serve(async (req) => {
       throw new Error(`OpenRouter API error: ${response.status}`);
     }
 
-    // Return the streaming response with rate limit headers
     return new Response(response.body, {
       headers: {
         ...headers,
         'Content-Type': 'text/event-stream',
         'X-RateLimit-Remaining': String(rateLimit.remaining),
-        'X-RateLimit-Reset': String(rateLimit.resetTime),
+        'X-RateLimit-Reset': String(resetTimeMs),
       },
     });
   } catch (error) {

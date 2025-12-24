@@ -19,12 +19,28 @@ interface LogEntry {
   type: 'info' | 'error' | 'warning' | 'api';
   message: string;
   timestamp: number;
-  details?: any;
+  details?: Record<string, unknown>;
 }
+
+// In-memory log storage (not persisted for security)
+let memoryLogs: LogEntry[] = [];
+const MAX_LOGS = 100;
+
+const addLogToMemory = (logEntry: LogEntry) => {
+  memoryLogs = [logEntry, ...memoryLogs].slice(0, MAX_LOGS);
+};
+
+export const getApiLogs = (): LogEntry[] => {
+  return [...memoryLogs];
+};
+
+export const clearApiLogs = () => {
+  memoryLogs = [];
+};
 
 export const logPuterAPICall = (apiLog: PuterAPILog) => {
   const logEntry: LogEntry = {
-    id: Date.now().toString(),
+    id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     type: 'api',
     message: `Puter API Call: ${apiLog.method}`,
     timestamp: apiLog.timestamp,
@@ -33,22 +49,15 @@ export const logPuterAPICall = (apiLog: PuterAPILog) => {
       model: apiLog.model,
       duration: apiLog.duration,
       success: apiLog.success,
-      // Sensitive data (params, messages, response) removed for privacy
     },
   };
 
-  // Get existing logs
-  const savedLogs = localStorage.getItem('app_logs');
-  const logs: LogEntry[] = savedLogs ? JSON.parse(savedLogs) : [];
-
-  // Add new log
-  const updatedLogs = [logEntry, ...logs].slice(0, 100); // Reduced to 100 entries
-  localStorage.setItem('app_logs', JSON.stringify(updatedLogs));
+  addLogToMemory(logEntry);
 };
 
 export const logOpenRouterAPICall = (apiLog: OpenRouterAPILog) => {
   const logEntry: LogEntry = {
-    id: Date.now().toString(),
+    id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     type: 'api',
     message: `OpenRouter API Call: ${apiLog.model}`,
     timestamp: apiLog.timestamp,
@@ -57,24 +66,18 @@ export const logOpenRouterAPICall = (apiLog: OpenRouterAPILog) => {
       model: apiLog.model,
       duration: apiLog.duration,
       success: apiLog.success,
-      // Sensitive data (params, messages, response) removed for privacy
     },
   };
 
-  // Get existing logs
-  const savedLogs = localStorage.getItem('app_logs');
-  const logs: LogEntry[] = savedLogs ? JSON.parse(savedLogs) : [];
-
-  // Add new log
-  const updatedLogs = [logEntry, ...logs].slice(0, 100); // Reduced to 100 entries
-  localStorage.setItem('app_logs', JSON.stringify(updatedLogs));
+  addLogToMemory(logEntry);
 };
 
 export const createPuterAPILogger = () => {
   const startTime = Date.now();
   
   return {
-    logSuccess: (method: string, params: any, response: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    logSuccess: (method: string, params?: any, _response?: any) => {
       logPuterAPICall({
         method,
         model: params?.model,
@@ -83,7 +86,8 @@ export const createPuterAPILogger = () => {
         success: true,
       });
     },
-    logError: (method: string, params: any, error: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    logError: (method: string, params?: any, _error?: any) => {
       logPuterAPICall({
         method,
         model: params?.model,
@@ -99,7 +103,8 @@ export const createOpenRouterAPILogger = () => {
   const startTime = Date.now();
   
   return {
-    logSuccess: (model: string, params: any, response: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    logSuccess: (model: string, _params?: any, _response?: any) => {
       logOpenRouterAPICall({
         method: 'chat.completions',
         model,
@@ -108,7 +113,8 @@ export const createOpenRouterAPILogger = () => {
         success: true,
       });
     },
-    logError: (model: string, params: any, error: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    logError: (model: string, _params?: any, _error?: any) => {
       logOpenRouterAPICall({
         method: 'chat.completions',
         model,
