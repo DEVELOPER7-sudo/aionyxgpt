@@ -244,7 +244,7 @@ export const botService = {
     }
 
     // Return the snapshot config
-    return data.bot_config as Bot;
+    return data.bot_config as unknown as Bot;
   },
 
   /**

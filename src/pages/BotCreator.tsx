@@ -91,7 +91,7 @@ const BotCreator = () => {
             category: bot.category || 'general',
             systemPrompt: bot.system_prompt,
             model_id: bot.model_id,
-            visibility: bot.visibility,
+            visibility: bot.visibility as 'private' | 'public' | 'unlisted',
             capabilities: bot.capabilities,
             pfpUrl: bot.pfp_url,
           });

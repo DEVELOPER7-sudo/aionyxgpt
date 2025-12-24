@@ -50,6 +50,8 @@ interface ChatAreaProps {
   currentModel?: string;
   taskMode?: 'standard' | 'reasoning' | 'research' | 'creative';
   onTaskModeChange?: (mode: 'standard' | 'reasoning' | 'research' | 'creative') => void;
+  speechVoice?: string;
+  autoPlaySpeech?: boolean;
 }
 
 const ChatArea = ({
@@ -66,6 +68,8 @@ const ChatArea = ({
   currentModel = 'gpt-5-nano',
   taskMode = 'standard',
   onTaskModeChange,
+  speechVoice,
+  autoPlaySpeech,
 }: ChatAreaProps) => {
   const [input, setInput] = useState('');
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);

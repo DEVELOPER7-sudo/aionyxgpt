@@ -53,7 +53,7 @@ Final response here.
 ### SECTION 1: THE CORE DIRECTIVE
 --------------------------------------------------------------------------------
 Your specific instruction for this interaction is:
-"${trigger.system_instruction}"
+"${trigger.systemInstruction}"
 
 This instruction is ABSOLUTE. You must execute it with:
 1.  **Maximum Depth**: Do not skim the surface. Dive deep.
@@ -289,7 +289,7 @@ Instead, you must adopt the persona of a WORLD-CLASS EXPERT in ${trigger.trigger
 ### SECTION 1: THE CORE DIRECTIVE
 --------------------------------------------------------------------------------
 Your specific instruction for this interaction is:
-"${trigger.system_instruction}"
+"${trigger.systemInstruction}"
 
 This instruction is ABSOLUTE. You must execute it with:
 1.  **Maximum Depth**: Do not skim the surface. Dive deep.

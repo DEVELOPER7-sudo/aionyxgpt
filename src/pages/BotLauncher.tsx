@@ -448,7 +448,8 @@ You can switch between chats using the sidebar or create a new chat. However, **
               }));
               storage.setCurrentChatId(id);
             }}
-            onDeleteChat={handleDeleteChat}
+            onDeleteChat={async (chatId: string) => handleDeleteChat(chatId)}
+            onNavigate={() => {}}
             collapsed={state.sidebarCollapsed}
             onToggleCollapse={() =>
               setState((prev) => ({
@@ -479,6 +480,11 @@ You can switch between chats using the sidebar or create a new chat. However, **
               onEditMessage={handleEditMessage}
               isLoading={state.isLoading}
               currentModel="gpt-5"
+              onStopGeneration={() => {}}
+              webSearchEnabled={false}
+              deepSearchEnabled={false}
+              onToggleWebSearch={() => {}}
+              onToggleDeepSearch={() => {}}
             />
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center">

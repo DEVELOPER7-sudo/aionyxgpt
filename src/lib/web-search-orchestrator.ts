@@ -279,7 +279,7 @@ export const createSearchCycle = (
   previousFindings: string[] = []
 ): SearchCycle => {
   const reasoning = generateSearchCycleReasoning(results, cycleNumber, previousFindings);
-  const { analysis, nextAction, suggestedNextQuery } = analyzeSearchResults(query, query, cycleNumber);
+  const { analysis, nextAction, suggestedNextQuery } = analyzeSearchResults(results, query, cycleNumber);
 
   return {
     cycleNumber,
@@ -368,9 +368,14 @@ export const getSearchStrategy = (query: string) => {
   const academic = isAcademicTopic(query);
   const timeSensitive = isTimeSensitive(query);
 
-  let strategy = {
+  let strategy: {
+    maxCycles: number;
+    preferredSourceTypes: ('academic' | 'news' | 'official' | 'blog' | 'other')[];
+    minResultsPerCycle: number;
+    minRelevanceThreshold: number;
+  } = {
     maxCycles: 2,
-    preferredSourceTypes: ['official', 'academic', 'news', 'blog'] as const,
+    preferredSourceTypes: ['official', 'academic', 'news', 'blog'],
     minResultsPerCycle: 5,
     minRelevanceThreshold: 0.5,
   };
