@@ -1,9 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Loader2, Sparkles, Zap, Globe, Shield, Image as ImageIcon, Brain } from "lucide-react";
 import { SEO } from "@/components/SEO";
+
+const PollinationsFeed = lazy(() => import('@/components/PollinationsFeed'));
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -121,6 +123,11 @@ const Landing = () => {
               <span className="hover:text-primary transition-colors">Qwen</span>
             </div>
           </div>
+
+          {/* Pollinations Feed */}
+          <Suspense fallback={<div className="flex items-center justify-center h-64"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
+            <PollinationsFeed />
+          </Suspense>
         </div>
       </div>
     </div>
